@@ -1,0 +1,135 @@
+**********************************************************
+Firmware release 2.11 improvements and additions:
+**********************************************************
+      corrected bug related to loss of MSB Byte on Block Transfer read binary 24-bit Repeat Mode
+
+**********************************************************
+Firmware release 2.10 improvements and additions:
+**********************************************************
+
+        1) 	Fixed flag Run On Boot operation on LUA script automatic execution
+
+	2) 	Shell start up modifications: 
+	As the system is started, the shell script /app/start is executed; the firmware contains the command line:
+  
+   	sh /data/custom_start
+   
+	Normally the shell script custom_start is not present, therefore the command execution is neglected. 
+	The User can add the fore mentioned shell script in order to execute additional commands to be performed 
+       at system boot, for example to update the system clok via SNTP server;
+	For example, the  shell script custom_start can be created by typing at prompt: 
+   	echo "/app/msntp -r -l /ram/msntp.pid -P no 192.168.0.1" > /data/custom_start
+
+
+	3) 	The SNTP client is hosted in the folder /app; the executable filename is msntp (it is recommended 
+        to be used exclusively as a client)
+
+	The command line options are as follows
+
+==================================================================
+
+    msntp [ --help | -h | -? ] [ -v | -V | -W ]
+          [ { -r | -a } [ -P prompt ] [ -l lockfile ] ]
+          [ -c count ] [ -e minerr ][ -E maxerr ]
+          [ -d delay | -x [ separation ] [ -f savefile ] ]
+          [ address(es) ] ]
+
+
+
+    --help, -h and -? all print the syntax of the command.
+
+    -v indicates that diagnostic messages should be written to standard error,
+and -V requests more output for investigating apparently inconsistent timestamps.  
+-W requests very verbose debugging output, and will interfere with the timing 
+when writing to the terminal (because of line buffered output from C); 
+it is useful only when debugging the source.  Note that the times produced by -V 
+and -W are the corrections needed, and not the error in the local clock.
+
+    -r indicates that the system clock should be reset by 'settimeofday'.
+Naturally, this will work only if the user has enough privilege.
+
+    -a indicates that the system clock should be reset by 'adjtime'.
+Naturally, this will work only if the user has enough privilege.
+
+    -x indicates that the program should run as a daemon (i.e. forever), and
+allow for clock drift.
+
+The default is to write the current date and time to the standard output in
+a format like '1996 Oct 15 20:17:25.123 + 4.567 +/- 0.089 secs', indicating the
+estimated true (local) time and the error in the local clock.  In daemon mode,
+it will add drift information in a format like ' + 1.3 +/- 0.1 ppm', and
+display this at roughly 'separation' intervals.
+
+    'minerr' is the maximum ignorable variation between the clocks. 
+Acceptable values are from 0.001 to 1, and the default is 0.1 if 'address' is specified
+and 0.5 otherwise.
+
+    'maxerr' is the maximum value of various delays that are deemed acceptable.
+Acceptable values are from 1 to 60, and the default is 5.  It should sometimes
+be increased if there are problems with the network, NTP server or system
+clock, but take care.
+
+    'prompt' is the maximum clock change that will be made automatically.
+Acceptable values are from 1 to 3600, and the default is 30.  If the program 
+is being run interactively, larger values will cause a prompt.  The value may 
+also be 'no', and the change will be made without prompting.
+
+    'count' is the maximum number of NTP packets to require.  Acceptable 
+values are from 1 to 25 if 'address' is specified and '-x' is not, and from 5 to 25
+otherwise; the default is 5.  If the maximum isn't enough, you need a better
+consistency algorithm than this program uses.  Don't increase it.
+
+    'delay' is a rough limit on the total running time in seconds. 
+Acceptable values are from 1 to 3600, and the default is 15 if 'address' is specified 
+and 300 otherwise.
+
+    'separation' is the time to wait between calls to the server in minutes if
+'address' is specified, and the minimum time between broadcast packets if not.
+Acceptable values are from 1 to 1440 (a day), and the default is 300.
+
+    'lockfile' may be used in an update mode to ensure that there is only
+one copy of msntp running at once.  The default is installation-dependent,
+but will usually be /etc/msntp.pid.
+
+    'savefile' may be used in daemon mode to store a record of previous
+packets, which may speed up recalculating the drift after msntp has to be
+restarted (e.g. because of network or server outages).  The default is
+installation-dependent, but will usually be /etc/msntp.state.  Note that
+there is no locking of this file, and using it twice may cause chaos.
+
+    'address' is the DNS name or IP number of a host to poll; if no name is
+given, the program waits for broadcasts.  Note that a single component numeric
+address is not allowed.    
+
+
+**********************************************************
+Firmware release 2.05 improvements and additions:
+**********************************************************
+
+Full Ethernet connectivity - 10/100 Mbit LAN interface on front panel 
+provides total control of the unit and of the CAMAC crate; remote 
+control is obtained through the internal web server and a dedicated 
+control socket
+	
+CAMAC bus access - full CAMAC bus control, including LAM 
+detection and block transfer  
+
+NIM I/O Section - various functions available: outputs, inputs, event 
+counters, pulse generators, COMBO I/O (trigger/busy) modules
+
+Remote Control Library - ANSI C remote control library derived from 
+the ESONE standard, with extensions to control local resources and 
+dedicated block transfer functions
+
+Local Web Server - full control using the embedded dynamic web 
+server, with password protection
+
+Advanced Scripting Engine - embedded script interpreter allows 
+local execution of C-like code, with full control on CAMAC and NIM 
+functions
+
+Front Panel Indicators - X and Q signals on last access, user LEDs 
+fault, status and NIM default indicators
+
+Serial port - on front panel, for configuration of Ethernet parameters 
+and other options; can be used as a remote serial port over TCP/IP
