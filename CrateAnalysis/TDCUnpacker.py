@@ -18,21 +18,17 @@ class TDCUnpacker(DummyModule):
     def beginRun(self, runNumber, runRecord):
         runConfiguration = runRecord[(runNumber, "runConfiguration")]
         self.tdc_slots=runConfiguration["tdc_slots_3377"]
-        
+
     def processEvent(self, runNumber, eventNumber, eventRecord):
-        
         tdcData = dict()
-        
-        
         for slot in self.tdc_slots:
             fifoData = eventRecord[(slot,"LeCroy3377")]
             unpacked = LC3377Readout(fifoData)
-            
             if len(unpacked.events) > 0:
                 lastevent = unpacked.events[-1]
                 for datum in lastevent.data:
                     tdcData[(slot,datum.channel)]=datum.tdc
-        
         eventRecord["unpacked3377Data"] = tdcData
-
+      #  print("eventRecord : {}".format(eventRecord))
+      #  print("eventNumber : {}".format(eventNumber))
 

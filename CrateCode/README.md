@@ -10,39 +10,61 @@ This directory contains the following files:
 | File Name  | Description|
 | ------------- | ------------- |
 | ADCHisto.py          |    Classes which plot ADC and TDC data on-the-fly.
+
 | CAEN_C111C.py        |    Additional high-level methods for operating the
 |                      |    CAEN C111C CAMAC crate controller. This file
 |                      |    also includes an alphabetical list of all
 |                      |    communication methods supported by the software.
+
 | CrateHandle.hh       |    C++ interface to the C111C C library provided
 | CrateHandle.cc       |    by CAEN. The main advantage of the C++ interface
 |                      |    is that it properly handles all communication
 |                      |    errors, input parameter errors, etc., by throwing
 |                      |    standard exceptions.
+
+
 | crate_lib_defs.h     |    C language interface for communicating with
 | crate_lib.h          |    the CAEN C111C CAMAC crate controller. This is
 | crate_lib.c          |    a slightly modified and extended version of the
 |                      |    C111C C library provided by CAEN.
+
+
 | example.py           |    A few example commands illustrating how to
 |                      |    communicate with the CAEN C111C CAMAC crate
 |                      |    controller.
+
+
 | LC3377.py            |    Several classes for unpacking FIFO data received
 |                      |    from LeCroy 3377 TDC modules.
+
+
 | LC3377_test.py       |    Test code for "LC3377.py". Run with
 |                      |    "python3 LC3377_test.py".
+
+
 | Makefile             |    Instructions for the "make" utility: how
 |                      |    to compile the "caencamac" Python module.
 |                      |    Normally, you only need to type "make" in
 |                      |    order to build this module, and "make clean"
 |                      |    in order to clean everything up.
+
+
 | MultipleUpdater.py   |    A utility class for running multiple classes
 |                      |    that dynamically update plots, etc. Works with
 |                      |    "runCAMAC".
+
+
 | runCAMAC.py          |    Illustrates running C111C CAMAC crate controller
 |                      |    and collecting ADC/TDC data.
+
+
 | takeData.py          |    Command line parser for "runCAMAC".
+
+
 | NumpyTypecode.hh     |    Helper functions for converting C++ array and
 | vectorToNumpy.hh     |    std::vector array objects into numpy arrays.
+
+
 | Various files with   |    SWIG definitions for building Python interface
 | the .i extension     |    to the functionality provided by the C++ code.
 |                      |    All C++ exceptions are automatically translated

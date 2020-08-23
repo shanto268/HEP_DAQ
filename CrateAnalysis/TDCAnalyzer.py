@@ -23,7 +23,6 @@ class TDCAnalyzer(DummyModule):
         
         tdcCalc = dict()
         
-
         
         if (2,0) in tdcData and (2,1) in tdcData:
             L1d = tdcData[(2,0)]-tdcData[(2,1)]
@@ -50,7 +49,7 @@ class TDCAnalyzer(DummyModule):
         
 
         eventRecord["TDCAnalyzer"] = tdcCalc
-        
+         
         # for item in eventRecord:
         #     print(eventNumber,"Key : {} , Value : {}".format(item,eventRecord[item]))
         

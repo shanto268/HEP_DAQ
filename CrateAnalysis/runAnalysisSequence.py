@@ -56,6 +56,8 @@ def runAnalysisSequence(moduleSequence, inputFiles,
 
         try:
             runRecord = pickle.load(f, fix_imports=False)
+    #        print(runRecord)
+         #   print("")
             runRecordVersion = runRecord["version"]
         except:
             runRecord = None

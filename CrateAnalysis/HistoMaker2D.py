@@ -41,6 +41,7 @@ class HistoMaker2D(AbsAnalysisModule):
                  ylabel, nybins, ymin, ymax, ycalculator,
                  wcalculator = None):
         AbsAnalysisModule.__init__(self, name)
+        self.defaultValue = -1
         self.title = title
         self.xlabel = xlabel
         self.nxbins = int(nxbins)
@@ -57,7 +58,10 @@ class HistoMaker2D(AbsAnalysisModule):
         assert self.ymax > self.ymin, "Invalid Y range specification"
         self.ycalculator = ycalculator
         self.wcalculator = wcalculator
-        self.data = np.zeros((self.nxbins, self.nybins), dtype=np.double)
+        #self.data = np.zeros((self.nxbins, self.nybins), dtype=np.double)
+     #   self.data = np.empty((self.nxbins, self.nybins))
+        self.data = np.full((self.nxbins, self.nybins), self.defaultValue, dtype=np.double)
+        #self.data = np.empty((self.nxbins, self.nybins), dtype=np.double)
         self.overflow = 0.0
         self._xbinwidth = (self.xmax - self.xmin)/self.nxbins
         self._ybinwidth = (self.ymax - self.ymin)/self.nybins
@@ -67,6 +71,7 @@ class HistoMaker2D(AbsAnalysisModule):
 
     def endJob(self):
         plt.ioff()
+        self.data[self.data == -1] = np.nan
         self.redraw()
         print("In module %s: %s overflow %s" % \
               (self.moduleName, self.overflow, self._makeZLabel()))

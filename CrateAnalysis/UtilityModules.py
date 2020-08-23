@@ -101,7 +101,6 @@ class EventCounter(DummyModule):
     def endJob(self):
         print("%s:" % self.moduleName, self.counter)
 
-
 class DutyCycleModue(EventCounter):
     """
     This module passes only a certain fraction of the events down the event

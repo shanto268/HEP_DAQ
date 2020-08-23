@@ -1,0 +1,5 @@
+Computer Automated Measurement And Control, (CAMAC), is a modular data handling system used at almost every nuclear physics research laboratory and many industrial sites all over the world. It represents the joint specifications of the U.S. NIM and the European ESONE Committees.
+
+The primary application is data acquisition but CAMAC may also be used for remotely programmable trigger and logic applications. The CAMAC standard covers electrical and physical specifications for the modules, instrument housings or crates, and a crate backplane.
+
+

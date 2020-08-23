@@ -34,7 +34,7 @@ print(result)
 # C111C User Manual. "stdCMDSR" stands for "standard command send-receive".
 h.stdCMDSR("vn24")
 
-# Note that, even if no meanigful result is expected, in most cases the
+# Note that, even if no meaningful result is expected, in most cases the
 # controller still sends the status. You can still use "stdCMDSR" for
 # such commands. It will process the status, raising exceptions as
 # necessary, and will return an empty string.
