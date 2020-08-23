@@ -16,12 +16,12 @@ CAMAC modules are available on the web.
 The *CrateCode/* directory contains all the data files (*.bin). The *CrateAnalysis/* contains the analysis code (myAnalysisExample.py).
 
 ## Example Usage
-The arguments are fileToStoreRunTimeData dataFileGeneratedByCAMAC
+The arguments are *fileToStoreRunTimeData* and *dataFileGeneratedByCAMAC* 
 
 ```bash
 python myAnalysisExample.py junk ../CrateCode/run318.bin
 ```
-If running in SpyDer/ipython:
+If running in SPyder/Ipython:
 
 ```python
 %run ./myAnalysisExample.py junk ../CrateCode/run318.bin
