@@ -45,6 +45,7 @@ class _ChannelHisto:
             plt.ion()
             self._makePlots()
 
+
     def processEvent(self, runNumber, eventNumber, eventRecord):
         if not (self.toPlot is None):
             self._updateData(eventNumber, eventRecord)
@@ -56,9 +57,13 @@ class _ChannelHisto:
             self._updatePlots()
 
     def endRun(self, runNumber, runRecord):
+        for id in self.toPlot:
+            print("ID is {} and size of data array is \n {}".format(id,len(self.plotData[id])))
         if not (self.toPlot is None):
             self._updatePlots()
             plt.ioff()
+            plt.savefig("channels_histo_{}.png".format(self.runNumber))
+            plt.show()
 
     def endJob(self):
         pass
@@ -134,7 +139,7 @@ class _ChannelHisto:
                     else:
                         maxCount = self.nBins
                     ax.hist(self.plotData[chId], self.nBins, range=(0, maxCount))
-        plt.pause(1.e-6)
+        #plt.pause(1.e-6)
 
 
 class ADCHisto(_ChannelHisto):
@@ -146,6 +151,7 @@ class ADCHisto(_ChannelHisto):
 
 class TDCHisto(_ChannelHisto):
     def __init__(self, nBins, dutyCycle, vAdj, channels_to_plot=None):
-        _ChannelHisto.__init__(self, nBins, dutyCycle, vAdj, "LeCroy2228",
-                               "tdc_slots", "TDC Counts", channels_to_plot)
+        _ChannelHisto.__init__(self, nBins, dutyCycle, vAdj,
+                               "LeCroy3377", "tdc_slots_3377", "TDC Counts", channels_to_plot)
+#                              "LeCroy2228", "tdc_slots", "TDC Counts", channels_to_plot)
         self.moduleName = "TDCHisto"

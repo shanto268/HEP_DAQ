@@ -22,8 +22,9 @@ class HistoMaker1D(AbsAnalysisModule):
 
     specs      A collection of Histo1DSpec objects
     """
-    def __init__(self, specs):
-        AbsAnalysisModule.__init__(self, "HistoMaker1D")
+    def __init__(self, specs, name):
+        #AbsAnalysisModule.__init__(self, "HistoMaker1D")
+        AbsAnalysisModule.__init__(self, name)
         self._specs = specs
         self._data = [list() for i in range(len(specs))]
 

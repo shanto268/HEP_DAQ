@@ -1,6 +1,14 @@
 """
 Usage: analysisExample.py outputPrefix inputFile0 ...
-Questions: how to look at data, data format and meaning
+Todo:
+[x]    Histogram each channel separately (CH0, 1, 2, and 3)
+[x]    Plot CHO vs CH1
+[x]    Plot CH2 vs CH3
+    Plot CH0-CH1
+    Plot CH0+CH1
+    Plot CH2-CH3
+    Plot CH2+CH3
+    Plot CH0-CH1 vs CH2-CH3
 """
 
 import sys
@@ -45,10 +53,12 @@ def main(argv):
     mod8 = TDCAnalyzer("TDCAnalyzer")
     gptr = GenericPrintingModule(("hw_event_count", "deadtime"))
 
-    hMaker = HistoMaker1D((h0,))
+    hMaker = HistoMaker1D((h0,),"h0")
 
-    adcPlotter = ADCHisto(100, 5, 0.4)
-    tdcPlotter = TDCHisto(100, 5, 0.4)
+    #adcPlotter = ADCHisto(100, 5, 0.4)
+    #tdcPlotter = TDCHisto(100, 5, 0.4)
+    global nbins
+    nbins = 200
 
     slot1 = 2
     channel1 = 0
@@ -60,9 +70,8 @@ def main(argv):
     slot4 = 2
     channel4 = 4
 
-    nbins = 200
-    #xdefinition = lambda eventRecord: eventRecord[(slot1,"LeCroy3377")][channel1]
-    #ydefinition = lambda eventRecord: eventRecord[(slot2,"LeCroy3377")][channel2]
+    tdcChannels = ((slot1, channel1),(slot1, channel2),(slot1, channel3),(slot1, channel4))
+    tdcH= modChannelIndividualPlotters(tdcChannels)
 
     xdefinitionL1 = LC3377Definition(slot1, channel1)
     ydefinitionL1 = LC3377Definition(slot2, channel2)
@@ -76,66 +85,44 @@ def main(argv):
     h2x = Histo1DSpec("Layer2x", "TDC Counts Layer 2x", 100, xdefinitionL2)
     h2y = Histo1DSpec("Layer2y", "TDC Counts Layer 2y", 100, ydefinitionL2)
 
-    hMaker1x = HistoMaker1D((h1x,))
-    hMaker1y = HistoMaker1D((h1y,))
+    hMaker1x = HistoMaker1D((h1x,),"h1x")
+    hMaker1y = HistoMaker1D((h1y,),"h1y")
 
-    hMaker2x = HistoMaker1D((h2x,))
-    hMaker2y = HistoMaker1D((h2y,))
+    hMaker2x = HistoMaker1D((h2x,),"h2x")
+    hMaker2y = HistoMaker1D((h2y,),"h2y")
 
-
-    xlabelL1 = "TDC counts for slot %s ch %s" % (slot1, channel1)
-    ylabelL1 = "TDC counts for slot %s ch %s" % (slot2, channel2)
-    titleL1 = "Slot %s ch %s vs. slot %s ch %s" % (slot2, channel2, slot1, channel1)
-
-    xlabelL2 = "TDC counts for slot %s ch %s" % (slot3, channel3)
-    ylabelL2 = "TDC counts for slot %s ch %s" % (slot4, channel4)
-    titleL2 = "Slot %s ch %s vs. slot %s ch %s" % (slot4, channel4, slot3, channel3)
-
-    h2dL1 = HistoMaker2D("h2dL1", titleL1,
-                       xlabelL1, nbins, 0.0, 200.0, xdefinitionL1,
-                       ylabelL1, nbins, 0.0, 200.0, ydefinitionL1)
-
-    h2dL2 = HistoMaker2D("h2dL2", titleL2,
-                       xlabelL2, nbins, 0.0, 200.0, xdefinitionL2,
-                       ylabelL2, nbins, 0.0, 200.0, ydefinitionL2)
-
+    h2dL1 = modChannelVsPlotters(slot1, channel1, slot2, channel2, xdefinitionL1, ydefinitionL1, "h2dL1")
+    h2dL2 = modChannelVsPlotters(slot3, channel3, slot4, channel4, xdefinitionL2, ydefinitionL2, "h2dL2")
 
     L1diff = lambda eventRecord: eventRecord["TDCAnalyzer"]["Layer1diff"]
     L2diff = lambda eventRecord: eventRecord["TDCAnalyzer"]["Layer2diff"]
     L1asym = lambda eventRecord: eventRecord["TDCAnalyzer"]["Layer1asym"]
     L2asym = lambda eventRecord: eventRecord["TDCAnalyzer"]["Layer2asym"]
 
-
-    global hitMap, hitMap2, myLayer1diff, myLayer2asym
-
     histo_layer1diff = Histo1DSpec("Layer1", "TDC Counts Diff Layer 1", 200, L1diff)
     histo_layer2diff = Histo1DSpec("Layer2", "TDC Counts Diff Layer 2", 200, L2diff)
     histo_layer1asym = Histo1DSpec("Layer1", "Asymmetry Layer 1", 200, L1asym)
     histo_layer2asym = Histo1DSpec("Layer2", "Asymmetry Layer 2", 200, L2asym)
 
-    myLayer1diff = HistoMaker1D((histo_layer1diff,))
-    myLayer2diff = HistoMaker1D((histo_layer2diff,))
-    myLayer1asym = HistoMaker1D((histo_layer1asym,))
-    myLayer2asym = HistoMaker1D((histo_layer2asym,))
-#
-#
+    myLayer1diff = HistoMaker1D((histo_layer1diff, ),"histo_layer1diff")
+    myLayer2diff = HistoMaker1D((histo_layer2diff, ),"histo_layer2diff")
+    myLayer1asym = HistoMaker1D((histo_layer1asym, ),"histo_layer1asym")
+    myLayer2asym = HistoMaker1D((histo_layer2asym, ),"histo_layer2asym")
 
+    global hitMap
     hitMap = HistoMaker2D("hitMap", "Hit Map",
                        "Asymmetry in X", nbins, -100, 100.0, L1asym,
                        "Asymmetry in Y", nbins, -100, 100.0, L2asym)
-
-    hitMap2 = HistoMaker2D("hitMap2", "Hit Map",
-                       "Difference in X", nbins, -100, 100.0, L1diff,
-                       "Difference in Y", nbins, -100, 100.0, L2diff)
 
     # Define the sequence of modules
     # modules = (mod0, mod1, hMaker, plotUpdater, mod2, mod3, gptr, mod4)
     # modules = (mod0, mod1, mod3, mod5)
     # modules = (mod0, mod1, mod6, h2d, tdcPlotter, adcPlotter)
     # modules = (mod0, mod1, mod7, mod8, h2dL1, h2dL2, myLayer2asym)
-    
-    modules = (mod0, mod1, mod7, mod8, hitMap)
-    
+
+    #modules = (mod0, mod1, mod7, mod8, hitMap)
+    modules = (mod0, mod1, mod7, mod8, h2dL1, h2dL2)
+
     # Call the code which actually does the job
     t0 = datetime.now()
     n = runAnalysisSequence(modules, inputFiles)
@@ -143,8 +130,19 @@ def main(argv):
 
     # Print a mini summary of event processing
     print('Processed %d events in %g sec' % (n, dt.total_seconds()))
-    hitMap.redraw(0,15)
+    #hitMap.redraw(0,15)
     return 0
+
+def modChannelIndividualPlotters(tdcChannels):
+    tdcH= TDCHisto(400, 1000, 0.4, tdcChannels)
+    return tdcH
+
+def modChannelVsPlotters(slot1, channel1, slot2, channel2, xdefinition, ydefinition, hname):
+    xlabel= "TDC counts for slot %s ch %s" % (slot1, channel1)
+    ylabel= "TDC counts for slot %s ch %s" % (slot2, channel2)
+    title= "Slot %s ch %s vs. slot %s ch %s" % (slot2, channel2, slot1, channel1)
+    histo = HistoMaker2D(hname, title,xlabel, nbins, 0.0, 200.0, xdefinition, ylabel, nbins, 0.0, 200.0, ydefinition)
+    return histo
 
 if __name__=='__main__':
     sys.exit(main(sys.argv[1:]))
