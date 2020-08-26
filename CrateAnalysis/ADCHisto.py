@@ -104,6 +104,8 @@ class _ChannelHisto:
     def _updateData(self, eventNumber, eventRecord):
         for slot in self.slots:
             channelValues = eventRecord[(slot,self.hardwareModule)]
+            #print("event record", eventRecord)
+            #print("plotted data", channelValues)
             for channel, value in enumerate(channelValues):
                 id = (slot, channel)
                 if id in self.plotData:
@@ -155,3 +157,5 @@ class TDCHisto(_ChannelHisto):
                                "LeCroy3377", "tdc_slots_3377", "TDC Counts", channels_to_plot)
 #                              "LeCroy2228", "tdc_slots", "TDC Counts", channels_to_plot)
         self.moduleName = "TDCHisto"
+        #hardwareModule,
+         #        slotsConfigName, xlabel, 

@@ -119,15 +119,24 @@ class HistoMaker2D(AbsAnalysisModule):
             w = 1.0*self.wcalculator(eventRecord)
         if w == 0.0:
             return
-        x = 1.0*self.xcalculator(eventRecord)
+        try:
+            x = 1.0*self.xcalculator(eventRecord)
+        except:
+            return
         if x >= self.xmax or x < self.xmin:
             self.overflow += w
             return
-        y = 1.0*self.ycalculator(eventRecord)
+        try:
+            y = 1.0*self.ycalculator(eventRecord)
+        except:
+            return
         if y >= self.ymax or y < self.ymin:
             self.overflow += w
             return
-        xbin = int((x - self.xmin)/self._xbinwidth)
+        try:
+            xbin = int((x - self.xmin)/self._xbinwidth)
+        except:
+            return
         if xbin >= self.nxbins:
             xbin = self.nxbins - 1
         ybin = int((y - self.ymin)/self._ybinwidth)

@@ -38,8 +38,6 @@ def main(argv):
     outputPrefix = argv[0]
     inputFiles = argv[1:]
 
-    # Example histogram specifier
-    h0 = Histo1DSpec("Dead Time", "Counts", 100, lambda x: x["deadtime"])
 
     # Create various analysis modules
     mod0 = VerboseModule("VerboseModule", True, True, 10, True, True)
@@ -53,7 +51,11 @@ def main(argv):
     mod8 = TDCAnalyzer("TDCAnalyzer")
     gptr = GenericPrintingModule(("hw_event_count", "deadtime"))
 
+    # Example histogram specifier
+    h0 = Histo1DSpec("Dead Time", "Counts", 100, lambda x: x["deadtime"])
+    h1 = Histo1DSpec("Number of hits per Event", "Counts", 10, lambda x: x["len_unpacked_3377Data"])
     hMaker = HistoMaker1D((h0,),"h0")
+    hMaker2 = HistoMaker1D((h1,),"NumHitsPerEvent")
 
     #adcPlotter = ADCHisto(100, 5, 0.4)
     #tdcPlotter = TDCHisto(100, 5, 0.4)
@@ -121,7 +123,8 @@ def main(argv):
     # modules = (mod0, mod1, mod7, mod8, h2dL1, h2dL2, myLayer2asym)
 
     #modules = (mod0, mod1, mod7, mod8, hitMap)
-    modules = (mod0, mod1, mod7, mod8, h2dL1, h2dL2)
+    modules = (mod0, mod1, mod7, mod8, h2dL1, h2dL2, tdcH, hMaker2)  #all plots
+#    modules = (mod0, mod1, mod7, mod8, tdcH, h2dL1, h2dL2)
 
     # Call the code which actually does the job
     t0 = datetime.now()

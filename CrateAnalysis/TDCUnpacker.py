@@ -26,9 +26,12 @@ class TDCUnpacker(DummyModule):
             unpacked = LC3377Readout(fifoData)
             if len(unpacked.events) > 0:
                 lastevent = unpacked.events[-1]
+                firstevent = unpacked.events[0]
                 for datum in lastevent.data:
-                    tdcData[(slot,datum.channel)]=datum.tdc
+                #for datum in firstevent.data:
+                    tdcData[(slot,datum.channel)] = datum.tdc
         eventRecord["unpacked3377Data"] = tdcData
+        eventRecord["len_unpacked_3377Data"] = len(tdcData)
       #  print("eventRecord : {}".format(eventRecord))
       #  print("eventNumber : {}".format(eventNumber))
 
