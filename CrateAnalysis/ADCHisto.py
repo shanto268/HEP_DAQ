@@ -57,8 +57,8 @@ class _ChannelHisto:
             self._updatePlots()
 
     def endRun(self, runNumber, runRecord):
-        for id in self.toPlot:
-            print("ID is {} and size of data array is \n {}".format(id,len(self.plotData[id])))
+       # for id in self.toPlot:
+       #     print("ID is {} and size of data array is \n {}".format(id,len(self.plotData[id])))
         if not (self.toPlot is None):
             self._updatePlots()
             plt.ioff()
@@ -96,7 +96,7 @@ class _ChannelHisto:
         self._fig = fig
         self._axes = axes.flatten()
         fig.canvas.set_window_title(self.xlabel) 
-        fig.suptitle("Run %d, 0 Events" % self.runNumber)
+     #   fig.suptitle("Run %d, 0 Events" % self.runNumber)
         # fig.subplots_adjust(hspace=self.vAdj)
         fig.tight_layout(rect=[0.02, 0.02, 1, 0.92])
         self._updatePlots()
@@ -104,8 +104,8 @@ class _ChannelHisto:
     def _updateData(self, eventNumber, eventRecord):
         for slot in self.slots:
             channelValues = eventRecord[(slot,self.hardwareModule)]
-            #print("event record", eventRecord)
-            #print("plotted data", channelValues)
+       #     print("event record", eventRecord)
+       #     print("plotted data", channelValues)
             for channel, value in enumerate(channelValues):
                 id = (slot, channel)
                 if id in self.plotData:
@@ -120,8 +120,7 @@ class _ChannelHisto:
         return maxADC
 
     def _updatePlots(self):
-        self._fig.suptitle("Run %d, %d events" % \
-                           (self.runNumber, self.eventCounter))
+#        self._fig.suptitle("Run %d, %d events" % (self.runNumber, self.eventCounter))
         nChannels = len(self.toPlot)
         for row in range(self._nRows):
             for col in range(self._nCols):
@@ -138,10 +137,12 @@ class _ChannelHisto:
                     ax.set_title("Slot %d ch %d" % chId)
                     if self.eventCounter > 0:
                         maxCount = self._xAxisUpperLimit(max(self.plotData[chId]))
+             #           maxCount = 2000
                     else:
                         maxCount = self.nBins
+              #          maxCount = 2000 
                     ax.hist(self.plotData[chId], self.nBins, range=(0, maxCount))
-        #plt.pause(1.e-6)
+    #    plt.pause(1.e-6)
 
 
 class ADCHisto(_ChannelHisto):
@@ -155,7 +156,7 @@ class TDCHisto(_ChannelHisto):
     def __init__(self, nBins, dutyCycle, vAdj, channels_to_plot=None):
         _ChannelHisto.__init__(self, nBins, dutyCycle, vAdj,
                                "LeCroy3377", "tdc_slots_3377", "TDC Counts", channels_to_plot)
-#                              "LeCroy2228", "tdc_slots", "TDC Counts", channels_to_plot)
+#                              "LeCroy2228", "tdc_slots_2228", "TDC Counts", channels_to_plot)
         self.moduleName = "TDCHisto"
         #hardwareModule,
          #        slotsConfigName, xlabel, 

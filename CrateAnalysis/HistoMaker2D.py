@@ -41,6 +41,7 @@ class HistoMaker2D(AbsAnalysisModule):
                  ylabel, nybins, ymin, ymax, ycalculator,
                  wcalculator = None):
         AbsAnalysisModule.__init__(self, name)
+        self.name = name
         self.defaultValue = -1
         self.title = title
         self.xlabel = xlabel
@@ -104,9 +105,12 @@ class HistoMaker2D(AbsAnalysisModule):
         axis.set_title(self._makePlotTitle(zmin, zmax))
         cbar.ax.set_title(self._makeZLabel())
         fig.canvas.set_window_title(self.moduleName)
+        plt.savefig("{}_{}.png".format(self.name, self.runNumber))
         plt.show()
 
     def beginRun(self, runNumber, runInfo):
+        self.runNumber = runNumber
+        self.title = self.title + " | Run Number: " + str(self.runNumber) 
         pass
 
     def endRun(self, runNumber, runInfo):
@@ -149,6 +153,7 @@ class HistoMaker2D(AbsAnalysisModule):
         xedges = np.linspace(self.xmin, self.xmax, num=shape[0]+1)
         yedges = np.linspace(self.ymax, self.ymin, num=shape[1]+1)
         xv, yv = np.meshgrid(xedges, yedges, indexing='ij')
+        #print(xv, yv)
         if zmin is None and zmax is None:
             return ax.pcolormesh(xv, yv, np.flip(self.data, 1), **options)
         if zmin is None:

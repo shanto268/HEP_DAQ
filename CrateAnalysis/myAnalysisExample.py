@@ -60,7 +60,7 @@ def main(argv):
     #adcPlotter = ADCHisto(100, 5, 0.4)
     #tdcPlotter = TDCHisto(100, 5, 0.4)
     global nbins
-    nbins = 200
+    nbins = 250
 
     slot1 = 2
     channel1 = 0
@@ -72,7 +72,9 @@ def main(argv):
     slot4 = 2
     channel4 = 4
 
-    tdcChannels = ((slot1, channel1),(slot1, channel2),(slot1, channel3),(slot1, channel4))
+   # tdcChannels = ((slot1, channel1),(slot1, channel2),(slot1, channel3),(slot1, channel4))
+   # tdcChannels = ((slot1, channel1),(slot1, channel2), (slot1, 2), (slot1, channel3), (slot1, channel4))
+    tdcChannels = ((slot1, 1),(slot1, 2), (slot1, 3), (slot1, 4))
     tdcH= modChannelIndividualPlotters(tdcChannels)
 
     xdefinitionL1 = LC3377Definition(slot1, channel1)
@@ -113,18 +115,16 @@ def main(argv):
 
     global hitMap
     hitMap = HistoMaker2D("hitMap", "Hit Map",
-                       "Asymmetry in X", nbins, -100, 100.0, L1asym,
-                       "Asymmetry in Y", nbins, -100, 100.0, L2asym)
+                       "Asymmetry in X", nbins, -30.0, 30.0, L1asym,
+                       "Asymmetry in Y", nbins, -30.0, 30.0, L2asym)
 
+#    diff = channelDifferenceCalulator((2,1), (2,2), slot1)
     # Define the sequence of modules
-    # modules = (mod0, mod1, hMaker, plotUpdater, mod2, mod3, gptr, mod4)
-    # modules = (mod0, mod1, mod3, mod5)
-    # modules = (mod0, mod1, mod6, h2d, tdcPlotter, adcPlotter)
-    # modules = (mod0, mod1, mod7, mod8, h2dL1, h2dL2, myLayer2asym)
-
-    #modules = (mod0, mod1, mod7, mod8, hitMap)
-    modules = (mod0, mod1, mod7, mod8, h2dL1, h2dL2, tdcH, hMaker2)  #all plots
-#    modules = (mod0, mod1, mod7, mod8, tdcH, h2dL1, h2dL2)
+#    modules = (mod0, mod1, mod7, mod8, h2dL1, h2dL2, tdcH)
+#    modules = (mod0, mod1, mod7, mod8, tdcH, hitMap)
+   # modules = (mod0, mod1, mod7, mod8, h2dL1, h2dL2, tdcH, hitMap)  #all plots
+    modules = (mod0, mod1, mod7, mod8, hMaker2)  #all plots
+#    modules = (mod0, mod1, mod7, mod8, diff)
 
     # Call the code which actually does the job
     t0 = datetime.now()
@@ -146,6 +146,12 @@ def modChannelVsPlotters(slot1, channel1, slot2, channel2, xdefinition, ydefinit
     title= "Slot %s ch %s vs. slot %s ch %s" % (slot2, channel2, slot1, channel1)
     histo = HistoMaker2D(hname, title,xlabel, nbins, 0.0, 200.0, xdefinition, ylabel, nbins, 0.0, 200.0, ydefinition)
     return histo
+
+def channelDifferenceCalulator(channel1, channel2, slot):
+    pass
+
+def channelAdditionCalulator(channel1, channel2):
+    pass
 
 if __name__=='__main__':
     sys.exit(main(sys.argv[1:]))
