@@ -26,6 +26,7 @@ from TDCUnpacker import *
 from TDCAnalyzer import *
 from datetime import datetime
 
+
 def main(argv):
     # Parse command line options
     argc = len(argv)
@@ -37,7 +38,6 @@ def main(argv):
 
     outputPrefix = argv[0]
     inputFiles = argv[1:]
-
 
     # Create various analysis modules
     mod0 = VerboseModule("VerboseModule", True, True, 10, True, True)
@@ -53,9 +53,10 @@ def main(argv):
 
     # Example histogram specifier
     h0 = Histo1DSpec("Dead Time", "Counts", 100, lambda x: x["deadtime"])
-    h1 = Histo1DSpec("Number of hits per Event", "Counts", 10, lambda x: x["len_unpacked_3377Data"])
-    hMaker = HistoMaker1D((h0,),"h0")
-    hMaker2 = HistoMaker1D((h1,),"NumHitsPerEvent")
+    h1 = Histo1DSpec("Number of hits per Event", "Counts", 10,
+                     lambda x: x["len_unpacked_3377Data"])
+    hMaker = HistoMaker1D((h0, ), "h0")
+    hMaker2 = HistoMaker1D((h1, ), "NumHitsPerEvent")
 
     #adcPlotter = ADCHisto(100, 5, 0.4)
     #tdcPlotter = TDCHisto(100, 5, 0.4)
@@ -72,10 +73,12 @@ def main(argv):
     slot4 = 2
     channel4 = 4
 
-   # tdcChannels = ((slot1, channel1),(slot1, channel2),(slot1, channel3),(slot1, channel4))
-   # tdcChannels = ((slot1, channel1),(slot1, channel2), (slot1, 2), (slot1, channel3), (slot1, channel4))
-    tdcChannels = ((slot1, 1),(slot1, 2), (slot1, 3), (slot1, 4))
-    tdcH= modChannelIndividualPlotters(tdcChannels)
+    tdcChannelsAll = ((slot1, 1), (slot1, 2), (slot1, 3), (slot1, 4))
+    tdcChannelsL1 = ((slot1, 1), (slot1, 2))
+    tdcChannelsL2 = ((slot1, 3), (slot1, 4))
+    tdcHAll = modChannelIndividualPlotters(tdcChannelsAll)
+    tdcHL1 = modChannelIndividualPlotters(tdcChannelsL1)
+    tdcHL2 = modChannelIndividualPlotters(tdcChannelsL2)
 
     xdefinitionL1 = LC3377Definition(slot1, channel1)
     ydefinitionL1 = LC3377Definition(slot2, channel2)
@@ -83,49 +86,97 @@ def main(argv):
     xdefinitionL2 = LC3377Definition(slot3, channel3)
     ydefinitionL2 = LC3377Definition(slot4, channel4)
 
-    h1x = Histo1DSpec("Layer1x", "TDC Counts Layer 1x", 100, xdefinitionL1)
-    h1y = Histo1DSpec("Layer1y", "TDC Counts Layer 1y", 100, ydefinitionL1)
+    h1x = Histo1DSpec("Layer1x", "TDC Counts Layer 1x", 200, xdefinitionL1)
+    h1y = Histo1DSpec("Layer1y", "TDC Counts Layer 1y", 200, ydefinitionL1)
 
-    h2x = Histo1DSpec("Layer2x", "TDC Counts Layer 2x", 100, xdefinitionL2)
-    h2y = Histo1DSpec("Layer2y", "TDC Counts Layer 2y", 100, ydefinitionL2)
+    h2x = Histo1DSpec("Layer2x", "TDC Counts Layer 2x", 200, xdefinitionL2)
+    h2y = Histo1DSpec("Layer2y", "TDC Counts Layer 2y", 200, ydefinitionL2)
 
-    hMaker1x = HistoMaker1D((h1x,),"h1x")
-    hMaker1y = HistoMaker1D((h1y,),"h1y")
+    # hMaker1x = HistoMaker1D((h1x, ), "Layer 1 Channel 0")
+    # hMaker1y = HistoMaker1D((h1y, ), "Layer 1 Channel 1")
 
-    hMaker2x = HistoMaker1D((h2x,),"h2x")
-    hMaker2y = HistoMaker1D((h2y,),"h2y")
+    # hMaker2x = HistoMaker1D((h2x, ), "Layer 2 Channel 2")
+    # hMaker2y = HistoMaker1D((h2y, ), "Layer 2 Channel 3")
 
-    h2dL1 = modChannelVsPlotters(slot1, channel1, slot2, channel2, xdefinitionL1, ydefinitionL1, "h2dL1")
-    h2dL2 = modChannelVsPlotters(slot3, channel3, slot4, channel4, xdefinitionL2, ydefinitionL2, "h2dL2")
+    histAllChannels = HistoInfo1D((h1x, h1y, h2x, h2y), "Comparative")
+    histAllChannelSep = HistoMaker1D((h1x, h1y, h2x, h2y), "All")
+
+    h2dL1 = modChannelVsPlotters(slot1, channel1, slot2, channel2,
+                                 xdefinitionL1, ydefinitionL1, "h2dL1")
+    h2dL1_rotate = modChannelVsPlotters(slot1,
+                                        channel1,
+                                        slot2,
+                                        channel2,
+                                        xdefinitionL1,
+                                        ydefinitionL1,
+                                        "h2dL1_rotate",
+                                        rotate=True)
+
+    h2dL2_rotate = modChannelVsPlotters(slot3,
+                                        channel3,
+                                        slot4,
+                                        channel4,
+                                        xdefinitionL2,
+                                        ydefinitionL2,
+                                        "h2dL2_rotate",
+                                        rotate=True)
+
+    h2dL2 = modChannelVsPlotters(slot3, channel3, slot4, channel4,
+                                 xdefinitionL2, ydefinitionL2, "h2dL2")
 
     L1diff = lambda eventRecord: eventRecord["TDCAnalyzer"]["Layer1diff"]
     L2diff = lambda eventRecord: eventRecord["TDCAnalyzer"]["Layer2diff"]
     L1asym = lambda eventRecord: eventRecord["TDCAnalyzer"]["Layer1asym"]
     L2asym = lambda eventRecord: eventRecord["TDCAnalyzer"]["Layer2asym"]
 
-    histo_layer1diff = Histo1DSpec("Layer1", "TDC Counts Diff Layer 1", 200, L1diff)
-    histo_layer2diff = Histo1DSpec("Layer2", "TDC Counts Diff Layer 2", 200, L2diff)
-    histo_layer1asym = Histo1DSpec("Layer1", "Asymmetry Layer 1", 200, L1asym)
-    histo_layer2asym = Histo1DSpec("Layer2", "Asymmetry Layer 2", 200, L2asym)
+    histo_layer1diff = Histo1DSpec("Layer1", "TDC Counts Diff Layer 1", 200,
+                                   L1diff)
+    histo_layer2diff = Histo1DSpec("Layer2", "TDC Counts Diff Layer 2", 200,
+                                   L2diff)
+    histo_layer1asym = Histo1DSpec(
+        "Layer1", "Asymmetry Layer 1", 200,
+        lambda x: x["TDCAnalyzer"].get("Layer1asym"))
 
-    myLayer1diff = HistoMaker1D((histo_layer1diff, ),"histo_layer1diff")
-    myLayer2diff = HistoMaker1D((histo_layer2diff, ),"histo_layer2diff")
-    myLayer1asym = HistoMaker1D((histo_layer1asym, ),"histo_layer1asym")
-    myLayer2asym = HistoMaker1D((histo_layer2asym, ),"histo_layer2asym")
+    histo_layer2asym = Histo1DSpec(
+        "Layer2", "Asymmetry Layer 2", 200,
+        lambda eventRecord: eventRecord["TDCAnalyzer"].get("Layer2asym"))
 
-    global hitMap
-    hitMap = HistoMaker2D("hitMap", "Hit Map",
-                       "Asymmetry in X", nbins, -30.0, 30.0, L1asym,
-                       "Asymmetry in Y", nbins, -30.0, 30.0, L2asym)
+    global hitMap  #, myLayer1diff, myLayer2diff, myLayer1asym, myLayer2asym
 
-#    diff = channelDifferenceCalulator((2,1), (2,2), slot1)
+    hitMap = HistoMaker2D("hitMap", "Hit Map", "Asymmetry in X", nbins, -30.0,
+                          30.0, L1asym, "Asymmetry in Y", nbins, -30.0, 30.0,
+                          L2asym)
+
+    myLayer1diff = HistoMaker1D((histo_layer1diff, ), "histo_layer1diff")
+    myLayer2diff = HistoMaker1D((histo_layer2diff, ), "histo_layer2diff")
+    myLayer1asym = HistoMaker1D((histo_layer1asym, ), "histo_layer1asym")
+    myLayer2asym = HistoMaker1D((histo_layer2asym, ), "histo_layer2asym")
+
+    #    diff = channelDifferenceCalulator((2,1), (2,2), slot1)
     # Define the sequence of modules
-#    modules = (mod0, mod1, mod7, mod8, h2dL1, h2dL2, tdcH)
-#    modules = (mod0, mod1, mod7, mod8, tdcH, hitMap)
-   # modules = (mod0, mod1, mod7, mod8, h2dL1, h2dL2, tdcH, hitMap)  #all plots
-    modules = (mod0, mod1, mod7, mod8, hMaker2)  #all plots
-#    modules = (mod0, mod1, mod7, mod8, diff)
-
+    #    modules = (mod0, mod1, mod7, mod8, tdcH, hitMap)
+    # tdc_all_channels = getTDCDataAllChannels(
+    # [hMaker1x, hMaker1y, hMaker2x, hMaker2y])
+    modules = (
+        mod0,
+        mod1,
+        mod7,
+        mod8,
+        histAllChannels,
+        # histAllChannelSep,
+        # myLayer1asym,
+        # myLayer2asym,
+        # hitMap,
+        # h2dL1_rotate,
+        # h2dL2_rotate,
+        # hMaker2,
+        # h2dL1,
+        # h2dL2,
+        # tdcHAll,
+    )  #all plots
+    # modules = (mod0, mod1, mod7, mod8, hMaker2, h2dL1, tdcHL1)  #tray 1
+    # modules = (mod0, mod1, mod7, mod8, hMaker2, h2dL2, tdcHL2)  #tray 2
+    # modules = (mod0, mod1, mod7, mod8, h2dL1ntrial)
     # Call the code which actually does the job
     t0 = datetime.now()
     n = runAnalysisSequence(modules, inputFiles)
@@ -136,23 +187,53 @@ def main(argv):
     #hitMap.redraw(0,15)
     return 0
 
+
+def getTDCDataAllChannels(hMakerObjectArray):
+    fig, (ax1, ax2, ax3, ax4) = plt.subplots(ncols=4)
+    plt.show()
+
+
 def modChannelIndividualPlotters(tdcChannels):
-    tdcH= TDCHisto(400, 1000, 0.4, tdcChannels)
+    tdcH = TDCHisto(400, 1000, 0.4, tdcChannels)
     return tdcH
 
-def modChannelVsPlotters(slot1, channel1, slot2, channel2, xdefinition, ydefinition, hname):
-    xlabel= "TDC counts for slot %s ch %s" % (slot1, channel1)
-    ylabel= "TDC counts for slot %s ch %s" % (slot2, channel2)
-    title= "Slot %s ch %s vs. slot %s ch %s" % (slot2, channel2, slot1, channel1)
-    histo = HistoMaker2D(hname, title,xlabel, nbins, 0.0, 200.0, xdefinition, ylabel, nbins, 0.0, 200.0, ydefinition)
+
+def modChannelVsPlotters(slot1,
+                         channel1,
+                         slot2,
+                         channel2,
+                         xdefinition,
+                         ydefinition,
+                         hname,
+                         rotate=False):
+
+    xlabel = "TDC counts for slot %s ch %s" % (slot1, channel1)
+    ylabel = "TDC counts for slot %s ch %s" % (slot2, channel2)
+    title = "Slot %s ch %s vs. slot %s ch %s" % (slot2, channel2, slot1,
+                                                 channel1)
+    histo = HistoMaker2D(hname,
+                         title,
+                         xlabel,
+                         nbins,
+                         0.0,
+                         200.0,
+                         xdefinition,
+                         ylabel,
+                         nbins,
+                         0.0,
+                         200.0,
+                         ydefinition,
+                         rotate=rotate)
     return histo
+
 
 def channelDifferenceCalulator(channel1, channel2, slot):
     pass
 
+
 def channelAdditionCalulator(channel1, channel2):
     pass
 
-if __name__=='__main__':
-    sys.exit(main(sys.argv[1:]))
 
+if __name__ == '__main__':
+    sys.exit(main(sys.argv[1:]))
