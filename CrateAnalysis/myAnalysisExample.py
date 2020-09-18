@@ -1,13 +1,6 @@
 """
 Usage: analysisExample.py outputPrefix inputFile0 ...
 Todo:
-[x]    Histogram each channel separately (CH0, 1, 2, and 3)
-[x]    Plot CHO vs CH1
-[x]    Plot CH2 vs CH3
-    Plot CH0-CH1
-    Plot CH0+CH1
-    Plot CH2-CH3
-    Plot CH2+CH3
     Plot CH0-CH1 vs CH2-CH3
 """
 
