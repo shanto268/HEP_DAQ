@@ -55,7 +55,7 @@ class HistoMaker2D(AbsAnalysisModule):
 
         AbsAnalysisModule.__init__(self, name)
         self.name = name
-        self.defaultValue = -1
+        self.defaultValue = -0
         self.title = title
         self.xlabel = xlabel
         self.nxbins = int(nxbins)
@@ -88,7 +88,7 @@ class HistoMaker2D(AbsAnalysisModule):
 
     def endJob(self):
         plt.ioff()
-        self.data[self.data == -1] = np.nan
+        self.data[self.data == self.defaultValue] = np.nan
         self.redraw()
         print("In module %s: %s overflow %s" % \
               (self.moduleName, self.overflow, self._makeZLabel()))

@@ -7,6 +7,7 @@ __version__ = "0.1"
 __date__ = "June 23 2017"
 
 import matplotlib.pyplot as plt
+import numpy as np
 from AbsAnalysisModule import AbsAnalysisModule
 
 
@@ -29,6 +30,7 @@ class HistoMaker1D(AbsAnalysisModule):
         AbsAnalysisModule.__init__(self, name)
         self._specs = specs
         self._data = [list() for i in range(len(specs))]
+        self.otol = 10  #outlier tolerance multiple
 
     def beginJob(self, allModuleNames):
         pass
@@ -38,6 +40,17 @@ class HistoMaker1D(AbsAnalysisModule):
         for i, spec in enumerate(self._specs):
             fig = plt.figure()
             ax = fig.add_subplot(111)
+            #print(self._data[i])
+            self._data[i].sort()
+            diff_last_two = self._data[i][-1] - self._data[i][-2]
+            diff_compare = self._data[i][-2] - self._data[i][-3]
+            diff_v = np.diff(self._data[i])
+            ave_diff = sum(diff_v) / len(diff_v)
+            # print("diff_last_two : {}".format(diff_last_two))
+            # print("diff_compare : {}".format(diff_compare))
+            # print("ave_diff : {}".format(ave_diff))
+            self._data[i].pop()
+            self._data[i].pop(0)
             plot = ax.hist(self._data[i], spec.nbins)
             ax.grid(True)
             ax.set_xlabel(spec.xlabel)
@@ -53,8 +66,9 @@ class HistoMaker1D(AbsAnalysisModule):
 
     def processEvent(self, runNumber, eventNumber, eventRecord):
         for i, spec in enumerate(self._specs):
-            if (spec.calculator(eventRecord) != None
-                    and spec.calculator(eventRecord) > 0):
+            # if (spec.calculator(eventRecord) != None
+            # and spec.calculator(eventRecord) > 0):
+            if (spec.calculator(eventRecord) != None):
                 self._data[i].append(spec.calculator(eventRecord))
 
 

@@ -12,6 +12,7 @@ Todo:
 """
 
 import sys
+from ChannelOperations import *
 from runAnalysisSequence import runAnalysisSequence
 from UtilityModules import *
 from ADCPrintingModule import *
@@ -49,6 +50,7 @@ def main(argv):
     mod6 = LC3377PrintingModule()
     mod7 = TDCUnpacker("TDCUnpacker")
     mod8 = TDCAnalyzer("TDCAnalyzer")
+    mod9 = ChannelOperations("ChannelOperations")
     gptr = GenericPrintingModule(("hw_event_count", "deadtime"))
 
     # Example histogram specifier
@@ -146,13 +148,37 @@ def main(argv):
     hitMap = HistoMaker2D("hitMap", "Hit Map", "Asymmetry in X", nbins, -30.0,
                           30.0, L1asym, "Asymmetry in Y", nbins, -30.0, 30.0,
                           L2asym)
-
     myLayer1diff = HistoMaker1D((histo_layer1diff, ), "histo_layer1diff")
     myLayer2diff = HistoMaker1D((histo_layer2diff, ), "histo_layer2diff")
     myLayer1asym = HistoMaker1D((histo_layer1asym, ), "histo_layer1asym")
     myLayer2asym = HistoMaker1D((histo_layer2asym, ), "histo_layer2asym")
 
-    #    diff = channelDifferenceCalulator((2,1), (2,2), slot1)
+    #channels 0 and 1
+    ch0Subch1 = lambda x: x["Layer_1"].get("sub_TDC")
+    histo_ch0Subch1 = Histo1DSpec("Layer 1 Ch0 - Ch 1",
+                                  "TDC counts diff Ch0 and Ch 1", 200,
+                                  ch0Subch1)
+    hMaker_ch0Subch1 = HistoMaker1D((histo_ch0Subch1, ), "hmaker_ch0Subch1")
+
+    ch0Addch1 = lambda x: x["Layer_1"].get("add_TDC")
+    histo_ch0Addch1 = Histo1DSpec("Layer 1 Ch0 + Ch 1",
+                                  "TDC counts add Ch0 and Ch 1", 200,
+                                  ch0Addch1)
+    hMaker_ch0Addch1 = HistoMaker1D((histo_ch0Addch1, ), "hmaker_ch0Addch1")
+
+    #channels 3 and 4
+    ch3Subch4 = lambda x: x["Layer_2"].get("sub_TDC")
+    histo_ch3Subch4 = Histo1DSpec("Layer 2 Ch3 - Ch 4",
+                                  "TDC counts diff Ch3 and Ch 4", 200,
+                                  ch3Subch4)
+    hMaker_ch3Subch4 = HistoMaker1D((histo_ch3Subch4, ), "hmaker_ch3Subch4")
+
+    ch3Addch4 = lambda x: x["Layer_2"].get("add_TDC")
+    histo_ch3Addch4 = Histo1DSpec("Layer 2 Ch3 + Ch 4",
+                                  "TDC counts add Ch3 and Ch 4", 200,
+                                  ch3Addch4)
+    hMaker_ch3Addch4 = HistoMaker1D((histo_ch3Addch4, ), "hmaker_ch3Addch4")
+
     # Define the sequence of modules
     #    modules = (mod0, mod1, mod7, mod8, tdcH, hitMap)
     # tdc_all_channels = getTDCDataAllChannels(
@@ -162,11 +188,16 @@ def main(argv):
         mod1,
         mod7,
         mod8,
-        histAllChannels,
+        mod9,
+        # hMaker_ch0Subch1,
+        # hMaker_ch0Addch1,
+        # hMaker_ch3Subch4,
+        # hMaker_ch3Addch4,
+        # histAllChannels,
         # histAllChannelSep,
-        # myLayer1asym,
-        # myLayer2asym,
-        # hitMap,
+        myLayer1asym,
+        myLayer2asym,
+        hitMap,
         # h2dL1_rotate,
         # h2dL2_rotate,
         # hMaker2,
@@ -186,6 +217,16 @@ def main(argv):
     print('Processed %d events in %g sec' % (n, dt.total_seconds()))
     #hitMap.redraw(0,15)
     return 0
+
+
+def getValue(layer, op):
+    l = lambda x: x["Channels_Added"].get("layer")
+    if layer == l and op == "+":
+        res = lambda x: x["Channels_Added"].get("add_TDC")
+        return res
+    elif layer == l and op == "-":
+        res = lambda x: x["Channels_Added"].get("sub_TDC")
+        return res
 
 
 def getTDCDataAllChannels(hMakerObjectArray):
