@@ -47,7 +47,7 @@ def _callEventSequence(moduleSequence, runNumber, evNumber, eventInfo):
                 break
 
 
-def updatedRunAnalysisSequence(runRecord,
+def updatedRunAnalysisSequence(run_record,
                                moduleSequence,
                                inputFiles,
                                maxEventsToProcess=0,
@@ -74,11 +74,13 @@ def updatedRunAnalysisSequence(runRecord,
             continue
 
         try:
-            # runRecord = pickle.load(f, fix_imports=False)
             #        print(runRecord)
             #   print("")
+            runRecord = run_record
             runRecordVersion = runRecord["version"]
         except:
+            runRecord = pickle.load(f, fix_imports=False)
+            runRecordVersion = runRecord["version"]
             # runRecord = None
             pass
         finally:

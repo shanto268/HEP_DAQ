@@ -206,13 +206,16 @@ def main(argv):
         # hitMap,
         # hMaker2D_comp_layer_plot,
     )  #all plots
+    modules_og = (mod0, mod1, mod7, mod8, mod9)
+    modules_og += modules2
     # modules = (mod0, mod1, mod7, mod8, hMaker2, h2dL1, tdcHL1)  #tray 1
     # modules = (mod0, mod1, mod7, mod8, hMaker2, h2dL2, tdcHL2)  #tray 2
     # modules = (mod0, mod1, mod7, mod8, h2dL1ntrial)
     # Call the code which actually does the job
     t0 = datetime.now()
-    m, newRunRecord = runAnalysisSequence(modules1, inputFiles)
-    n = updatedRunAnalysisSequence(newRunRecord, modules2, inputFiles)
+    # n, newRunRecord = runAnalysisSequence(modules1, inputFiles)
+    n, newRunRecord = runAnalysisSequence(modules_og, inputFiles)
+    #n = updatedRunAnalysisSequence(newRunRecord, modules2, inputFiles)
     dt = datetime.now() - t0
 
     # Print a mini summary of event processing
