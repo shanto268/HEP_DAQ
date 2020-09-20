@@ -2,9 +2,10 @@
 Class which defines the API for CAMAC analysis modules
 """
 
-__author__="Igor Volobouev (i.volobouev@ttu.edu)"
-__version__="0.1"
-__date__ ="June 22 2017"
+__author__ = "Igor Volobouev (i.volobouev@ttu.edu)"
+__version__ = "0.1"
+__date__ = "June 22 2017"
+
 
 class AbsAnalysisModule:
     def __init__(self, name):
@@ -21,6 +22,20 @@ class AbsAnalysisModule:
         raise NotImplementedError()
 
     def beginRun(self, runNumber, runRecord):
+        """
+        Method called at the beginning of run processing
+        """
+        raise NotImplementedError()
+
+    def preProcessEvent(self, runNumber, eventNumber, eventRecord):
+        """
+        Method called for each event. Return "False" from this function
+        to terminate event processing. Return "True" (or None) to invoke
+        the next module in the sequence.
+        """
+        raise NotImplementedError()
+
+    def filterRun(self, runNumber, runRecord):
         """
         Method called at the beginning of run processing
         """

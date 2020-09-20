@@ -9,6 +9,8 @@ __date__ = "June 23 2017"
 import matplotlib.pyplot as plt
 import numpy as np
 from AbsAnalysisModule import AbsAnalysisModule
+from statistics import NormalDist
+import scipy.stats
 
 
 class Histo1DSpec:
@@ -25,12 +27,13 @@ class HistoMaker1D(AbsAnalysisModule):
 
     specs      A collection of Histo1DSpec objects
     """
-    def __init__(self, specs, name):
+    def __init__(self, specs, name, gaussian=False):
         #AbsAnalysisModule.__init__(self, "HistoMaker1D")
         AbsAnalysisModule.__init__(self, name)
         self._specs = specs
         self._data = [list() for i in range(len(specs))]
         self.otol = 10  #outlier tolerance multiple
+        self.isGaussian = gaussian
 
     def beginJob(self, allModuleNames):
         pass
@@ -51,6 +54,9 @@ class HistoMaker1D(AbsAnalysisModule):
             # print("ave_diff : {}".format(ave_diff))
             self._data[i].pop()
             self._data[i].pop(0)
+            if self.isGaussian:
+                norm = NormalDist.from_samples(self._data[i])
+                print(norm)
             plot = ax.hist(self._data[i], spec.nbins)
             ax.grid(True)
             ax.set_xlabel(spec.xlabel)

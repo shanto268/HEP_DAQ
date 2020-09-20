@@ -1,12 +1,11 @@
 """
 Usage: analysisExample.py outputPrefix inputFile0 ...
-Todo:
-    Plot CH0-CH1 vs CH2-CH3
 """
 
 import sys
 from ChannelOperations import *
 from runAnalysisSequence import runAnalysisSequence
+from updatedRunAnalysisSequence import updatedRunAnalysisSequence
 from UtilityModules import *
 from ADCPrintingModule import *
 from TDCPrintingModule import *
@@ -18,6 +17,7 @@ from LC3377PrintingModule import *
 from LC3377Definition import *
 from TDCUnpacker import *
 from TDCAnalyzer import *
+from NoiseCleaner import *
 from datetime import datetime
 
 
@@ -44,6 +44,7 @@ def main(argv):
     mod7 = TDCUnpacker("TDCUnpacker")
     mod8 = TDCAnalyzer("TDCAnalyzer")
     mod9 = ChannelOperations("ChannelOperations")
+    mod10 = NoiseCleaner("NoiseCleaner")
     gptr = GenericPrintingModule(("hw_event_count", "deadtime"))
 
     # Example histogram specifier
@@ -157,7 +158,10 @@ def main(argv):
     histo_ch0Addch1 = Histo1DSpec("Layer 1 Ch0 + Ch 1",
                                   "TDC counts add Ch0 and Ch 1", 200,
                                   ch0Addch1)
-    hMaker_ch0Addch1 = HistoMaker1D((histo_ch0Addch1, ), "hmaker_ch0Addch1")
+
+    hMaker_ch0Addch1 = HistoMaker1D((histo_ch0Addch1, ),
+                                    "hmaker_ch0Addch1",
+                                    gaussian=True)
 
     #channels 3 and 4
     ch3Subch4 = lambda x: x["Layer_2"].get("sub_TDC")
@@ -170,61 +174,51 @@ def main(argv):
     histo_ch3Addch4 = Histo1DSpec("Layer 2 Ch3 + Ch 4",
                                   "TDC counts add Ch3 and Ch 4", 200,
                                   ch3Addch4)
-    hMaker_ch3Addch4 = HistoMaker1D((histo_ch3Addch4, ), "hmaker_ch3Addch4")
+    hMaker_ch3Addch4 = HistoMaker1D((histo_ch3Addch4, ),
+                                    "hmaker_ch3Addch4",
+                                    gaussian=True)
+    hMaker2D_comp_layer_plot = HistoMaker2D("comp layer plot",
+                                            "Ch 0 - Ch 1 vs Ch 3 - Ch 4",
+                                            "TDC difference in Layer 1", nbins,
+                                            -60.0, 60.0, ch0Subch1,
+                                            "TDC difference in Layer 2", nbins,
+                                            -60.0, 60.0, ch3Subch4)
 
     # Define the sequence of modules
     #    modules = (mod0, mod1, mod7, mod8, tdcH, hitMap)
-    # tdc_all_channels = getTDCDataAllChannels(
     # [hMaker1x, hMaker1y, hMaker2x, hMaker2y])
-    modules = (
-        mod0,
-        mod1,
-        mod7,
-        mod8,
-        mod9,
-        # hMaker_ch0Subch1,
-        # hMaker_ch0Addch1,
-        # hMaker_ch3Subch4,
+    modules1 = (mod0, mod1, mod7, mod8, mod9, mod10)
+    modules2 = (
+        hMaker_ch0Subch1,
+        hMaker_ch0Addch1,
+        hMaker_ch3Subch4,
         # hMaker_ch3Addch4,
         # histAllChannels,
         # histAllChannelSep,
-        myLayer1asym,
-        myLayer2asym,
-        hitMap,
+        # myLayer1asym,
+        # myLayer2asym,
         # h2dL1_rotate,
         # h2dL2_rotate,
         # hMaker2,
         # h2dL1,
         # h2dL2,
         # tdcHAll,
+        # hitMap,
+        # hMaker2D_comp_layer_plot,
     )  #all plots
     # modules = (mod0, mod1, mod7, mod8, hMaker2, h2dL1, tdcHL1)  #tray 1
     # modules = (mod0, mod1, mod7, mod8, hMaker2, h2dL2, tdcHL2)  #tray 2
     # modules = (mod0, mod1, mod7, mod8, h2dL1ntrial)
     # Call the code which actually does the job
     t0 = datetime.now()
-    n = runAnalysisSequence(modules, inputFiles)
+    m, newRunRecord = runAnalysisSequence(modules1, inputFiles)
+    n = updatedRunAnalysisSequence(newRunRecord, modules2, inputFiles)
     dt = datetime.now() - t0
 
     # Print a mini summary of event processing
     print('Processed %d events in %g sec' % (n, dt.total_seconds()))
     #hitMap.redraw(0,15)
     return 0
-
-
-def getValue(layer, op):
-    l = lambda x: x["Channels_Added"].get("layer")
-    if layer == l and op == "+":
-        res = lambda x: x["Channels_Added"].get("add_TDC")
-        return res
-    elif layer == l and op == "-":
-        res = lambda x: x["Channels_Added"].get("sub_TDC")
-        return res
-
-
-def getTDCDataAllChannels(hMakerObjectArray):
-    fig, (ax1, ax2, ax3, ax4) = plt.subplots(ncols=4)
-    plt.show()
 
 
 def modChannelIndividualPlotters(tdcChannels):
@@ -259,14 +253,6 @@ def modChannelVsPlotters(slot1,
                          ydefinition,
                          rotate=rotate)
     return histo
-
-
-def channelDifferenceCalulator(channel1, channel2, slot):
-    pass
-
-
-def channelAdditionCalulator(channel1, channel2):
-    pass
 
 
 if __name__ == '__main__':

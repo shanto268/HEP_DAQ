@@ -2,9 +2,9 @@
 A few simple analysis modules derived from AbsAnalysisModule
 """
 
-__author__="Igor Volobouev (i.volobouev@ttu.edu)"
-__version__="0.1"
-__date__ ="June 22 2017"
+__author__ = "Igor Volobouev (i.volobouev@ttu.edu)"
+__version__ = "0.1"
+__date__ = "June 22 2017"
 
 from AbsAnalysisModule import AbsAnalysisModule
 
@@ -16,13 +16,20 @@ class DummyModule(AbsAnalysisModule):
     own module from it if you prefer to have your methods not to throw
     "NotImplementedError" by default.
     """
-    def __init__(self, name):
+    def __init__(self, name, updateRunRecord=False):
         AbsAnalysisModule.__init__(self, name)
+        self.updateRunRecord = updateRunRecord
 
     def beginJob(self, allModuleNames):
         pass
 
     def beginRun(self, runNumber, runRecord):
+        pass
+
+    def preProcessEvent(self, runNumber, eventNumber, eventRecord):
+        pass
+
+    def filterRun(self, runNumber, runRecord):
         pass
 
     def processEvent(self, runNumber, eventNumber, eventRecord):
@@ -100,6 +107,7 @@ class EventCounter(DummyModule):
 
     def endJob(self):
         print("%s:" % self.moduleName, self.counter)
+
 
 class DutyCycleModue(EventCounter):
     """

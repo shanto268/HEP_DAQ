@@ -47,10 +47,11 @@ def _callEventSequence(moduleSequence, runNumber, evNumber, eventInfo):
                 break
 
 
-def runAnalysisSequence(moduleSequence,
-                        inputFiles,
-                        maxEventsToProcess=0,
-                        nSkip=0):
+def updatedRunAnalysisSequence(runRecord,
+                               moduleSequence,
+                               inputFiles,
+                               maxEventsToProcess=0,
+                               nSkip=0):
     if nSkip < 0:
         raise ValueError("Number of events to skip can not be negative")
     eventCounter = 0
@@ -73,12 +74,13 @@ def runAnalysisSequence(moduleSequence,
             continue
 
         try:
-            runRecord = pickle.load(f, fix_imports=False)
+            # runRecord = pickle.load(f, fix_imports=False)
             #        print(runRecord)
             #   print("")
             runRecordVersion = runRecord["version"]
         except:
-            runRecord = None
+            # runRecord = None
+            pass
         finally:
             f.close()
 
@@ -120,4 +122,4 @@ def runAnalysisSequence(moduleSequence,
             break
     _callEndJobSequence(moduleSequence)
 
-    return eventsProcessed, updatedRunRecord
+    return eventsProcessed
