@@ -61,7 +61,7 @@ class HistoMaker1D(AbsAnalysisModule):
             ax.grid(True)
             ax.set_xlabel(spec.xlabel)
             ax.set_ylabel("Events")
-            ax.set_title(spec.title)
+            ax.set_title(spec.title + " | " + self.title_string)
         plt.show()
 
     def beginRun(self, runNumber, runInfo):
@@ -104,7 +104,7 @@ class HistoInfo1D(AbsAnalysisModule):
         plt.hist(all_data[1], spec.nbins, alpha=0.5, label='Layer 1 Channel 1')
         plt.xlabel("TDC Counts")
         plt.ylabel("Frequency")
-        plt.title("TDC Values Layer 1")
+        plt.title("TDC Values Layer 1" + " | " + self.title_string)
         plt.legend(loc='upper right')
         plt.show()
 
@@ -112,7 +112,7 @@ class HistoInfo1D(AbsAnalysisModule):
         plt.hist(all_data[3], spec.nbins, alpha=0.5, label='Layer 2 Channel 1')
         plt.xlabel("TDC Counts")
         plt.ylabel("Frequency")
-        plt.title("TDC Values Layer 2")
+        plt.title("TDC Values Layer 2" + " | " + self.title_string)
         plt.legend(loc='upper right')
         plt.show()
 

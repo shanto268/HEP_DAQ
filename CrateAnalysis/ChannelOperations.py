@@ -17,6 +17,17 @@ class ChannelOperations(DummyModule):
         runConfiguration = runRecord[(runNumber, "runConfiguration")]
         self.tdc_slots = runConfiguration["tdc_slots_3377"]
 
+    def printSpecificData(self, item, eventNumber, eventRecord):
+        print(eventNumber,
+              "Key : {} , Value : {}".format(item, eventRecord[item]))
+        #print(eventNumber,"Value : {}, Len: {}".format(eventRecord.get(item), len(eventRecord.get(item))))
+
+    def printRawDataOutput(self, eventNumber, eventRecord):
+        for item in eventRecord:
+            #print(item)
+            print(eventNumber,
+                  "Key : {} , Value : {}".format(item, eventRecord[item]))
+
     def processEvent(self, runNumber, eventNumber, eventRecord):
         tdcData = eventRecord["unpacked3377Data"]
         lenTDCData = eventRecord["len_unpacked_3377Data"]
@@ -42,6 +53,5 @@ class ChannelOperations(DummyModule):
 
         eventRecord["Layer_1"] = channelOp1
         eventRecord["Layer_2"] = channelOp2
-        #print(eventRecord)
         # self.printRawDataOutput(eventNumber, eventRecord)
         # self.printSpecificData('TDCAnalyzer', eventNumber, eventRecord)

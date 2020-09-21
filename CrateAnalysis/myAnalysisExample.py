@@ -196,7 +196,7 @@ def main(argv):
         # histAllChannels,
         # histAllChannelSep,
         # myLayer1asym,
-        # myLayer2asym,
+        myLayer2asym,
         # h2dL1_rotate,
         # h2dL2_rotate,
         # hMaker2,
@@ -208,20 +208,34 @@ def main(argv):
     )  #all plots
     modules_og = (mod0, mod1, mod7, mod8, mod9)
     modules_og += modules2
-    # modules = (mod0, mod1, mod7, mod8, hMaker2, h2dL1, tdcHL1)  #tray 1
-    # modules = (mod0, mod1, mod7, mod8, hMaker2, h2dL2, tdcHL2)  #tray 2
-    # modules = (mod0, mod1, mod7, mod8, h2dL1ntrial)
-    # Call the code which actually does the job
-    t0 = datetime.now()
-    # n, newRunRecord = runAnalysisSequence(modules1, inputFiles)
-    n, newRunRecord = runAnalysisSequence(modules_og, inputFiles)
-    #n = updatedRunAnalysisSequence(newRunRecord, modules2, inputFiles)
-    dt = datetime.now() - t0
 
-    # Print a mini summary of event processing
-    print('Processed %d events in %g sec' % (n, dt.total_seconds()))
-    #hitMap.redraw(0,15)
+    # working cuts
+    # t0 = datetime.now()
+    # n, newRunRecord = runAnalysisSequence(modules1, inputFiles)
+    # # n, newRunRecord = runAnalysisSequence(modules_og, inputFiles)
+    # n = updatedRunAnalysisSequence(newRunRecord, modules2, inputFiles)
+    # dt = datetime.now() - t0
+    # print('Processed %d events in %g sec' % (n, dt.total_seconds()))
+
+    processWithCuts(modules1, modules2, inputFiles)
+    processDefault(modules_og, inputFiles)
     return 0
+
+
+def processWithCuts(modules1, modules2, inputFiles):
+    t0 = datetime.now()
+    n, newRunRecord = runAnalysisSequence(modules1, inputFiles)
+    # n, newRunRecord = runAnalysisSequence(modules_og, inputFiles)
+    n = updatedRunAnalysisSequence(newRunRecord, modules2, inputFiles)
+    dt = datetime.now() - t0
+    print('Processed %d events in %g sec' % (n, dt.total_seconds()))
+
+
+def processDefault(modules_og, inputFiles):
+    t0 = datetime.now()
+    n, newRunRecord = runAnalysisSequence(modules_og, inputFiles)  #no cuts
+    dt = datetime.now() - t0
+    print('Processed %d events in %g sec' % (n, dt.total_seconds()))
 
 
 def modChannelIndividualPlotters(tdcChannels):

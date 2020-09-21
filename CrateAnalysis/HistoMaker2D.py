@@ -126,7 +126,8 @@ class HistoMaker2D(AbsAnalysisModule):
 
     def beginRun(self, runNumber, runInfo):
         self.runNumber = runNumber
-        self.title = self.title + " | Run Number: " + str(self.runNumber)
+        self.title = self.title + " | Run Number: " + str(
+            self.runNumber) + " | " + self.title_string
         pass
 
     def endRun(self, runNumber, runInfo):
