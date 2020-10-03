@@ -99,14 +99,17 @@ class NoiseCleaner(DummyModule):
             if isinstance(key[1], int):
                 l1_TDC_val = runRecord.get(key).get("Layer_1").get("add_TDC")
                 l2_TDC_val = runRecord.get(key).get("Layer_2").get("add_TDC")
-                # if runRecord.get(key).get("len_unpacked_3377Data") == 4:
-                # print(runRecord.get(key).get("len_unpacked_3377Data"))
-                if l1_TDC_val is not None:
-                    if (l1_TDC_val < ll_l1) or (l1_TDC_val > ul_l1):
-                        runRecord.pop(key)
-                if l2_TDC_val is not None:
-                    if (l2_TDC_val < ll_l2) or (l2_TDC_val > ul_l2):
-                        try:
+                # eliminating non 4/4 hits
+                if runRecord.get(key).get("len_unpacked_3377Data") == 4:
+                    # keeping events that satisfy cut 1 and cut 2
+                    if l1_TDC_val is not None:
+                        if (l1_TDC_val < ll_l1) or (l1_TDC_val > ul_l1):
                             runRecord.pop(key)
-                        except:
-                            pass
+                    if l2_TDC_val is not None:
+                        if (l2_TDC_val < ll_l2) or (l2_TDC_val > ul_l2):
+                            try:
+                                runRecord.pop(key)
+                            except:
+                                pass
+                else:
+                    runRecord.pop(key)

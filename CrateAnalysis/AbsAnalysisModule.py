@@ -14,7 +14,7 @@ class AbsAnalysisModule:
         Module names must be unique.
         """
         self.moduleName = name
-        self.title_string = "Cuts 1 and 2"
+        self.title_string = "Cut 3"
 
     def beginJob(self, allModuleNames):
         """

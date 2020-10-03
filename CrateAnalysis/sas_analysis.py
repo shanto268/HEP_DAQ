@@ -19,6 +19,46 @@ from TDCUnpacker import *
 from TDCAnalyzer import *
 from NoiseCleaner import *
 from datetime import datetime
+from EventDataFrame import *
+from PostRunDataFrame import *
+
+
+def main_(argv):
+    # Parse command line options
+    argc = len(argv)
+    if (argc < 2):
+        # Convention used here: command invoked without any arguments
+        # prints its usage instruction and exits successfully
+        print(__doc__)
+        return 0
+
+    outputPrefix = argv[0]
+    inputFiles = argv[1:]
+
+    # Create various analysis modules
+    mod0 = VerboseModule("VerboseModule", True, True, 10, True, True)
+    mod1 = EventCounter("Counter 0")
+    mod2 = DutyCycleModue("DC0", 100)
+    mod3 = ADCPrintingModule(outputPrefix + "_adc")
+    mod4 = EventCounter("Counter 1")
+    mod5 = TDCPrintingModule(outputPrefix + "_tdc")
+    mod6 = LC3377PrintingModule()
+    mod7 = TDCUnpacker("TDCUnpacker")
+    mod8 = TDCAnalyzer("TDCAnalyzer")
+    mod9 = ChannelOperations("ChannelOperations")
+    mod10 = NoiseCleaner("NoiseCleaner")
+    mod11 = EventDataFrame("EventDataFrame")
+    gptr = GenericPrintingModule(("hw_event_count", "deadtime"))
+
+    modules = (mod0, mod1, mod7, mod8, mod9, mod10, mod11)
+    # post = PostRunDataFrame("PostRunDataFrame")
+
+    t0 = datetime.now()
+    n, newRunRecord = runAnalysisSequence(modules, inputFiles)  #no cuts
+    dt = datetime.now() - t0
+    print('Processed %d events in %g sec' % (n, dt.total_seconds()))
+    #create the PostRunDataFrame
+    #save both dataframes in feather
 
 
 def main(argv):
@@ -45,6 +85,7 @@ def main(argv):
     mod8 = TDCAnalyzer("TDCAnalyzer")
     mod9 = ChannelOperations("ChannelOperations")
     mod10 = NoiseCleaner("NoiseCleaner")
+    mod11 = EventDataFrame("EventDataFrame")
     gptr = GenericPrintingModule(("hw_event_count", "deadtime"))
 
     # Example histogram specifier
@@ -187,27 +228,27 @@ def main(argv):
     # Define the sequence of modules
     #    modules = (mod0, mod1, mod7, mod8, tdcH, hitMap)
     # [hMaker1x, hMaker1y, hMaker2x, hMaker2y])
-    modules1 = (mod0, mod1, mod7, mod8, mod9, mod10)
+    modules1 = (mod0, mod1, mod7, mod8, mod9, mod10, mod11)
     modules2 = (
         hMaker_ch0Subch1,
-        hMaker_ch0Addch1,
-        hMaker_ch3Subch4,
-        hMaker_ch3Addch4,
-        histAllChannels,
-        histAllChannelSep,
-        myLayer1asym,
-        myLayer2asym,
-        h2dL1_rotate,
-        h2dL2_rotate,
-        hMaker2,
-        h2dL1,
-        h2dL2,
-        tdcHAll,
+        # hMaker_ch0Addch1,
+        # hMaker_ch3Subch4,
+        # hMaker_ch3Addch4,
+        # histAllChannels,
+        # histAllChannelSep,
+        # myLayer1asym,
+        # myLayer2asym,
+        # h2dL1_rotate,
+        # h2dL2_rotate,
+        # hMaker2,
+        # h2dL1,
+        # h2dL2,
+        # tdcHAll,
         hitMap,
         # hMaker2D_comp_layer_plot,
     )  #all plots
-    modules_og = (mod0, mod1, mod7, mod8, mod9)
-    modules_og += modules2
+    modules_og = (mod0, mod1, mod7, mod8, mod9, mod10, mod11)
+    # modules_og += modules2
 
     # working cuts
     # t0 = datetime.now()
@@ -217,8 +258,8 @@ def main(argv):
     # dt = datetime.now() - t0
     # print('Processed %d events in %g sec' % (n, dt.total_seconds()))
 
-    processWithCuts(modules1, modules2, inputFiles)
-    # processDefault(modules_og, inputFiles)
+    # processWithCuts(modules1, modules2, inputFiles)
+    processDefault(modules_og, inputFiles)
     return 0
 
 

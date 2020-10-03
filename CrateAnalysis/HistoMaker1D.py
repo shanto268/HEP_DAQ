@@ -62,9 +62,11 @@ class HistoMaker1D(AbsAnalysisModule):
             ax.set_xlabel(spec.xlabel)
             ax.set_ylabel("Events")
             ax.set_title(spec.title + " | " + self.title_string)
-        plt.show()
+        plt.savefig(self.moduleName + ".png")
+        # plt.show()
 
     def beginRun(self, runNumber, runInfo):
+        self.moduleName += str(runNumber)
         pass
 
     def endRun(self, runNumber, runInfo):
@@ -90,7 +92,7 @@ class HistoInfo1D(AbsAnalysisModule):
         self._specs = specs
         self.SIZE = len(specs)
         self._data = [list() for i in range(len(specs))]
-
+        
     def beginJob(self, allModuleNames):
         pass
 
@@ -106,7 +108,8 @@ class HistoInfo1D(AbsAnalysisModule):
         plt.ylabel("Frequency")
         plt.title("TDC Values Layer 1" + " | " + self.title_string)
         plt.legend(loc='upper right')
-        plt.show()
+        plt.savefig(self.moduleName + ".png")
+        # plt.show()
 
         plt.hist(all_data[2], spec.nbins, alpha=0.5, label='Layer 2 Channel 0')
         plt.hist(all_data[3], spec.nbins, alpha=0.5, label='Layer 2 Channel 1')
@@ -114,9 +117,11 @@ class HistoInfo1D(AbsAnalysisModule):
         plt.ylabel("Frequency")
         plt.title("TDC Values Layer 2" + " | " + self.title_string)
         plt.legend(loc='upper right')
-        plt.show()
+        plt.savefig(self.moduleName + ".png")
+        # plt.show()
 
     def beginRun(self, runNumber, runInfo):
+        self.moduleName += str(runNumber)
         pass
 
     def endRun(self, runNumber, runInfo):
