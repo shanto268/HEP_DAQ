@@ -8,10 +8,8 @@ purpose:
     create a dataFrame and add it to df
 """
 
-from LC3377 import *
 
-
-class PostRunDataFrame():
+class PostRunDataFrame:
     """Docstring for PostRunDataFrame. """
     def __init__(self, requiredData):
         """TODO: to be defined. """

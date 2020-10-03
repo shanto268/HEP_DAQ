@@ -43,7 +43,7 @@ class EventDataFrame(DummyModule):
                   "Key : {} , Value : {}".format(item, eventRecord[item]))
 
     def processEvent(self, runNumber, eventNumber, eventRecord):
-        self.df.updateDataFrame(eventRecord)
+        self.df.updateDataFrame(eventRecord, eventNumber)
         # self.df.showDataFrame()
 
     def endRun(self, runNumber, runRecord):

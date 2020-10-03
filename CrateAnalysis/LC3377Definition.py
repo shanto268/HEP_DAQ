@@ -9,7 +9,6 @@ from LC3377 import *
 
 
 class LC3377Definition:
-
     invalidtdc = -1
 
     def __init__(self, slot, channel):
