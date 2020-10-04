@@ -122,9 +122,13 @@ if __name__ == "__main__":
     try:
         ifile = sys.argv[1]
     except:
-        ifile = "processed_data/events_data_frame_510.ftr"  # needs change later
+        print("No File passed / Invalid File")
+        # ifile = "processed_data/events_data_frame_510.ftr"  # needs change later
     events_df = pd.read_feather(ifile, use_threads=True)
     get3DScatterPlot(events_df, ["L1_asym", "L2_asym", "L1_TDC_sum"])
+    get3DScatterPlot(events_df, ["L1_asym", "L2_asym", "TDC_L1_L"])
+    get3DScatterPlot(events_df, ["L1_asym", "L2_asym", "TDC_L1_R"])
+    # get3DScatterPlot(events_df, ["L1_asym", "L2_asym", "L2_TDC_sum"])
     # get3DScatterPlot(events_df, ["L1_asym", "L2_asym", "deadtime"])
     # getScatterPlot(events_df, ["L1_asym", "L2_asym"])
     # getPlot(events_df, "deadtime")
