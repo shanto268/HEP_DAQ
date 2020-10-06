@@ -33,6 +33,6 @@ class TDCUnpacker(DummyModule):
                     tdcData[(slot, datum.channel)] = datum.tdc
         eventRecord["unpacked3377Data"] = tdcData
         eventRecord["len_unpacked_3377Data"] = len(tdcData)
+        # print("eventRecord : {}".format(eventRecord))
 
-    #  print("eventRecord : {}".format(eventRecord))
     #  print("eventNumber : {}".format(eventNumber))

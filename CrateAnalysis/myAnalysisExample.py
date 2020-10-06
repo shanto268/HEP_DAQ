@@ -217,8 +217,8 @@ def main(argv):
     # dt = datetime.now() - t0
     # print('Processed %d events in %g sec' % (n, dt.total_seconds()))
 
-    processWithCuts(modules1, modules2, inputFiles)
-    # processDefault(modules_og, inputFiles)
+    # processWithCuts(modules1, modules2, inputFiles)
+    processDefault(modules_og, inputFiles)
     return 0
 
 

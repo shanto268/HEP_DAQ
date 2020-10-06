@@ -19,6 +19,7 @@ class LC3377Definition:
     def __call__(self, eventRecord):
         fifoData = eventRecord[(self.slot, "LeCroy3377")]
         unpacked = LC3377Readout(fifoData)
+        # print(unpacked)
 
         nevent = len(unpacked.events)
         if nevent == 0:
