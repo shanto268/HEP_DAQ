@@ -8,7 +8,7 @@ class DataFrame:
         self.name = "events_data_frame_" + str(runNumber)
         self.df0 = pd.DataFrame(columns=[
             'event_num', 'event_time', 'deadtime', 'TDC_L1_L', 'TDC_L1_R',
-            'TDC_L2_L', 'TDC_L2_R', 'ADC', 'numChannelsRead', 'L1_asym',
+            'TDC_L2_L', 'TDC_L2_R', 'ADC', 'TDC', 'numChannelsRead', 'L1_asym',
             'L2_asym', 'L1_TDC_sum', 'L2_TDC_sum', 'L1_TDC_diff', 'L2_TDC_diff'
         ])
         self.eventNum = 0
@@ -19,6 +19,7 @@ class DataFrame:
         self.TDC_L2_L = 0
         self.TDC_L2_R = 0
         self.ADC = []
+        self.TDC = []
         self.numChannelsRead = 0
         self.L1_asym = 0
         self.L2_asym = 0
@@ -56,6 +57,11 @@ class DataFrame:
             self.ADC = info.get((17, 'LeCroy2249'))
         except:
             self.ADC = None
+        try:
+            self.TDC = info.get("TDC").get("TDC")
+            print(self.TDC)
+        except:
+            self.TDC = None
         try:
             self.numChannelsRead = info.get('len_unpacked_3377Data')
         except:
@@ -97,6 +103,7 @@ class DataFrame:
             'TDC_L2_L': self.TDC_L2_L,
             'TDC_L2_R': self.TDC_L2_R,
             'ADC': self.ADC,
+            'TDC': self.TDC,
             'numChannelsRead': self.numChannelsRead,
             'L1_asym': self.L1_asym,
             'L2_asym': self.L2_asym,

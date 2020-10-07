@@ -80,7 +80,7 @@ class TDCAnalyzer(DummyModule):
 
         eventRecord["TDCAnalyzer"] = tdcCalc
         # self.printRawDataOutput(eventNumber, eventRecord)
-        # self.printSpecificData('TDCAnalyzer', eventNumber, eventRecord)
+        # self.printSpecificData('TDC', eventNumber, eventRecord)
 
     def processEvent_SAS(self, runNumber, eventNumber, eventRecord):
         tdcData = eventRecord["unpacked3377Data"]
