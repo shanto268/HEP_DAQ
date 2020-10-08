@@ -10,15 +10,19 @@ __date__ = "10/06/2020"
 __email__ = "sadman-ahmed.shanto@ttu.edu"
 """"
 To DO:
+    - make jnb tutorial
     - count number of events with multiple TDC
     - implement methods that updates all TDC columns using some TDC value
         - first TDC
         - max TDC
         - min TDC
+    - generate report method
+    - data filtering method
     - implement Igor 2D histo
     - Bell curve fit of histo
     - Recreate of all graphs
-    - Plots of arrays 
+    - Plots of arrays
+    - GUI make
 """
 
 import feather
