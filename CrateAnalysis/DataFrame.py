@@ -59,7 +59,6 @@ class DataFrame:
             self.ADC = None
         try:
             self.TDC = info.get("TDC").get("TDC")
-            print(self.TDC)
         except:
             self.TDC = None
         try:
