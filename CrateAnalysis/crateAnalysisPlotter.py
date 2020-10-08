@@ -30,18 +30,18 @@ if __name__ == "__main__":
         print("No File passed / Invalid File")
 
     mdf = MuonDataFrame(ifile)
+    mdf.getMultipleTDCHitReport()
 
     # function descriptions
     # data filtering
-    # mdf.getNumEventsWithMultipleTDC()
     # mdf.show()
     # mdf.summary()
     # mdf.lookAt("TDC")
     # mdf.removeNoTDCEvents()
+    # mdf.removeOutliers()
     # mdf.getStats("deadtime")
     # mdf.getEventInfo([10, 15])
     # mdf.getEventInfo(833)
-    # mdf.removeOutliers()
     # filtered_mdf = mdf.getFilteredEvents(["deadtime > 900"])
     # filtered_mdf = mdf.getFilteredEvents(
     # ["L1_TDC_sum > 250", "deadtime > 900", "&"])

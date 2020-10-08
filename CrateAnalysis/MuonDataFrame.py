@@ -10,7 +10,6 @@ __date__ = "10/06/2020"
 __email__ = "sadman-ahmed.shanto@ttu.edu"
 """"
 To DO:
-    - count number of events with multiple TDC
     - implement methods that updates all TDC columns using some TDC value
         - first TDC
         - max TDC
@@ -28,8 +27,9 @@ import feather
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from pandas.plotting import andrews_curves
 import sys
+from pandas.plotting import andrews_curves
+from collections import Counter
 """
 # Query terms
 'event_num', 'event_time', 'deadtime', 'TDC_L1_L', 'TDC_L1_R',
@@ -150,6 +150,7 @@ class MuonDataFrame:
         self.query_terms = [
             'event_num', 'event_time', 'ADC', 'TDC', 'numChannelsRead'
         ] + self.quant_query_terms
+        self.generateMultipleTDCHitData()
 
     def show(self):
         return self.events_df
@@ -166,11 +167,68 @@ class MuonDataFrame:
         return self.events_df.info()
         # print(self.events_df.info())
 
-    def getNumEventsWithMultipleTDC(self):
+    def generateMultipleTDCHitData(self):
         # self.events_df[""]
         num_tdc_read = self.events_df["TDC"].values
-        return num_tdc_read[3]
-        # print(num_tdc_read[3])
+        # tdc_hits = dict()  # key = hits , value = [0_hit, 1_hit, 3_hit, 4_hit]
+        tdc_hits = []
+        for event in num_tdc_read:
+            if event == None:
+                tdc_hits.append([0, 0, 0, 0])
+            else:
+                tdc_hits.append(self.calculateTDCHits(event))
+        self.events_df["TDC_hit_num"] = tdc_hits
+
+    def getMultipleTDCHitReport(self):
+        # print(self.events_df["TDC_hit_num"].describe())
+        # print(self.events_df["TDC_hit_num"].values.tolist())
+        val = self.events_df["TDC_hit_num"].values.tolist()
+        df1 = pd.DataFrame(val,
+                           index=self.events_df.index,
+                           columns=["Ch0", "Ch1", "Ch3", "Ch4"])
+        fig = plt.figure(figsize=(9, 7))
+
+        plt.suptitle("Multihit TDC Event Breakdown")
+        plt.subplot(2, 2, 1)
+        df1["Ch0"].plot.hist(bins=10)
+        plt.title("Channel 0")
+        plt.ylabel("Number of Events")
+
+        plt.subplot(2, 2, 2)
+        df1["Ch1"].plot.hist(bins=10)
+        plt.title("Channel 1")
+
+        plt.subplot(2, 2, 3)
+        df1["Ch3"].plot.hist(bins=10)
+        plt.title("Channel 3")
+
+        plt.subplot(2, 2, 4)
+        df1["Ch4"].plot.hist(bins=10)
+        plt.title("Channel 4")
+        plt.xlabel("Number of TDC Hit Per Event")
+        plt.show()
+        # df1["Ch0"].plot.hist(bins=10)
+        # df1["Ch1"].plot.hist(bins=10)
+        # df1["Ch3"].plot.hist(bins=10)
+        # df1["Ch4"].plot.hist(bins=10)
+        # plt.show()
+
+    def calculateTDCHits(self, event):
+        zero_c = 0
+        one_c = 0
+        three_c = 0
+        four_c = 0
+        for i in event:
+            if i[0] == 0:
+                zero_c += 1
+            elif i[0] == 1:
+                one_c += 1
+            elif i[0] == 3:
+                three_c += 1
+            elif i[0] == 4:
+                four_c += 1
+
+        return [zero_c, one_c, three_c, four_c]
 
     """
     # conditions : ("query_term operation value","query_term operation value","and/or operator")
