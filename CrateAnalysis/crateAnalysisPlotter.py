@@ -32,24 +32,16 @@ if __name__ == "__main__":
     mdf = MuonDataFrame(ifile)
 
     # function descriptions
+    # data filtering
+    # mdf.getNumEventsWithMultipleTDC()
     # mdf.show()
-    mdf.getNumEventsWithMultipleTDC()
     # mdf.summary()
     # mdf.lookAt("TDC")
     # mdf.removeNoTDCEvents()
     # mdf.getStats("deadtime")
     # mdf.getEventInfo([10, 15])
     # mdf.getEventInfo(833)
-    # mdf.getFilteredHistogram("L1_TDC_sum", "numChannelsRead")
-    # mdf.getHistogram("deadtime")
-    # mdf.getKDE("L1_TDC_sum")
-    # mdf.get3DScatterPlot(["L1_asym", "L2_asym", "L1_TDC_sum"])
-    # mdf.getScatterPlot(["L1_asym", "L2_asym"])
-    # mdf.getPlot("deadtime")
-    # mdf.getComparableHistogram(["L1_TDC_sum", "L2_TDC_sum"])
     # mdf.removeOutliers()
-    # mdf.getTrimmedHistogram("L1_TDC_sum", 3)
-    # mdf.getTrimmedComparableHistogram(["L1_TDC_sum", "L2_TDC_sum"], 3)
     # filtered_mdf = mdf.getFilteredEvents(["deadtime > 900"])
     # filtered_mdf = mdf.getFilteredEvents(
     # ["L1_TDC_sum > 250", "deadtime > 900", "&"])
@@ -57,3 +49,14 @@ if __name__ == "__main__":
     # ["L1_TDC_sum > 250", "deadtime > 900", "|"])
     # filtered_mdf["L1_TDC_sum"].plot.hist(bins=150)
     # plt.show()
+
+    # plots
+    # mdf.getHistogram("deadtime")
+    # mdf.getKDE("L1_TDC_sum")
+    # mdf.getTrimmedHistogram("L1_TDC_sum", 3)
+    # mdf.getComparableHistogram(["L1_TDC_sum", "L2_TDC_sum"])
+    # mdf.getTrimmedComparableHistogram(["L1_TDC_sum", "L2_TDC_sum"], 3)
+    # mdf.getFilteredHistogram("L1_TDC_sum", "numChannelsRead")
+    # mdf.getPlot("deadtime")
+    # mdf.getScatterPlot(["L1_asym", "L2_asym"])
+    # mdf.get3DScatterPlot(["L1_asym", "L2_asym", "L1_TDC_sum"])

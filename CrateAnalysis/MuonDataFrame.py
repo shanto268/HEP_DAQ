@@ -10,7 +10,6 @@ __date__ = "10/06/2020"
 __email__ = "sadman-ahmed.shanto@ttu.edu"
 """"
 To DO:
-    - make jnb tutorial
     - count number of events with multiple TDC
     - implement methods that updates all TDC columns using some TDC value
         - first TDC
@@ -86,7 +85,6 @@ def conditionParser_single(df, conditions):
 
 
 def getFilteredEvents(self, df, conditions):
-    print(len(conditions))
     numConditions = len(conditions)
     if numConditions == 1:
         qt, op, val = conditions[0].split(" ")
@@ -117,6 +115,17 @@ def scrubbedDataFrame(df, queryName, numStd):
 def getHistogram(df, queryName, nbins=100, title=""):
     s = df[queryName]
     ax = s.plot.hist(alpha=0.7, bins=nbins)
+    mean, std, count = s.describe().values[1], s.describe(
+    ).values[2], s.describe().values[0]
+    textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}".format(mean, std, count)
+    props = dict(boxstyle='round', facecolor='wheat', alpha=0.7)
+    ax.text(0.80,
+            0.95,
+            textstr,
+            transform=ax.transAxes,
+            fontsize=12,
+            verticalalignment='top',
+            bbox=props)
     ax.set_title("Histogram of {} {}".format(queryName, title))
     plt.show()
 
@@ -143,21 +152,25 @@ class MuonDataFrame:
         ] + self.quant_query_terms
 
     def show(self):
-        print(self.events_df)
+        return self.events_df
+        # print(self.events_df)
 
     def lookAt(self, query_term):
-        print(self.events_df[query_term])
+        return self.events_df[query_term]
+        # print(self.events_df[query_term])
 
     def removeNoTDCEvents(self):
         self.events_df = self.events_df[~self.events_df["TDC"].isnull()]
 
     def summary(self):
-        print(self.events_df.info())
+        return self.events_df.info()
+        # print(self.events_df.info())
 
     def getNumEventsWithMultipleTDC(self):
         # self.events_df[""]
         num_tdc_read = self.events_df["TDC"].values
-        print(num_tdc_read[3])
+        return num_tdc_read[3]
+        # print(num_tdc_read[3])
 
     """
     # conditions : ("query_term operation value","query_term operation value","and/or operator")
@@ -185,6 +198,8 @@ class MuonDataFrame:
         s = self.events_df[queryName].to_numpy()
         s = pd.Series(s)
         ax = s.plot.kde()
+        mean, std, count = s.describe().values[1], s.describe(
+        ).values[2], s.describe().values[0]
         textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}".format(
             mean, std, count)
         props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
@@ -245,10 +260,10 @@ class MuonDataFrame:
                 res = pd.concat(
                     [df1.merge(intersection),
                      df2.merge(intersection)])
-                print(res)
+                # print(res)
             else:
                 res = pd.concat([df1, df2])
-                print(res)
+                # print(res)
             return res
 
     def dropna(arr, *args, **kwarg):
@@ -288,11 +303,13 @@ class MuonDataFrame:
         elif isinstance(eventNum, list):
             df = self.events_df[self.events_df['event_num'].between(
                 eventNum[0], eventNum[1])]
-        print(df)
+        return df
+        # print(df)
 
     def getStats(self, queryName):
         s = self.events_df[queryName]
-        print(s.describe())
+        return s.describe()
+        # print(s.describe())
 
     def removeOutliers(self):
         for queryName in self.quant_query_terms:
