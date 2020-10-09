@@ -34,11 +34,13 @@ def waitForBusy(h):
         pass
 
 
-def clearModules(h, adc_slots, tdc_slots_3377):
+def clearModules(h, adc_slots, tdc_slots_3377, scaler_slots_c257):
     h.stdCMDSR("nim_resetcev 1")
     for slot in adc_slots:
         h.CFSA(9, slot, 0, 0)
     for slot in tdc_slots_3377:
+        h.CSSA(9, slot, 0, 0)
+    for slot in scaler_slots_c257:
         h.CSSA(9, slot, 0, 0)
 
 
@@ -78,8 +80,8 @@ def configureDAQDefaults(h):
     runConfiguration["tdc_slots_2228"] = (10, )
     runConfiguration["tdc_channels_2228"] = 8
     runConfiguration["tdc_slots_3377"] = (2, )
-    runConfiguration["scaler_slots_c257"] = (14, )  # new
-    runConfiguration["scaler_channels"] = 16  # new
+    runConfiguration["scaler_slots_c257"] = (14, ) # new
+    runConfiguration["scaler_channels"] = 14 # new
 
     # Enable busy signal on the controller combo channel 1
     h.stdCMDSR("nim_enablecombo 1 0")
@@ -196,7 +198,7 @@ def runCAMAC(configModule, maxEvents, maxTimeSec, runNumber, outputFile,
         startTime = datetime.now()
 
         # waitForBusy(h)
-        clearModules(h, adc_slots, tdc_slots_3377)
+        clearModules(h, adc_slots, tdc_slots_3377, scaler_slots_c257)
         for slot in tdc_slots_3377:
             initLeCroy3377(h, slot)
 
@@ -223,7 +225,7 @@ def runCAMAC(configModule, maxEvents, maxTimeSec, runNumber, outputFile,
 
             # Read out all Scaler values
             for slot in scaler_slots_c257:
-                scalerValues = h.read24Scan(2, slot, 0, scaler_channels)
+                scalerValues = h.read24Scan(2, slot, scaler_channels)
                 eventRecord[(slot, "Scaler257")] = scalerValues
 
             # Read out all LeCroy2228A TDCs
@@ -236,8 +238,8 @@ def runCAMAC(configModule, maxEvents, maxTimeSec, runNumber, outputFile,
                 fifoData = h.read16UntilQ0Q0(0, slot, 0)
                 eventRecord[(slot, "LeCroy3377")] = fifoData
                 # printLeCroy3377Hex(slot, fifoData)
-                print("LeCroy3377 slot %d: %s" %
-                      (slot, LC3377Readout(fifoData)))
+                # print("LeCroy3377 slot %d: %s" %
+                #      (slot, LC3377Readout(fifoData)))
 
             # Read out all ADCs
             for slot in adc_slots:
