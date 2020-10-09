@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Thu Jul  9 12:18:43 2020
+Created on 2020-10-09
 
-@author: nuralakchurin
+@author: sshanto 
 """
 
 import matplotlib.pyplot as plt
@@ -30,7 +30,7 @@ class TDCAnalyzer(DummyModule):
                   "Key : {} , Value : {}".format(item, eventRecord[item]))
 
     def processEvent(self, runNumber, eventNumber, eventRecord):
-        tdcData = eventRecord["unpacked3377Data"]
+        scalarValue = eventRecord["unpacked3377Data"]
         lenTDCData = eventRecord["len_unpacked_3377Data"]
         #        print(tdcData)
         #        print(40 * "=")
@@ -65,4 +65,4 @@ class TDCAnalyzer(DummyModule):
         eventRecord["Layer_2"] = channelOp2
 
         # self.printRawDataOutput(eventNumber, eventRecord)
-        self.printSpecificData((14, 'Scaler257'), eventNumber, eventRecord)
+        # self.printSpecificData('TDC', eventNumber, eventRecord)

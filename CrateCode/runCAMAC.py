@@ -2,9 +2,9 @@
 A very simple CAMAC data acquisition sequence. For use as an example.
 """
 
-__author__="Igor Volobouev (i.volobouev@ttu.edu)"
-__version__="0.2"
-__date__ ="July 3 2020"
+__author__ = "Igor Volobouev (i.volobouev@ttu.edu)"
+__version__ = "0.2"
+__date__ = "July 3 2020"
 
 from CAEN_C111C import CAEN_C111C
 import importlib
@@ -13,9 +13,9 @@ import sys
 from datetime import datetime, timedelta
 from LC3377 import *
 
-
 # def enableDataTaking(h, enable):
 #    h.NOSOS(1, not enable)
+
 
 def enableDataTaking(h, enable):
     if enable:
@@ -23,6 +23,7 @@ def enableDataTaking(h, enable):
     else:
         # In this mode, data taking is disabled by hardware busy signal
         pass
+
 
 # def enableDataTaking(h, enable):
 #     pass
@@ -72,19 +73,21 @@ def configureDAQDefaults(h):
     result = h.CFSA(26, lam_slot, 0, 0)
     print("Enabling LAM for slot %d: result is" % lam_slot, result)
     runConfiguration["lam_slot"] = lam_slot
-    runConfiguration["adc_slots"] = (17,)
+    runConfiguration["adc_slots"] = (17, )
     runConfiguration["adc_channels"] = 12
-    runConfiguration["tdc_slots_2228"] = (10,)
+    runConfiguration["tdc_slots_2228"] = (10, )
     runConfiguration["tdc_channels_2228"] = 8
-    runConfiguration["tdc_slots_3377"] = (2,)
+    runConfiguration["tdc_slots_3377"] = (2, )
+    runConfiguration["scaler_slots_c257"] = (14, )  # new
+    runConfiguration["scaler_channels"] = 16  # new
 
     # Enable busy signal on the controller combo channel 1
     h.stdCMDSR("nim_enablecombo 1 0")
     return runConfiguration
 
 
-def runCAMAC(configModule, maxEvents, maxTimeSec,
-             runNumber, outputFile, plotUpdater):
+def runCAMAC(configModule, maxEvents, maxTimeSec, runNumber, outputFile,
+             plotUpdater):
     """
     This function runs a simple data acquisition sequence. The arguments are:
 
@@ -123,7 +126,7 @@ def runCAMAC(configModule, maxEvents, maxTimeSec,
     timeDeltaLimit = maxTimeSec
     if timeDeltaLimit <= 0:
         timeDeltaLimit = 2**32 - 1
-    timeDeltaLimit = timeDeltaLimit*1.0
+    timeDeltaLimit = timeDeltaLimit * 1.0
 
     # Import "configModule" if requested.
     if configModule == "None" or configModule == "none":
@@ -159,6 +162,8 @@ def runCAMAC(configModule, maxEvents, maxTimeSec,
     tdc_slots_2228 = runConfiguration["tdc_slots_2228"]
     tdc_channels_2228 = runConfiguration["tdc_channels_2228"]
     tdc_slots_3377 = runConfiguration["tdc_slots_3377"]
+    scaler_slots_c257 = runConfiguration["scaler_slots_c257"]  # new
+    scaler_channels = runConfiguration["scaler_channels"]  # new
 
     # Initialize various variables
     runStatus = "WaitForBusy"
@@ -174,8 +179,8 @@ def runCAMAC(configModule, maxEvents, maxTimeSec,
     runRecord[(runNumber, "runStatus")] = "In Progress"
     runRecord[eventCommitKey] = 0
 
-    # Call the "beginRun" method of the plotter (or whatever that               
-    # class is actually doing)                                                  
+    # Call the "beginRun" method of the plotter (or whatever that
+    # class is actually doing)
     if not (plotUpdater is None):
         plotUpdater.beginRun(runNumber, runRecord)
 
@@ -216,22 +221,28 @@ def runCAMAC(configModule, maxEvents, maxTimeSec,
             eventRecord["version"] = 2
             eventRecord["timeStamp"] = timeStamp
 
+            # Read out all Scaler values
+            for slot in scaler_slots_c257:
+                scalerValues = h.read24Scan(2, slot, 0, scaler_channels)
+                eventRecord[(slot, "Scaler257")] = scalerValues
+
             # Read out all LeCroy2228A TDCs
             for slot in tdc_slots_2228:
                 tdcValues = h.read24Scan(2, slot, 0, tdc_channels_2228)
-                eventRecord[(slot,"LeCroy2228")] = tdcValues
+                eventRecord[(slot, "LeCroy2228")] = tdcValues
 
             # Read out all LeCroy3377 TDCs
             for slot in tdc_slots_3377:
                 fifoData = h.read16UntilQ0Q0(0, slot, 0)
-                eventRecord[(slot,"LeCroy3377")] = fifoData
+                eventRecord[(slot, "LeCroy3377")] = fifoData
                 # printLeCroy3377Hex(slot, fifoData)
-                print("LeCroy3377 slot %d: %s" % (slot, LC3377Readout(fifoData)))
+                print("LeCroy3377 slot %d: %s" %
+                      (slot, LC3377Readout(fifoData)))
 
             # Read out all ADCs
             for slot in adc_slots:
                 adcValues = h.read24Scan(2, slot, 0, adc_channels)
-                eventRecord[(slot,"LeCroy2249")] = adcValues
+                eventRecord[(slot, "LeCroy2249")] = adcValues
 
             eventRecord["hw_event_count"] = int(h.CMDSR("nim_getcev 1"))
             eventRecord["deadtime"] = int(h.stdCMDSR("nim_getcdtc 1"))
@@ -278,4 +289,5 @@ def runCAMAC(configModule, maxEvents, maxTimeSec,
         plotUpdater.endRun(runNumber, runRecord)
 
     # Return the number of events collected and the elapsed time
-    return runRecord[eventCommitKey], (stopTime - startTime).total_seconds(), runStatus, runError
+    return runRecord[eventCommitKey], (
+        stopTime - startTime).total_seconds(), runStatus, runError

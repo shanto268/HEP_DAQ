@@ -10,6 +10,7 @@ __date__ = "10/06/2020"
 __email__ = "sadman-ahmed.shanto@ttu.edu"
 """"
 To DO:
+    - change crateAna code to only read main values and then do analysis here
     - implement methods that updates all TDC columns using some TDC value
         - first TDC
         - max TDC
