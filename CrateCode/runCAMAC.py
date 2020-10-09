@@ -225,7 +225,7 @@ def runCAMAC(configModule, maxEvents, maxTimeSec, runNumber, outputFile,
 
             # Read out all Scaler values
             for slot in scaler_slots_c257:
-                scalerValues = h.read24Scan(2, slot, scaler_channels)
+                scalerValues = h.read24Scan(2, slot, 0, scaler_channels)
                 eventRecord[(slot, "Scaler257")] = scalerValues
 
             # Read out all LeCroy2228A TDCs
