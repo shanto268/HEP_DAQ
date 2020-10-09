@@ -81,7 +81,7 @@ def configureDAQDefaults(h):
     runConfiguration["tdc_channels_2228"] = 8
     runConfiguration["tdc_slots_3377"] = (2, )
     runConfiguration["scaler_slots_c257"] = (14, ) # new
-    runConfiguration["scaler_channels"] = 14 # new
+    runConfiguration["scaler_channels"] = 16 # new
 
     # Enable busy signal on the controller combo channel 1
     h.stdCMDSR("nim_enablecombo 1 0")
