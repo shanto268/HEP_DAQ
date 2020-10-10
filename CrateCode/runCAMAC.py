@@ -41,7 +41,7 @@ def clearModules(h, adc_slots, tdc_slots_3377, scaler_slots_c257):
     for slot in tdc_slots_3377:
         h.CSSA(9, slot, 0, 0)
     for slot in scaler_slots_c257:
-        h.CSSA(9, slot, 0, 0)
+        h.CFSA(9, slot, 0, 0)
 
 
 def initLeCroy3377(h, slot, moduleId=None):
@@ -80,8 +80,8 @@ def configureDAQDefaults(h):
     runConfiguration["tdc_slots_2228"] = (10, )
     runConfiguration["tdc_channels_2228"] = 8
     runConfiguration["tdc_slots_3377"] = (2, )
-    runConfiguration["scaler_slots_c257"] = (14, ) # new
-    runConfiguration["scaler_channels"] = 16 # new
+    runConfiguration["scaler_slots_c257"] = (14, )  # new
+    runConfiguration["scaler_channels"] = 16  # new
 
     # Enable busy signal on the controller combo channel 1
     h.stdCMDSR("nim_enablecombo 1 0")
@@ -225,7 +225,7 @@ def runCAMAC(configModule, maxEvents, maxTimeSec, runNumber, outputFile,
 
             # Read out all Scaler values
             for slot in scaler_slots_c257:
-                scalerValues = h.read24Scan(2, slot, 0, scaler_channels)
+                scalerValues = h.read24ScanScaler(2, slot, 0, scaler_channels)
                 eventRecord[(slot, "Scaler257")] = scalerValues
 
             # Read out all LeCroy2228A TDCs

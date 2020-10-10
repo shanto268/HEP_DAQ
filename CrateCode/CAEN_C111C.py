@@ -84,6 +84,9 @@ communication methods are provided (in alphabetical order):
   read24Scan   -- Read a number of consequtive channels from a particular
                   slot. Defined in CrateHandle.i. Returns a numpy array.
 
+  read24ScanScaler  -- Same as read24Scan, but checks for Q = 0 for valid data
+                       rather than 1. Defined in CrateHandle.i. Returns a numpy array.
+
   read24UntilQ0 -- Read a particular slot and subaddress until Q = 0 is
                    returned. Defined in CrateHandle.i. Returns a numpy array.
 
@@ -104,14 +107,15 @@ communication methods are provided (in alphabetical order):
                   CrateHandle.hh.
 """
 
-__author__="Igor Volobouev (i.volobouev@ttu.edu)"
-__version__="0.1"
-__date__ ="June 22 2017"
+__author__ = "Igor Volobouev (i.volobouev@ttu.edu)"
+__version__ = "0.1"
+__date__ = "June 22 2017"
 
 from caencamac import *
 
+
 class CAEN_C111C(CrateHandle):
-    def __init__(self, address = None):
+    def __init__(self, address=None):
         if address is None:
             CrateHandle.__init__(self)
         else:
@@ -125,14 +129,14 @@ class CAEN_C111C(CrateHandle):
         else:
             raise RuntimeError("Readback status is %d" % status)
 
-    def stdCMDR(self, maxResponseSize = None):
+    def stdCMDR(self, maxResponseSize=None):
         if maxResponseSize is None:
             readback = CrateHandle.CMDR(self)
         else:
             readback = CrateHandle.CMDR(self, maxResponseSize)
         return self._process_ascii(readback)
 
-    def stdCMDSR(self, cmd, maxResponseSize = None):
+    def stdCMDSR(self, cmd, maxResponseSize=None):
         if maxResponseSize is None:
             readback = CrateHandle.CMDSR(self, cmd)
         else:
@@ -144,7 +148,7 @@ class CAEN_C111C(CrateHandle):
         timeout = CrateHandle.getCRTOUT(self)
         CrateHandle.CRTOUT(self, 1)
         try:
-            while(True):
+            while (True):
                 nextline = CrateHandle.CMDR(self)
                 s += "\n"
                 s += nextline
