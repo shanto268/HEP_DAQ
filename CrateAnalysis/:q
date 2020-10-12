@@ -26,21 +26,12 @@ import pandas as pd
 import sys
 from pandas.plotting import andrews_curves
 from collections import Counter
-from collections import OrderedDict
-from collections import defaultdict
 """
 # Query terms
 'event_num', 'event_time', 'deadtime', 'TDC_L1_L', 'TDC_L1_R',
 'TDC_L2_L', 'TDC_L2_R', 'ADC', 'numChannelsRead', 'L1_asym',
 'L2_asym', 'L1_TDC_sum', 'L2_TDC_sum', 'L1_TDC_diff', 'L2_TDC_diff'
 """
-
-
-def remove_if_first_index(l):
-    return [
-        item for index, item in enumerate(l)
-        if item[0] not in [value[0] for value in l[0:index]]
-    ]
 
 
 def conditionParser_multiple(df, conditions):
@@ -155,7 +146,6 @@ class MuonDataFrame:
         self.query_terms = [
             'event_num', 'event_time', 'ADC', 'TDC', 'numChannelsRead'
         ] + self.quant_query_terms
-        self.deleteTDCAnaData()
         self.generateMultipleTDCHitData()
 
     def show(self):
@@ -173,50 +163,27 @@ class MuonDataFrame:
         return self.events_df.info()
         # print(self.events_df.info())
 
-    def generateMultipleTDCHitData(self, criteria="min"):
+    def generateMultipleTDCHitData(self):
         # self.events_df[""]
         num_tdc_read = self.events_df["TDC"].values
         # tdc_hits = dict()  # key = hits , value = [0_hit, 1_hit, 3_hit, 4_hit]
         tdc_hits = []
-        tdc_event = []
         for event in num_tdc_read:
             if event == None:
                 tdc_hits.append([0, 0, 0, 0])
-                tdc_event.append(None)
             else:
-                tdc_list, ev_list = self.calculateTDCHits(event, criteria)
-                tdc_event.append(ev_list)
-                tdc_hits.append(tdc_list)
+                tdc_hits.append(self.calculateTDCHits(event))
         self.events_df["TDC_hit_num"] = tdc_hits
-        self.events_df["TDC_Ana"] = tdc_event
 
-    def deleteTDCAnaData(self):
-        del self.events_df['TDC_L1_L']
-        del self.events_df['TDC_L1_R']
-        del self.events_df['TDC_L2_L']
-        del self.events_df['TDC_L2_R']
-        del self.events_df['L1_asym']
-        del self.events_df['L2_asym']
-        del self.events_df['L1_TDC_sum']
-        del self.events_df['L2_TDC_sum']
-        del self.events_df['L1_TDC_diff']
-        del self.events_df['L2_TDC_diff']
-        del self.events_df['numChannelsRead']
-
-    def createTDCValues(self, tdc_hits, event, criteria):
-        if criteria == "last":
-            ev = list(OrderedDict(event).items())
-        elif criteria == "first":
-            ev = remove_if_first_index(event)
+    def useTDCValue(self, criteria):
+        if criteria == "first":
+            pass
+        elif criteria == "last":
+            pass
         elif criteria == "max":
-            ev = list(dict(list(event), key=lambda v: int(v[1])).items())
-            ev.pop()
+            pass
         elif criteria == "min":
-            d = defaultdict(list)
-            for name, num in event:
-                d[name].append(num)
-            ev = list(zip(d, map(min, d.values())))
-        return ev
+            pass
 
     def generateLayerDiffTDCData(self):
         pass
@@ -267,12 +234,11 @@ class MuonDataFrame:
         # df1["Ch4"].plot.hist(bins=10)
         # plt.show()
 
-    def calculateTDCHits(self, event, criteria):
+    def calculateTDCHits(self, event):
         zero_c = 0
         one_c = 0
         three_c = 0
         four_c = 0
-        tdc_event = []
         for i in event:
             if i[0] == 0:
                 zero_c += 1
@@ -282,9 +248,8 @@ class MuonDataFrame:
                 three_c += 1
             elif i[0] == 4:
                 four_c += 1
-        tdc_hit = [zero_c, one_c, three_c, four_c]
-        ev = self.createTDCValues(tdc_hit, event, criteria)
-        return tdc_hit, ev
+
+        return [zero_c, one_c, three_c, four_c]
 
     """
     # conditions : ("query_term operation value","query_term operation value","and/or operator")

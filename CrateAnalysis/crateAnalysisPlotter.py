@@ -30,7 +30,8 @@ if __name__ == "__main__":
         print("No File passed / Invalid File")
 
     mdf = MuonDataFrame(ifile)
-    mdf.getMultipleTDCHitReport()
+    print(mdf.show())
+    # print(mdf.summary())
 
     # function descriptions
     # data filtering

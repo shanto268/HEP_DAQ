@@ -64,5 +64,5 @@ class TDCAnalyzer(DummyModule):
         eventRecord["Layer_1"] = channelOp1
         eventRecord["Layer_2"] = channelOp2
 
-        # self.printRawDataOutput(eventNumber, eventRecord)
-        self.printSpecificData((14, 'Scaler257'), eventNumber, eventRecord)
+        self.printRawDataOutput(eventNumber, eventRecord)
+        # self.printSpecificData((14, 'Scaler257'), eventNumber, eventRecord)
