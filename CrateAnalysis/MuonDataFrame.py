@@ -11,7 +11,6 @@ __email__ = "sadman-ahmed.shanto@ttu.edu"
 """"
 To DO:
     - generate report method
-    - data filtering method
     - implement Igor 2D histo
     - Bell curve fit of histo
     - Recreate of all graphs
@@ -174,9 +173,10 @@ class MuonDataFrame:
         # print(self.events_df.info())
 
     def generateMultipleTDCHitData(self, criteria="min"):
-        # self.events_df[""]
+        """
+        criteria: options are "min", "max", "first", "last"
+        """
         num_tdc_read = self.events_df["TDC"].values
-        # tdc_hits = dict()  # key = hits , value = [0_hit, 1_hit, 3_hit, 4_hit]
         tdc_hits = []
         tdc_event = []
         for event in num_tdc_read:
@@ -189,12 +189,14 @@ class MuonDataFrame:
                 tdc_hits.append(tdc_list)
         self.events_df["TDC_hit_num"] = tdc_hits
         self.events_df["TDC_Ana"] = tdc_event
+        # self.generateNumChannelsReadData()
+        self.generateTDCAnalyzedData()
 
     def deleteTDCAnaData(self):
-        del self.events_df['TDC_L1_L']
-        del self.events_df['TDC_L1_R']
-        del self.events_df['TDC_L2_L']
-        del self.events_df['TDC_L2_R']
+        # del self.events_df['TDC_L1_L']
+        # del self.events_df['TDC_L1_R']
+        # del self.events_df['TDC_L2_L']
+        # del self.events_df['TDC_L2_R']
         del self.events_df['L1_asym']
         del self.events_df['L2_asym']
         del self.events_df['L1_TDC_sum']
@@ -218,19 +220,104 @@ class MuonDataFrame:
             ev = list(zip(d, map(min, d.values())))
         return ev
 
-    def generateLayerDiffTDCData(self):
-        pass
+    def generateTDCAnalyzedData(self):
+        l1_l = []
+        l1_r = []
+        l2_l = []
+        l2_r = []
+        l1_diff = []
+        l2_diff = []
+        l1_sum = []
+        l2_sum = []
+        l1_asym = []
+        l2_asym = []
+        numChannelsRead = []
 
-    def generateLayerAssymTDCData(self):
-        pass
+        for index, row in self.events_df.iterrows():
 
-    def generateNumChannelsReadData(self):
-        pass
+            thit = np.array(row["TDC_hit_num"])
+            nonZeroIndex = np.where(thit > 0)[0]
+            if len(nonZeroIndex) == 4:
+                l1_sum.append(row["TDC_Ana"][0][1] + row["TDC_Ana"][1][1])
+                l2_sum.append(row["TDC_Ana"][2][1] + row["TDC_Ana"][3][1])
+                l1_diff.append(row["TDC_Ana"][0][1] - row["TDC_Ana"][1][1])
+                l2_diff.append(row["TDC_Ana"][2][1] - row["TDC_Ana"][3][1])
+                numChannelsRead.append(len(nonZeroIndex))
+                l1_asym.append(100 *
+                               (row["TDC_Ana"][0][1] - row["TDC_Ana"][1][1]) /
+                               (row["TDC_Ana"][0][1] + row["TDC_Ana"][1][1]))
+                l2_asym.append(100 *
+                               (row["TDC_Ana"][2][1] - row["TDC_Ana"][3][1]) /
+                               (row["TDC_Ana"][2][1] + row["TDC_Ana"][3][1]))
+            else:
+                if 0 in nonZeroIndex and 1 in nonZeroIndex:
+                    l1_sum.append(row["TDC_Ana"][0][1] + row["TDC_Ana"][1][1])
+                    l1_diff.append(row["TDC_Ana"][0][1] - row["TDC_Ana"][1][1])
+                    l1_asym.append(
+                        100 * (row["TDC_Ana"][0][1] - row["TDC_Ana"][1][1]) /
+                        (row["TDC_Ana"][0][1] + row["TDC_Ana"][1][1]))
+                    l2_sum.append(None)
+                    l2_diff.append(None)
+                    l2_asym.append(None)
+                    numChannelsRead.append(len(nonZeroIndex))
+                elif 2 in nonZeroIndex and 3 in nonZeroIndex:
+                    l2_sum.append(row["TDC_Ana"][-2][1] +
+                                  row["TDC_Ana"][-1][1])
+                    l2_diff.append(row["TDC_Ana"][-2][1] -
+                                   row["TDC_Ana"][-1][1])
+                    l2_asym.append(
+                        100 * (row["TDC_Ana"][-2][1] - row["TDC_Ana"][-1][1]) /
+                        (row["TDC_Ana"][-2][1] + row["TDC_Ana"][-1][1]))
+                    l1_sum.append(None)
+                    l1_diff.append(None)
+                    l1_asym.append(None)
+                    numChannelsRead.append(len(nonZeroIndex))
+                else:
+                    if row["TDC_Ana"] != None:
+                        print(nonZeroIndex)
+                        # for i in row["TDC_Ana"]:
+                        # if i[0] == 0:
+                        # l1_l.append(i[1])
+                        # l1_r.append(None)
+                        # l2_r.append(None)
+                        # l2_l.append(None)
+                        # elif i[0] == 1:
+                        # l1_l.append(None)
+                        # l1_r.append(i[1])
+                        # l2_r.append(None)
+                        # l2_l.append(None)
+                        # elif i[0] == 3:
+                        # l1_l.append(None)
+                        # l1_r.append(None)
+                        # l2_r.append(None)
+                        # l2_l.append(i[1])
+                        # elif i[0] == 4:
+                        # l1_l.append(None)
+                        # l1_r.append(None)
+                        # l2_r.append(i[1])
+                        # l2_l.append(None)
 
-    def generateSUMTDCData(self):
-        pass
+                    l1_sum.append(None)
+                    l2_sum.append(None)
+                    l1_diff.append(None)
+                    l2_diff.append(None)
+                    l1_asym.append(None)
+                    l2_asym.append(None)
+                    numChannelsRead.append(len(nonZeroIndex))
 
-    def generateSUBTDCData(self):
+        self.events_df['numChannelsRead'] = numChannelsRead
+        self.events_df['L1_TDC_sum'] = l1_sum
+        self.events_df['L2_TDC_sum'] = l2_sum
+        self.events_df['L1_TDC_diff'] = l1_diff
+        self.events_df['L2_TDC_diff'] = l2_diff
+        self.events_df['L1_asym'] = l1_asym
+        self.events_df['L2_asym'] = l2_asym
+
+    def generateLayerLRTDCData(self):
+        self.events_df['TDC_L1_L']
+        self.events_df['TDC_L1_R']
+        self.events_df['TDC_L2_L']
+        self.events_df['TDC_L2_R']
         pass
 
     def getMultipleTDCHitReport(self):
@@ -285,10 +372,6 @@ class MuonDataFrame:
         tdc_hit = [zero_c, one_c, three_c, four_c]
         ev = self.createTDCValues(tdc_hit, event, criteria)
         return tdc_hit, ev
-
-    """
-    # conditions : ("query_term operation value","query_term operation value","and/or operator")
-    """
 
     def getHistogram(self, queryName, nbins=100, title=""):
         s = self.events_df[queryName]
