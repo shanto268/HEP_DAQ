@@ -50,7 +50,7 @@ class TDCUnpacker(DummyModule):
                     tdcData[(slot, datum.channel)] = datum.tdc
         eventRecord["unpacked3377Data"] = tdcData
         eventRecord["TDC"] = tdcSData
-        eventRecord["len_unpacked_3377Data"] = len(tdcData)
+        # eventRecord["len_unpacked_3377Data"] = len(tdcData)
         # print("eventRecord : {}".format(eventRecord))
 
     def processEvent_NA(self, runNumber, eventNumber, eventRecord):
@@ -65,7 +65,7 @@ class TDCUnpacker(DummyModule):
                     #for datum in firstevent.data:
                     tdcData[(slot, datum.channel)] = datum.tdc
         eventRecord["unpacked3377Data"] = tdcData
-        eventRecord["len_unpacked_3377Data"] = len(tdcData)
+        # eventRecord["len_unpacked_3377Data"] = len(tdcData)
         # print("eventRecord : {}".format(eventRecord))
 
     #  print("eventNumber : {}".format(eventNumber))

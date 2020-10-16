@@ -45,8 +45,8 @@ def main(argv):
     mod6 = LC3377PrintingModule()
     mod7 = TDCUnpacker("TDCUnpacker")
     mod8 = TDCAnalyzer("TDCAnalyzer")
-    mod9 = ChannelOperations("ChannelOperations")
-    mod10 = NoiseCleaner("NoiseCleaner")
+    # mod9 = ChannelOperations("ChannelOperations")
+    # mod10 = NoiseCleaner("NoiseCleaner")
     mod11 = EventDataFrame("EventDataFrame")
     gptr = GenericPrintingModule(("hw_event_count", "deadtime"))
 
