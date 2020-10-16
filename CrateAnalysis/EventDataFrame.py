@@ -47,4 +47,5 @@ class EventDataFrame(DummyModule):
         # self.df.showDataFrame()
 
     def endRun(self, runNumber, runRecord):
+        # self.df.showDataFrame()
         self.df.saveDataFrame()

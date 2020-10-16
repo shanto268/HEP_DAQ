@@ -29,11 +29,10 @@ class TDCAnalyzer(DummyModule):
             print(eventNumber,
                   "Key : {} , Value : {}".format(item, eventRecord[item]))
 
-
     def processEvent(self, runNumber, eventNumber, eventRecord):
-        self.printRawDataOutput(eventNumber, eventRecord)
+        # self.printRawDataOutput(eventNumber, eventRecord)
         # self.printSpecificData((14, 'Scaler257'), eventNumber, eventRecord)
-
+        pass
 
     def processEvent_0(self, runNumber, eventNumber, eventRecord):
         tdcData = eventRecord["unpacked3377Data"]
