@@ -48,7 +48,7 @@ class TDCUnpacker(DummyModule):
                 for datum in lastevent.data:
                     #for datum in firstevent.data:
                     tdcData[(slot, datum.channel)] = datum.tdc
-        eventRecord["unpacked3377Data"] = tdcData
+        # eventRecord["unpacked3377Data"] = tdcData
         eventRecord["TDC"] = tdcSData
         # eventRecord["len_unpacked_3377Data"] = len(tdcData)
         # print("eventRecord : {}".format(eventRecord))

@@ -1,4 +1,5 @@
 import pandas as pd
+# import modin.pandas as pd
 import feather
 from LC3377 import *
 
@@ -6,6 +7,8 @@ from LC3377 import *
 class DataFrame:
     def __init__(self, runNumber):
         self.name = "events_data_frame_" + str(runNumber)
+        # self.df0 = pd.DataFrame(
+        # columns=['event_num', 'event_time', 'deadtime'])
         self.df0 = pd.DataFrame(columns=[
             'event_num', 'event_time', 'deadtime', 'ADC', 'TDC', 'Scaler'
         ])
@@ -15,11 +18,12 @@ class DataFrame:
         self.ADC = []
         self.TDC = []
         self.Scaler = []
+        self.data_dict = []
         self.path = "processed_data/" + self.name + ".ftr"
 
     def updateDataFrame(self, info, eventNum):
-        data_dict = self.getDataDict(info, eventNum)
-        self.df0 = self.df0.append(data_dict, ignore_index=True)
+        self.data_dict.append(self.getDataDict(info, eventNum))
+        # self.df0 = self.df0.append(data_dict, ignore_index=True)
 
     def getDataDict(self, info, eventNum):
         self.eventNum = eventNum
@@ -63,4 +67,7 @@ class DataFrame:
         return {'deadTime': self.deadTime}
 
     def saveDataFrame(self):
-        self.df0.to_feather(self.path)
+        print("Saving the DataFrame....")
+        self.df0 = pd.DataFrame.from_dict(self.data_dict)
+        feather.write_dataframe(self.df0, self.path)
+        # self.df0.to_feather(self.path)

@@ -10,10 +10,6 @@ __date__ = "10/04/2020"
 __email__ = "sadman-ahmed.shanto@ttu.edu"
 
 import feather
-import matplotlib.pyplot as plt
-import numpy as np
-import pandas as pd
-from pandas.plotting import andrews_curves
 import sys
 from MuonDataFrame import *
 """
@@ -29,35 +25,46 @@ if __name__ == "__main__":
     except:
         print("No File passed / Invalid File")
 
-    mdf = MuonDataFrame(ifile)
-    print(mdf.show())
-    # print(mdf.summary())
+    os.environ["MODIN_ENGINE"] = "ray"
+    mdfo = MuonDataFrame(ifile, "last")
+    mdf = mdfo.events_df
+    mdfo.computeAssymetries()
+    mdfo.get2DHistogram()
+    # mdfo.getScatterPlot(["L1_asym", "L2_asym"])
+    # mdfo.getScatterPlot(["L3_asym", "L4_asym"])
+    # mdfo.getScatterPlot(["L1_asym", "L3_asym"])
+    # mdfo.getScatterPlot(["L2_asym", "L4_asym"])
+    # # mdfo.getAssymetry1DPlots()
+
+    # mdf = mdfo.events_df
+    # goodEv = (mdf['TR12'] == True)
+    # print(mdf[goodEv])
 
     # function descriptions
     # data filtering
-    # mdf.show()
-    # mdf.summary()
-    # mdf.lookAt("TDC")
-    # mdf.removeNoTDCEvents()
-    # mdf.removeOutliers()
-    # mdf.getStats("deadtime")
-    # mdf.getEventInfo([10, 15])
-    # mdf.getEventInfo(833)
-    # filtered_mdf = mdf.getFilteredEvents(["deadtime > 900"])
-    # filtered_mdf = mdf.getFilteredEvents(
+    # mdfo.show()
+    # mdfo.summary()
+    # mdfo.lookAt("TDC")
+    # mdfo.removeNoTDCEvents()
+    # mdfo.removeOutliers()
+    # mdfo.getStats("deadtime")
+    # mdfo.getEventInfo([10, 15])
+    # mdfo.getEventInfo(833)
+    # filtered_mdf = mdfo.getFilteredEvents(["deadtime > 900"])
+    # filtered_mdf = mdfo.getFilteredEvents(
     # ["L1_TDC_sum > 250", "deadtime > 900", "&"])
-    # filtered_mdf = mdf.getFilteredEvents(
+    # filtered_mdf = mdfo.getFilteredEvents(
     # ["L1_TDC_sum > 250", "deadtime > 900", "|"])
     # filtered_mdf["L1_TDC_sum"].plot.hist(bins=150)
     # plt.show()
 
-    # plots
-    # mdf.getHistogram("deadtime")
-    # mdf.getKDE("L1_TDC_sum")
-    # mdf.getTrimmedHistogram("L1_TDC_sum", 3)
-    # mdf.getComparableHistogram(["L1_TDC_sum", "L2_TDC_sum"])
-    # mdf.getTrimmedComparableHistogram(["L1_TDC_sum", "L2_TDC_sum"], 3)
-    # mdf.getFilteredHistogram("L1_TDC_sum", "numChannelsRead")
-    # mdf.getPlot("deadtime")
-    # mdf.getScatterPlot(["L1_asym", "L2_asym"])
-    # mdf.get3DScatterPlot(["L1_asym", "L2_asym", "L1_TDC_sum"])
+    # # plots
+    # mdfo.getHistogram("deadtime")
+    # mdfo.getKDE("L1_TDC_sum")
+    # mdfo.getTrimmedHistogram("L1_TDC_sum", 3)
+    # mdfo.getComparableHistogram(["L1_TDC_sum", "L2_TDC_sum"])
+    # mdfo.getTrimmedComparableHistogram(["L1_TDC_sum", "L2_TDC_sum"], 3)
+    # mdfo.getFilteredHistogram("L1_TDC_sum", "numChannelsRead")
+    # mdfo.getPlot("deadtime")
+    # mdfo.getScatterPlot(["L1_asym", "L2_asym"])
+    # mdfo.get3DScatterPlot(["L1_asym", "L2_asym", "L1_TDC_sum"])

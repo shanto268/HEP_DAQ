@@ -86,12 +86,12 @@ class HistoMaker2D(AbsAnalysisModule):
     def beginJob(self, allModuleNames):
         pass
 
-    def endJob(self):
+    def endjob(self):
         plt.ioff()
-        self.data[self.data == self.defaultValue] = np.nan
+        self.data[self.data == self.defaultvalue] = np.nan
         self.redraw()
-        print("In module %s: %s overflow %s" % \
-              (self.moduleName, self.overflow, self._makeZLabel()))
+        print("in module %s: %s overflow %s" % \
+              (self.modulename, self.overflow, self._makezlabel()))
 
     def _makePlotTitle(self, zmin, zmax):
         if zmin is None and zmax is None:

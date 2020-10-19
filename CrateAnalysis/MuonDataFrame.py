@@ -10,12 +10,20 @@ __date__ = "10/06/2020"
 __email__ = "sadman-ahmed.shanto@ttu.edu"
 """"
 To DO:
-    - generate report method
-    - implement Igor 2D histo
-    - Bell curve fit of histo
-    - Recreate of all graphs
-    - Plots of arrays
-    - GUI make
+    - Methods for generating report (pdf)
+    - Vectorize all DF columns
+        - Methods for all Plots
+            - histo of layers hit
+            - histo of tdc hits per event
+            - ADC
+            - add histo info on graph
+            - method for histo individual layer operations/assymetry
+            - scaler histo of all elements in the list
+    - Parallelize the following tasks:
+        - Generate Report
+        - Make a copy of this new DF and save it as a .ftr with new name corresponding to decision D1
+    - Event Display/Tracking
+    - Imaging
 """
 
 import feather
@@ -23,16 +31,26 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import sys
-from pandas.plotting import andrews_curves
+import os
 from collections import Counter
 from collections import OrderedDict
 from collections import defaultdict
+from multiprocessing import Pool
+from pandas_profiling import ProfileReport
+from Histo2d import Histo2D
 """
-# Query terms
-'event_num', 'event_time', 'deadtime', 'TDC_L1_L', 'TDC_L1_R',
-'TDC_L2_L', 'TDC_L2_R', 'ADC', 'numChannelsRead', 'L1_asym',
-'L2_asym', 'L1_TDC_sum', 'L2_TDC_sum', 'L1_TDC_diff', 'L2_TDC_diff'
+# Default Query Terms:
+'event_num', 'event_time', 'deadtime', 'ADC', 'TDC', 'Scaler'
 """
+
+
+def parallelize_dataframe(df, func, n_cores=2):
+    df_split = np.array_split(df, n_cores)
+    pool = Pool(n_cores)
+    df = pd.concat(pool.map(func, df_split))
+    pool.close()
+    pool.join()
+    return df
 
 
 def remove_if_first_index(l):
@@ -68,8 +86,12 @@ def conditionParser_multiple(df, conditions):
 def conditionParser_single(df, conditions):
     qt, op, val = conditions[0].split(" ")
     if op == "==":
-        df = df[df[qt] == float(val)]
-        print(df[df[qt] == float(val)])
+        try:
+            df = df[df[qt] == float(val)]
+            print(df[df[qt] == float(val)])
+        except:
+            df = df[df[qt] == val]
+            print(df[df[qt] == val])
     elif op == ">":
         df = df[df[qt] > float(val)]
         # print(df[df[qt] > float(val)])
@@ -116,7 +138,7 @@ def scrubbedDataFrame(df, queryName, numStd):
     return df_filtered
 
 
-def getHistogram(df, queryName, nbins=100, title=""):
+def getHistogram(df, queryName, title="", nbins=100):
     s = df[queryName]
     ax = s.plot.hist(alpha=0.7, bins=nbins)
     mean, std, count = s.describe().values[1], s.describe(
@@ -143,19 +165,177 @@ def getFilteredHistogram(df, queryName, filter, nbins=100, title=""):
 
 
 class MuonDataFrame:
-    def __init__(self, path):
+    def __init__(self, path, d1="last"):
+        """
+        Initialize the MuonDataFrame
+
+        :param path [string]: path to the data file
+        :param d1 [string]: type of decision to be made on multiTDC events (acceptable terms are "last", "first", "min", and "max")
+                            default value = last
+        """
+
         self.events_df = pd.read_feather(path, use_threads=True)
         self.nbins = 150
-        self.quant_query_terms = [
-            'deadtime', 'TDC_L1_L', 'TDC_L1_R', 'TDC_L2_L', 'TDC_L2_R',
-            'L1_asym', 'L2_asym', 'L1_TDC_sum', 'L2_TDC_sum', 'L1_TDC_diff',
-            'L2_TDC_diff'
+        self.quant_query_terms = []
+        self.default_query_terms = [
+            'event_num', 'event_time', 'deadtime', 'ADC', 'TDC', 'Scaler'
         ]
-        self.query_terms = [
-            'event_num', 'event_time', 'ADC', 'TDC', 'numChannelsRead'
-        ] + self.quant_query_terms
-        self.deleteTDCAnaData()
-        self.generateMultipleTDCHitData()
+        self.query_terms = self.default_query_terms + self.quant_query_terms
+        self.d1 = d1
+        self.events_df = self.getDataFrame(
+            pd.read_feather(path, use_threads=True))
+
+    def generateReport(self):
+        profile = ProfileReport(self.events_df,
+                                title='Prototype 1B Profiling Report',
+                                explorative=True)
+        profile.to_file("mdf.html")
+
+    def getDeadtimePlot(self):
+        self.getHistogram("deadtime")
+
+    def getADCPlot(self):
+        pass
+
+    def getChannelPlots(self):
+        fig, axes = plt.subplots(nrows=2, ncols=4)
+        self.events_df['L1'].plot(ax=axes[0, 0], title="Ch0", kind="hist")
+        self.events_df['R1'].plot(ax=axes[1, 0], title="Ch1", kind="hist")
+        self.events_df['L2'].plot(ax=axes[0, 1], title="Ch3", kind="hist")
+        self.events_df['R2'].plot(ax=axes[1, 1], title="Ch4", kind="hist")
+        self.events_df['L3'].plot(ax=axes[0, 2], title="Ch6", kind="hist")
+        self.events_df['R3'].plot(ax=axes[1, 2], title="Ch7", kind="hist")
+        self.events_df['L4'].plot(ax=axes[0, 3], title="Ch9", kind="hist")
+        self.events_df['R4'].plot(ax=axes[1, 3], title="Ch10", kind="hist")
+        plt.show()
+
+    def getChannelSumPlots(self):
+        df = pd.DataFrame()
+        df['L1+R1'] = self.events_df['L1'] + self.events_df['R1']
+        df['L2+R2'] = self.events_df['L2'] + self.events_df['R2']
+        df['L3+R3'] = self.events_df['L3'] + self.events_df['R3']
+        df['L4+R4'] = self.events_df['L4'] + self.events_df['R4']
+        fig, axes = plt.subplots(nrows=1, ncols=4)
+        df['L1+R1'].plot(ax=axes[0], title="L1+R1", kind="hist")
+        df['L2+R2'].plot(ax=axes[1], title="L2+R2", kind="hist")
+        df['L3+R3'].plot(ax=axes[2], title="L3+R3", kind="hist")
+        df['L4+R4'].plot(ax=axes[3], title="L4+R4", kind="hist")
+        plt.show()
+
+    def getChannelDiffPlots(self):
+        df = pd.DataFrame()
+        df['L1-R1'] = self.events_df['L1'] - self.events_df['R1']
+        df['L2-R2'] = self.events_df['L2'] - self.events_df['R2']
+        df['L3-R3'] = self.events_df['L3'] - self.events_df['R3']
+        df['L4-R4'] = self.events_df['L4'] - self.events_df['R4']
+        fig, axes = plt.subplots(nrows=1, ncols=4)
+        df['L1-R1'].plot(ax=axes[0], title="L1-R1", kind="hist")
+        df['L2-R2'].plot(ax=axes[1], title="L2-R2", kind="hist")
+        df['L3-R3'].plot(ax=axes[2], title="L3-R3", kind="hist")
+        df['L4-R4'].plot(ax=axes[3], title="L4-R4", kind="hist")
+        plt.show()
+
+    def computeAssymetries(self):
+        self.events_df['L1_asym'] = (
+            self.events_df['L1'] - self.events_df['R1']) / (
+                self.events_df['L1'] + self.events_df['R1'])
+        self.events_df['L2_asym'] = (
+            self.events_df['L2'] - self.events_df['R2']) / (
+                self.events_df['L2'] + self.events_df['R2'])
+        self.events_df['L3_asym'] = (
+            self.events_df['L3'] - self.events_df['R3']) / (
+                self.events_df['L3'] + self.events_df['R3'])
+        self.events_df['L4_asym'] = (
+            self.events_df['L4'] - self.events_df['R4']) / (
+                self.events_df['L4'] + self.events_df['R4'])
+
+    def getAssymetry1DPlots(self):
+        df = pd.DataFrame()
+        fig, axes = plt.subplots(nrows=4, ncols=1)
+        self.events_df['L1_asym'].plot(ax=axes[0],
+                                       title="L1_asym",
+                                       kind="hist")
+        self.events_df['L2_asym'].plot(ax=axes[1],
+                                       title="L2_asym",
+                                       kind="hist")
+        self.events_df['L3_asym'].plot(ax=axes[2],
+                                       title="L3_asym",
+                                       kind="hist")
+        self.events_df['L4_asym'].plot(ax=axes[3],
+                                       title="L4_asym",
+                                       kind="hist")
+        plt.show()
+
+    def getDataFrame(self, df):
+        return parallelize_dataframe(df, self.completeDataFrame)
+
+    def completeDataFrame(self, df):
+        df['L1'] = df['TDC'].apply(lambda x: self.getTDC(x, 0))
+        df['R1'] = df['TDC'].apply(lambda x: self.getTDC(x, 1))
+        df['L2'] = df['TDC'].apply(lambda x: self.getTDC(x, 3))
+        df['R2'] = df['TDC'].apply(lambda x: self.getTDC(x, 4))
+        df['L3'] = df['TDC'].apply(lambda x: self.getTDC(x, 6))
+        df['R3'] = df['TDC'].apply(lambda x: self.getTDC(x, 7))
+        df['L4'] = df['TDC'].apply(lambda x: self.getTDC(x, 9))
+        df['R4'] = df['TDC'].apply(lambda x: self.getTDC(x, 10))
+        df['TR1'] = self.verifyTrayHit(df, 1)
+        df['TR2'] = self.verifyTrayHit(df, 2)
+        df['TR12'] = df.TR1 & df.TR2
+        return df
+
+    def verifyTrayHit(self, df, trayNum):
+        res = []
+        if trayNum == 1:
+            for index, row in df.iterrows():
+                cond = (not np.isnan(row["L1"])) and (not np.isnan(
+                    row["R1"])) and (not np.isnan(
+                        row["L2"])) and (not np.isnan(row["R2"]))
+                if cond:
+                    res.append(True)
+                else:
+                    res.append(False)
+        else:
+            for index, row in df.iterrows():
+                cond = (not np.isnan(row["L3"])) and (not np.isnan(
+                    row["R3"])) and (not np.isnan(
+                        row["L4"])) and (not np.isnan(row["R4"]))
+                if cond:
+                    res.append(True)
+                else:
+                    res.append(False)
+        return res
+
+    def getTDC(self, event, chNum):
+        tdc = 0
+        tdcVals = []
+        if event != None:
+            for i in event:
+                if chNum in i:
+                    tdcVals.append(i[1])
+            # print("tdcVals : {}".format(tdcVals))
+            tdc = self.getCorrectTDC(tdcVals)
+        else:
+            tdc = None
+        # print("tdc : {}".format(tdc))
+        # print(event)
+        # print()
+        return tdc
+
+    def getCorrectTDC(self, tdcs):
+        if len(tdcs) == 1:
+            return tdcs[0]
+        elif len(tdcs) == 0:
+            return None
+        else:
+            if self.d1 == "last":
+                # print("len(tdcs) : {}".format(len(tdcs)))
+                return tdcs[-1]
+            elif self.d1 == "first":
+                return tdcs[0]
+            elif self.d1 == "min":
+                return min(tdcs)
+            elif self.d1 == "max":
+                return max(tdcs)
 
     def show(self):
         return self.events_df
@@ -172,10 +352,8 @@ class MuonDataFrame:
         return self.events_df.info()
         # print(self.events_df.info())
 
-    def generateMultipleTDCHitData(self, criteria="min"):
-        """
-        criteria: options are "min", "max", "first", "last"
-        """
+    def generateMultipleTDCHitData(self):
+        criteria = self.d1
         num_tdc_read = self.events_df["TDC"].values
         tdc_hits = []
         tdc_event = []
@@ -190,20 +368,7 @@ class MuonDataFrame:
         self.events_df["TDC_hit_num"] = tdc_hits
         self.events_df["TDC_Ana"] = tdc_event
         # self.generateNumChannelsReadData()
-        self.generateTDCAnalyzedData()
-
-    def deleteTDCAnaData(self):
-        # del self.events_df['TDC_L1_L']
-        # del self.events_df['TDC_L1_R']
-        # del self.events_df['TDC_L2_L']
-        # del self.events_df['TDC_L2_R']
-        del self.events_df['L1_asym']
-        del self.events_df['L2_asym']
-        del self.events_df['L1_TDC_sum']
-        del self.events_df['L2_TDC_sum']
-        del self.events_df['L1_TDC_diff']
-        del self.events_df['L2_TDC_diff']
-        del self.events_df['numChannelsRead']
+        # self.generateTDCAnalyzedData()
 
     def createTDCValues(self, tdc_hits, event, criteria):
         if criteria == "last":
@@ -426,20 +591,32 @@ class MuonDataFrame:
         plt.title("Histogram of {} {}".format(str(queries), title))
         plt.show()
 
-    def get2DHistogram(df, queries, nbibs=1000, title=""):
-        x = df[queries[0]].to_numpy()
-        y = df[queries[1]].to_numpy()
-        x = dropna(x)
-        y = dropna(y)
-        while (len(x) != len(y)):
-            if (len(x) > len(y)):
-                x = x[:-1]
-            else:
-                y = y[:-1]
-        plt.hist2d(x, y)
-        plt.title("2D Histogram of {} against {} {}".format(
-            queries[0], queries[1], title))
-        plt.show()
+    def get2DHistogram(self, nbins=250):
+        # L1asym = lambda eventRecord: eventRecord["L2_asym"]
+        # L2asym = lambda eventRecord: eventRecord["L4_asym"]
+        L1asym = lambda eventRecord: eventRecord["L2"]
+        L2asym = lambda eventRecord: eventRecord["R2"]
+        hitMap = Histo2D("hitMap", "Hit Map", "Asymmetry in X", nbins, -160.0,
+                         160.0, L1asym, "Asymmetry in Y", nbins, -160.0, 160.0,
+                         L2asym)
+        for index, row in self.events_df.iterrows():
+            hitMap.processEvent(row)
+        hitMap.endjob()
+
+    # def get2DHistogram(df, queries, nbibs=1000, title=""):
+    # x = df[queries[0]].to_numpy()
+    # y = df[queries[1]].to_numpy()
+    # x = dropna(x)
+    # y = dropna(y)
+    # while (len(x) != len(y)):
+    # if (len(x) > len(y)):
+    # x = x[:-1]
+    # else:
+    # y = y[:-1]
+    # plt.hist2d(x, y)
+    # plt.title("2D Histogram of {} against {} {}".format(
+    # queries[0], queries[1], title))
+    # plt.show()
 
     def getFilteredEvents(self, conditions):
         df = self.events_df

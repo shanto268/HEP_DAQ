@@ -103,6 +103,7 @@ def runAnalysisSequence(moduleSequence,
             id = (runNumber, iev)
             if id in runRecord:
                 idlist.append(id)
+        # print(idlist)
         for id in idlist:
             if eventCounter >= nSkip and eventCounter < maxEventNum:
                 if not beginRunCalled:

@@ -44,6 +44,7 @@ class EventDataFrame(DummyModule):
 
     def processEvent(self, runNumber, eventNumber, eventRecord):
         self.df.updateDataFrame(eventRecord, eventNumber)
+        # print("Processing the DF....")
         # self.df.showDataFrame()
 
     def endRun(self, runNumber, runRecord):

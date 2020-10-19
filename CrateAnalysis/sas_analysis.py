@@ -73,8 +73,9 @@ def main(argv):
     xdefinitionL2 = LC3377Definition(slot3, channel3)
     ydefinitionL2 = LC3377Definition(slot4, channel4)
 
-    modules = (mod0, mod1, mod7, mod8, mod11)
     # modules = (mod0, mod1, mod7, mod8, mod11)
+    # modules = (mod0, mod1, mod7, mod8)
+    modules = (mod0, mod1, mod7, mod8, mod11)
 
     # processWithCuts(modules1, modules2, inputFiles)
     processDefault(modules, inputFiles)
