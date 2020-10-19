@@ -18,6 +18,15 @@ from MuonDataFrame import *
 'TDC_L2_L', 'TDC_L2_R', 'ADC', 'TDC' , 'numChannelsRead', 'L1_asym',
 'L2_asym', 'L1_TDC_sum', 'L2_TDC_sum', 'L1_TDC_diff', 'L2_TDC_diff'
 """
+"""
+Access data from HDF5
+# Access data store
+data_store = pd.HDFStore('processed_data.h5')
+
+# Retrieve data using key
+preprocessed_df = data_store['preprocessed_df']
+data_store.close()
+"""
 
 if __name__ == "__main__":
     try:
@@ -26,10 +35,11 @@ if __name__ == "__main__":
         print("No File passed / Invalid File")
 
     os.environ["MODIN_ENGINE"] = "ray"
-    mdfo = MuonDataFrame(ifile, "last")
+    mdfo = MuonDataFrame(ifile, "last", False)
     mdf = mdfo.events_df
-    mdfo.computeAssymetries()
-    mdfo.get2DHistogram()
+    mdfo.getAnaReport()
+    # mdfo.computeAssymetries()
+    # mdfo.get2DHistogram()
     # mdfo.getScatterPlot(["L1_asym", "L2_asym"])
     # mdfo.getScatterPlot(["L3_asym", "L4_asym"])
     # mdfo.getScatterPlot(["L1_asym", "L3_asym"])
