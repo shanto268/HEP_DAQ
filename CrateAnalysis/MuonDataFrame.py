@@ -44,6 +44,7 @@ from collections import defaultdict
 from multiprocessing import Pool
 from pandas_profiling import ProfileReport
 from Histo2d import Histo2D
+np.warnings.filterwarnings('ignore')
 """
 # Default Query Terms:
 'event_num', 'event_time', 'deadtime', 'ADC', 'TDC', 'Scaler'
@@ -256,6 +257,7 @@ class MuonDataFrame:
             d['ModDate'] = datetime.datetime.today()
 
         self.allLayerCorrelationPlots()
+        print("The report file {} has been created.".format(self.pdfName))
 
     def getAnaReport(self):
         self.getDeadtimePlot()
@@ -519,7 +521,7 @@ class MuonDataFrame:
     def getADCPlot(self):
         pass
 
-    def getNumLayersHitPlot(self, pdf):
+    def getNumLayersHitPlot(self, pdf=False):
         x = self.getHistogram("numLHit",
                               title="(Number of Layers Hit Per Event)",
                               pdf=pdf)
@@ -1059,7 +1061,7 @@ class MuonDataFrame:
         s = s.fillna(0)  # with 0s rather than NaNs
         for query in queries:
             s[query] = self.events_df[query]
-        ax = s.plot.hist(alpha=0.7, bins=nbins)
+        ax = s.plot.hist(alpha=0.6, bins=nbins)
         plt.title("Histogram of {} {}".format(str(queries), title))
         plt.show()
 
@@ -1161,8 +1163,10 @@ class MuonDataFrame:
 
     def getTrimmedHistogram(self, queryName, numStd, nbins=100):
         df_filtered = scrubbedDataFrame(self.events_df, queryName, numStd)
-        getHistogram(df_filtered, queryName, nbins,
-                     "(Events within {} std dev)".format(numStd))
+        getHistogram(df_filtered,
+                     queryName,
+                     title="(Events within {} std dev)".format(numStd),
+                     nbins=nbins)
 
     def getTrimmed2DHistogram(df, queryName, numStd, nbins=100):
         pass

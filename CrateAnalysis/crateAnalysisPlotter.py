@@ -34,11 +34,13 @@ if __name__ == "__main__":
     except:
         print("No File passed / Invalid File")
 
+    ifile = "processed_data/events_data_frame_800.ftr"
     os.environ["MODIN_ENGINE"] = "ray"
     mdfo = MuonDataFrame(ifile, "last", isNew=False)
     mdf = mdfo.events_df
+    mdfo.show()
     # mdfo.getAnaReport()
-    mdfo.generateAnaReport()
+    # mdfo.generateAnaReport()
     # mdfo.computeAssymetries()
     # mdfo.get2DHistogram()
     # mdfo.getScatterPlot(["L1_asym", "L2_asym"])

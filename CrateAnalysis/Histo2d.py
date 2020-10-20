@@ -59,7 +59,7 @@ class Histo2D:
         # print("self.xmax : {}".format(self.xmax))
         self.doRotate = rotate
         self.pdf = pdf
-        print(self.pdf)
+        # print(self.pdf)
         self.plot2DHist()
         self.endjob()
 
