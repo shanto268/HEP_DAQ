@@ -35,8 +35,9 @@ import numpy as np
 import pandas as pd
 import sys
 import os
-# import numba
+from matplotlib.backends.backend_pdf import PdfPages
 import itertools
+import datetime
 from collections import Counter
 from collections import OrderedDict
 from collections import defaultdict
@@ -184,10 +185,14 @@ class MuonDataFrame:
         self.nbins = 150
         self.quant_query_terms = []
         self.default_query_terms = [
-            'event_num', 'event_time', 'deadtime', 'ADC', 'TDC', 'Scaler'
+            'event_num', 'event_time', 'deadtime', 'ADC', 'TDC', 'SCh0',
+            'SCh1', 'SCh2', 'SCh3', 'SCh4', 'SCh5', 'SCh6', 'SCh7', 'SCh8',
+            'SCh9', 'SCh10', 'SCh11'
         ]
         self.query_terms = self.default_query_terms + self.quant_query_terms
         self.d1 = d1
+        self.pdfName = path.split(".")[0].split("/")[1] + ".pdf"
+        self.runNum = self.pdfName.split(".")[0].split("_")[-1]
         self.newFileName = path.split(".")[0].split("/")[0] + "/" + path.split(
             ".")[0].split("/")[1] + "_analyzed.ftr"
         if isNew:
@@ -203,86 +208,663 @@ class MuonDataFrame:
                                 explorative=True)
         profile.to_file("mdf.html")
 
-    def getAnaReport(self):
-        # self.getDeadtimePlot()
-        # self.getChannelPlots()
-        # self.getChannelSumPlots()
-        # self.getChannelDiffPlots()
-        # self.getAssymetry1DPlots()
-        # self.getNumLayersHitPlot()
-        self.get2DHistogram()
+    def generateAnaReport(self):
+        with PdfPages(self.pdfName) as pdf:
+            firstPage = plt.figure(figsize=(11.69, 8.27))
+            firstPage.clf()
+            txt = 'Analysis of Run: ' + self.runNum + '\n Time Created: ' + str(
+                datetime.datetime.today())
+            firstPage.text(0.5,
+                           0.5,
+                           txt,
+                           transform=firstPage.transFigure,
+                           size=24,
+                           ha="center")
+            pdf.savefig()
+            plt.close()
+            self.getDeadtimePlot(pdf=True)
+            pdf.savefig()
+            plt.close()
+            self.getChannelPlots(pdf=True)
+            pdf.savefig()
+            plt.close()
+            self.getChannelSumPlots(pdf=True)
+            pdf.savefig()
+            plt.close()
+            self.getChannelDiffPlots(pdf=True)
+            pdf.savefig()
+            plt.close()
+            self.getAssymetry1DPlots(pdf=True)
+            pdf.savefig()
+            plt.close()
+            self.getNumLayersHitPlot(pdf=True)
+            pdf.savefig()
+            plt.close()
+            self.getScalerPlots_header(pdf=True)
+            pdf.savefig()
+            plt.close()
+            self.getScalerPlots_channels(pdf=True)
+            pdf.savefig()
+            plt.close()
 
-    def getDeadtimePlot(self):
-        self.getHistogram("deadtime")
+            d = pdf.infodict()
+            d['Title'] = 'Prototype 1B Data Analysis'
+            d['Author'] = 'Sadman Ahmed Shanto'
+            d['Subject'] = 'Storing Analysis Results'
+            d['Keywords'] = 'Muon APDL'
+            d['CreationDate'] = datetime.datetime(2009, 11, 13)
+            d['ModDate'] = datetime.datetime.today()
+
+        self.allLayerCorrelationPlots()
+
+    def getAnaReport(self):
+        self.getDeadtimePlot()
+        self.getChannelPlots()
+        self.getChannelSumPlots()
+        self.getChannelDiffPlots()
+        self.getAssymetry1DPlots()
+        self.getNumLayersHitPlot()
+        self.allLayerCorrelationPlots()
+        self.getScalerPlots_header()
+        self.getScalerPlots_channels()
+
+    def getScalerPlots_channels(self, pdf=False, nbins=100):
+        fig, axes = plt.subplots(nrows=4, ncols=2)
+        plt.suptitle("Histogram of Scaler Readings (Ch 4 - 11)")
+        ax0, ax1, ax2, ax3, ax4, ax5, ax6, ax7 = axes.flatten()
+        ax0.hist(self.events_df['SCh4'], nbins, histtype='step')
+        s = self.events_df['SCh4']
+        mean, std, count = s.describe().values[1], s.describe(
+        ).values[2], s.describe().values[0]
+        textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}".format(
+            mean, std, count)
+        props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+        ax0.text(0.80,
+                 0.95,
+                 textstr,
+                 transform=ax0.transAxes,
+                 fontsize=5,
+                 verticalalignment='top',
+                 bbox=props)
+        ax0.set_title('Ch4 (1L)')
+        ax1.hist(self.events_df['SCh5'], nbins, histtype='step')
+        ax1.set_title('Ch5 (1R)')
+        s = self.events_df['SCh5']
+        mean, std, count = s.describe().values[1], s.describe(
+        ).values[2], s.describe().values[0]
+        textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}".format(
+            mean, std, count)
+        props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+        ax1.text(0.80,
+                 0.95,
+                 textstr,
+                 transform=ax1.transAxes,
+                 fontsize=5,
+                 verticalalignment='top',
+                 bbox=props)
+        ax2.hist(self.events_df['SCh6'], nbins, histtype='step')
+        ax2.set_title('Ch6 (2L)')
+        s = self.events_df['SCh6']
+        mean, std, count = s.describe().values[1], s.describe(
+        ).values[2], s.describe().values[0]
+        textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}".format(
+            mean, std, count)
+        props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+        ax2.text(0.80,
+                 0.95,
+                 textstr,
+                 transform=ax2.transAxes,
+                 fontsize=5,
+                 verticalalignment='top',
+                 bbox=props)
+        ax3.hist(self.events_df['SCh7'], nbins, histtype='step')
+        ax3.set_title('Ch7 (2R)')
+        s = self.events_df['SCh7']
+        mean, std, count = s.describe().values[1], s.describe(
+        ).values[2], s.describe().values[0]
+        textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}".format(
+            mean, std, count)
+        props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+        ax3.text(0.80,
+                 0.95,
+                 textstr,
+                 transform=ax3.transAxes,
+                 fontsize=5,
+                 verticalalignment='top',
+                 bbox=props)
+        ax4.hist(self.events_df['SCh8'], nbins, histtype='step')
+        ax4.set_title('Ch8 (3L)')
+        s = self.events_df['SCh8']
+        mean, std, count = s.describe().values[1], s.describe(
+        ).values[2], s.describe().values[0]
+        textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}".format(
+            mean, std, count)
+        props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+        ax4.text(0.80,
+                 0.95,
+                 textstr,
+                 transform=ax4.transAxes,
+                 fontsize=5,
+                 verticalalignment='top',
+                 bbox=props)
+        ax5.hist(self.events_df['SCh9'], nbins, histtype='step')
+        ax5.set_title('Ch9 (3R)')
+        s = self.events_df['SCh9']
+        mean, std, count = s.describe().values[1], s.describe(
+        ).values[2], s.describe().values[0]
+        textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}".format(
+            mean, std, count)
+        props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+        ax5.text(0.80,
+                 0.95,
+                 textstr,
+                 transform=ax5.transAxes,
+                 fontsize=5,
+                 verticalalignment='top',
+                 bbox=props)
+        ax6.hist(self.events_df['SCh10'], nbins, histtype='step')
+        ax6.set_title('Ch10 (4L)')
+        s = self.events_df['SCh10']
+        mean, std, count = s.describe().values[1], s.describe(
+        ).values[2], s.describe().values[0]
+        textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}".format(
+            mean, std, count)
+        props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+        ax6.text(0.80,
+                 0.95,
+                 textstr,
+                 transform=ax6.transAxes,
+                 fontsize=5,
+                 verticalalignment='top',
+                 bbox=props)
+        ax7.hist(self.events_df['SCh11'], nbins, histtype='step')
+        ax7.set_title('Ch11 (4R)')
+        s = self.events_df['SCh11']
+        mean, std, count = s.describe().values[1], s.describe(
+        ).values[2], s.describe().values[0]
+        textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}".format(
+            mean, std, count)
+        props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+        ax7.text(0.80,
+                 0.95,
+                 textstr,
+                 transform=ax7.transAxes,
+                 fontsize=5,
+                 verticalalignment='top',
+                 bbox=props)
+        fig.tight_layout()
+        if not pdf:
+            plt.show()
+        else:
+            return fig
+
+    def getScalerPlots_header(self, pdf=False, nbins=100):
+        fig, axes = plt.subplots(nrows=4, ncols=1)
+        plt.suptitle("Histogram of Scaler Readings (Ch 0 - 3)")
+        ax0, ax1, ax2, ax3 = axes.flatten()
+        ax0.hist(self.events_df['SCh0'], nbins, histtype='step')
+        s = self.events_df['SCh0']
+        mean, std, count = s.describe().values[1], s.describe(
+        ).values[2], s.describe().values[0]
+        textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}".format(
+            mean, std, count)
+        props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+        ax0.text(0.80,
+                 0.95,
+                 textstr,
+                 transform=ax0.transAxes,
+                 fontsize=5,
+                 verticalalignment='top',
+                 bbox=props)
+        ax0.set_title('Ch0')
+        ax1.hist(self.events_df['SCh1'], nbins, histtype='step')
+        ax1.set_title('Ch1')
+        s = self.events_df['SCh1']
+        mean, std, count = s.describe().values[1], s.describe(
+        ).values[2], s.describe().values[0]
+        textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}".format(
+            mean, std, count)
+        props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+        ax1.text(0.80,
+                 0.95,
+                 textstr,
+                 transform=ax1.transAxes,
+                 fontsize=5,
+                 verticalalignment='top',
+                 bbox=props)
+        ax2.hist(self.events_df['SCh2'], nbins, histtype='step')
+        ax2.set_title('Ch2')
+        s = self.events_df['SCh2']
+        mean, std, count = s.describe().values[1], s.describe(
+        ).values[2], s.describe().values[0]
+        textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}".format(
+            mean, std, count)
+        props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+        ax2.text(0.80,
+                 0.95,
+                 textstr,
+                 transform=ax2.transAxes,
+                 fontsize=5,
+                 verticalalignment='top',
+                 bbox=props)
+        ax3.hist(self.events_df['SCh3'], nbins, histtype='step')
+        ax3.set_title('Ch3')
+        s = self.events_df['SCh3']
+        mean, std, count = s.describe().values[1], s.describe(
+        ).values[2], s.describe().values[0]
+        textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}".format(
+            mean, std, count)
+        props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+        ax3.text(0.80,
+                 0.95,
+                 textstr,
+                 transform=ax3.transAxes,
+                 fontsize=5,
+                 verticalalignment='top',
+                 bbox=props)
+        fig.tight_layout()
+        if not pdf:
+            plt.show()
+        else:
+            return fig
+
+    def getAsymPlotFig(self, term1, term2):
+        xmin = -1
+        xmax = 1
+        ymin = -1
+        ymax = 1
+        nbins = 1000
+        x = self.get2DHistogram(self.events_df[term1].values,
+                                self.events_df[term2].values, "L1 vs L2",
+                                "Assymetry in X", "Assymetry in Y", xmin, xmax,
+                                ymin, ymax, nbins, True)
+        print(x)
+        return x
+
+    def allLayerCorrelationPlots(self):
+        xmin = -1
+        xmax = 1
+        ymin = -1
+        ymax = 1
+        nbins = 1000
+        self.get2DHistogram(self.events_df['asymL1'].values,
+                            self.events_df['asymL2'].values, "L1 vs L2",
+                            "Assymetry in X", "Assymetry in Y", xmin, xmax,
+                            ymin, ymax, nbins)
+        self.get2DHistogram(self.events_df['asymL3'].values,
+                            self.events_df['asymL4'].values, "L3 vs L4",
+                            "Assymetry in X", "Assymetry in Y", xmin, xmax,
+                            ymin, ymax, nbins)
+        self.get2DHistogram(self.events_df['asymL1'].values,
+                            self.events_df['asymL3'].values, "L1 vs L3",
+                            "Assymetry in X", "Assymetry in Y", xmin, xmax,
+                            ymin, ymax, nbins)
+        self.get2DHistogram(self.events_df['asymL2'].values,
+                            self.events_df['asymL4'].values, "L2 vs L4",
+                            "Assymetry in X", "Assymetry in Y", xmin, xmax,
+                            ymin, ymax, nbins)
+        self.get2DHistogram(self.events_df['asymL1'].values,
+                            self.events_df['asymL4'].values, "L1 vs L4",
+                            "Assymetry in X", "Assymetry in Y", xmin, xmax,
+                            ymin, ymax, nbins)
+        self.get2DHistogram(self.events_df['asymL2'].values,
+                            self.events_df['asymL3'].values, "L2 vs L3",
+                            "Assymetry in X", "Assymetry in Y", xmin, xmax,
+                            ymin, ymax, nbins)
+
+    def getDeadtimePlot(self, pdf=False):
+        x = self.getHistogram("deadtime", pdf=pdf)
+        return x
 
     def getADCPlot(self):
         pass
 
-    def getNumLayersHitPlot(self):
-        self.getHistogram("numLHit", title="(Number of Layers Hit Per Event)")
+    def getNumLayersHitPlot(self, pdf):
+        x = self.getHistogram("numLHit",
+                              title="(Number of Layers Hit Per Event)",
+                              pdf=pdf)
+        return x
 
-    def getChannelPlots(self):
+    def getChannelPlots(self, pdf=False, nbins=100):
         fig, axes = plt.subplots(nrows=2, ncols=4)
-        self.events_df['L1'].plot(ax=axes[0, 0],
-                                  title="Ch0",
-                                  kind="hist",
-                                  histtype='step')
-        self.events_df['R1'].plot(ax=axes[1, 0],
-                                  title="Ch1",
-                                  kind="hist",
-                                  histtype='step')
-        self.events_df['L2'].plot(ax=axes[0, 1],
-                                  title="Ch3",
-                                  kind="hist",
-                                  histtype='step')
-        self.events_df['R2'].plot(ax=axes[1, 1],
-                                  title="Ch4",
-                                  kind="hist",
-                                  histtype='step')
-        self.events_df['L3'].plot(ax=axes[0, 2],
-                                  title="Ch6",
-                                  kind="hist",
-                                  histtype='step')
-        self.events_df['R3'].plot(ax=axes[1, 2],
-                                  title="Ch7",
-                                  kind="hist",
-                                  histtype='step')
-        self.events_df['L4'].plot(ax=axes[0, 3],
-                                  title="Ch9",
-                                  kind="hist",
-                                  histtype='step')
-        self.events_df['R4'].plot(ax=axes[1, 3],
-                                  title="Ch10",
-                                  kind="hist",
-                                  histtype='step')
-        plt.show()
+        plt.suptitle("Histogram of All Individual Channels")
+        ax0, ax1, ax2, ax3, ax4, ax5, ax6, ax7 = axes.flatten()
+        ax0.hist(self.events_df['L1'], nbins, histtype='step')
+        s = self.events_df['L1']
+        mean, std, count = s.describe().values[1], s.describe(
+        ).values[2], s.describe().values[0]
+        textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}".format(
+            mean, std, count)
+        props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+        ax0.text(0.80,
+                 0.95,
+                 textstr,
+                 transform=ax0.transAxes,
+                 fontsize=5,
+                 verticalalignment='top',
+                 bbox=props)
+        ax0.set_title('Ch0')
+        ax1.hist(self.events_df['R1'], nbins, histtype='step')
+        ax1.set_title('Ch1')
+        s = self.events_df['R1']
+        mean, std, count = s.describe().values[1], s.describe(
+        ).values[2], s.describe().values[0]
+        textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}".format(
+            mean, std, count)
+        props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+        ax1.text(0.80,
+                 0.95,
+                 textstr,
+                 transform=ax1.transAxes,
+                 fontsize=5,
+                 verticalalignment='top',
+                 bbox=props)
+        ax2.hist(self.events_df['L2'], nbins, histtype='step')
+        ax2.set_title('Ch3')
+        s = self.events_df['L2']
+        mean, std, count = s.describe().values[1], s.describe(
+        ).values[2], s.describe().values[0]
+        textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}".format(
+            mean, std, count)
+        props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+        ax2.text(0.80,
+                 0.95,
+                 textstr,
+                 transform=ax2.transAxes,
+                 fontsize=5,
+                 verticalalignment='top',
+                 bbox=props)
+        ax3.hist(self.events_df['R2'], nbins, histtype='step')
+        ax3.set_title('Ch4')
+        s = self.events_df['R2']
+        mean, std, count = s.describe().values[1], s.describe(
+        ).values[2], s.describe().values[0]
+        textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}".format(
+            mean, std, count)
+        props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+        ax3.text(0.80,
+                 0.95,
+                 textstr,
+                 transform=ax3.transAxes,
+                 fontsize=5,
+                 verticalalignment='top',
+                 bbox=props)
+        ax4.hist(self.events_df['L3'], nbins, histtype='step')
+        ax4.set_title('Ch6')
+        s = self.events_df['L3']
+        mean, std, count = s.describe().values[1], s.describe(
+        ).values[2], s.describe().values[0]
+        textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}".format(
+            mean, std, count)
+        props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+        ax4.text(0.80,
+                 0.95,
+                 textstr,
+                 transform=ax4.transAxes,
+                 fontsize=5,
+                 verticalalignment='top',
+                 bbox=props)
+        ax5.hist(self.events_df['R3'], nbins, histtype='step')
+        ax5.set_title('Ch7')
+        s = self.events_df['R3']
+        mean, std, count = s.describe().values[1], s.describe(
+        ).values[2], s.describe().values[0]
+        textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}".format(
+            mean, std, count)
+        props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+        ax5.text(0.80,
+                 0.95,
+                 textstr,
+                 transform=ax5.transAxes,
+                 fontsize=5,
+                 verticalalignment='top',
+                 bbox=props)
+        ax6.hist(self.events_df['L4'], nbins, histtype='step')
+        ax6.set_title('Ch9')
+        s = self.events_df['L4']
+        mean, std, count = s.describe().values[1], s.describe(
+        ).values[2], s.describe().values[0]
+        textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}".format(
+            mean, std, count)
+        props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+        ax6.text(0.80,
+                 0.95,
+                 textstr,
+                 transform=ax6.transAxes,
+                 fontsize=5,
+                 verticalalignment='top',
+                 bbox=props)
+        ax7.hist(self.events_df['R4'], nbins, histtype='step')
+        ax7.set_title('Ch10')
+        s = self.events_df['L2']
+        mean, std, count = s.describe().values[1], s.describe(
+        ).values[2], s.describe().values[0]
+        textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}".format(
+            mean, std, count)
+        props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+        ax7.text(0.80,
+                 0.95,
+                 textstr,
+                 transform=ax7.transAxes,
+                 fontsize=5,
+                 verticalalignment='top',
+                 bbox=props)
+        fig.tight_layout()
+        if not pdf:
+            plt.show()
+        else:
+            return fig
 
-    def getChannelSumPlots(self):
-        df = pd.DataFrame()
-        fig, axes = plt.subplots(nrows=1, ncols=4)
-        self.events_df['sumL1'].plot(ax=axes[0], title="L1+R1", kind="hist")
-        self.events_df['sumL2'].plot(ax=axes[1], title="L2+R2", kind="hist")
-        self.events_df['sumL3'].plot(ax=axes[2], title="L3+R3", kind="hist")
-        self.events_df['sumL4'].plot(ax=axes[3], title="L4+R4", kind="hist")
-        plt.show()
-
-    def getChannelDiffPlots(self):
-        df = pd.DataFrame()
-        fig, axes = plt.subplots(nrows=1, ncols=4)
-        self.events_df['diffL1'].plot(ax=axes[0], title="L1-R1", kind="hist")
-        self.events_df['diffL2'].plot(ax=axes[1], title="L2-R2", kind="hist")
-        self.events_df['diffL3'].plot(ax=axes[2], title="L3-R3", kind="hist")
-        self.events_df['diffL4'].plot(ax=axes[3], title="L4-R4", kind="hist")
-        plt.show()
-
-    def getAssymetry1DPlots(self):
-        df = pd.DataFrame()
+    def getChannelSumPlots(self, pdf=False, nbins=100):
         fig, axes = plt.subplots(nrows=4, ncols=1)
-        self.events_df['asymL1'].plot(ax=axes[0], title="L1_asym", kind="hist")
-        self.events_df['asymL2'].plot(ax=axes[1], title="L2_asym", kind="hist")
-        self.events_df['asymL3'].plot(ax=axes[2], title="L3_asym", kind="hist")
-        self.events_df['asymL4'].plot(ax=axes[3], title="L4_asym", kind="hist")
-        plt.show()
+        plt.suptitle("Histogram of Sum of Channels in their Respective Trays")
+        ax0, ax1, ax2, ax3 = axes.flatten()
+        ax0.hist(self.events_df['sumL1'], nbins, histtype='step')
+        s = self.events_df['sumL1']
+        mean, std, count = s.describe().values[1], s.describe(
+        ).values[2], s.describe().values[0]
+        textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}".format(
+            mean, std, count)
+        props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+        ax0.text(0.80,
+                 0.95,
+                 textstr,
+                 transform=ax0.transAxes,
+                 fontsize=5,
+                 verticalalignment='top',
+                 bbox=props)
+        ax0.set_title('Tray 1')
+        ax1.hist(self.events_df['sumL2'], nbins, histtype='step')
+        ax1.set_title('Tray 2')
+        s = self.events_df['sumL2']
+        mean, std, count = s.describe().values[1], s.describe(
+        ).values[2], s.describe().values[0]
+        textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}".format(
+            mean, std, count)
+        props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+        ax1.text(0.80,
+                 0.95,
+                 textstr,
+                 transform=ax1.transAxes,
+                 fontsize=5,
+                 verticalalignment='top',
+                 bbox=props)
+        ax2.hist(self.events_df['sumL3'], nbins, histtype='step')
+        ax2.set_title('Tray 3')
+        s = self.events_df['sumL3']
+        mean, std, count = s.describe().values[1], s.describe(
+        ).values[2], s.describe().values[0]
+        textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}".format(
+            mean, std, count)
+        props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+        ax2.text(0.80,
+                 0.95,
+                 textstr,
+                 transform=ax2.transAxes,
+                 fontsize=5,
+                 verticalalignment='top',
+                 bbox=props)
+        ax3.hist(self.events_df['sumL4'], nbins, histtype='step')
+        ax3.set_title('Tray 4')
+        s = self.events_df['sumL4']
+        mean, std, count = s.describe().values[1], s.describe(
+        ).values[2], s.describe().values[0]
+        textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}".format(
+            mean, std, count)
+        props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+        ax3.text(0.80,
+                 0.95,
+                 textstr,
+                 transform=ax3.transAxes,
+                 fontsize=5,
+                 verticalalignment='top',
+                 bbox=props)
+        fig.tight_layout()
+        if not pdf:
+            plt.show()
+        else:
+            return fig
+
+    def getChannelDiffPlots(self, pdf=False, nbins=100):
+        fig, axes = plt.subplots(nrows=4, ncols=1)
+        plt.suptitle(
+            "Histogram of Difference of Channels in their Respective Trays")
+        ax0, ax1, ax2, ax3 = axes.flatten()
+        ax0.hist(self.events_df['diffL1'], nbins, histtype='step')
+        s = self.events_df['diffL1']
+        mean, std, count = s.describe().values[1], s.describe(
+        ).values[2], s.describe().values[0]
+        textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}".format(
+            mean, std, count)
+        props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+        ax0.text(0.80,
+                 0.95,
+                 textstr,
+                 transform=ax0.transAxes,
+                 fontsize=5,
+                 verticalalignment='top',
+                 bbox=props)
+        ax0.set_title('Tray 1')
+        ax1.hist(self.events_df['diffL2'], nbins, histtype='step')
+        ax1.set_title('Tray 2')
+        s = self.events_df['diffL2']
+        mean, std, count = s.describe().values[1], s.describe(
+        ).values[2], s.describe().values[0]
+        textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}".format(
+            mean, std, count)
+        props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+        ax1.text(0.80,
+                 0.95,
+                 textstr,
+                 transform=ax1.transAxes,
+                 fontsize=5,
+                 verticalalignment='top',
+                 bbox=props)
+        ax2.hist(self.events_df['diffL3'], nbins, histtype='step')
+        ax2.set_title('Tray 3')
+        s = self.events_df['diffL3']
+        mean, std, count = s.describe().values[1], s.describe(
+        ).values[2], s.describe().values[0]
+        textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}".format(
+            mean, std, count)
+        props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+        ax2.text(0.80,
+                 0.95,
+                 textstr,
+                 transform=ax2.transAxes,
+                 fontsize=5,
+                 verticalalignment='top',
+                 bbox=props)
+        ax3.hist(self.events_df['diffL4'], nbins, histtype='step')
+        ax3.set_title('Tray 4')
+        s = self.events_df['diffL4']
+        mean, std, count = s.describe().values[1], s.describe(
+        ).values[2], s.describe().values[0]
+        textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}".format(
+            mean, std, count)
+        props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+        ax3.text(0.80,
+                 0.95,
+                 textstr,
+                 transform=ax3.transAxes,
+                 fontsize=5,
+                 verticalalignment='top',
+                 bbox=props)
+        fig.tight_layout()
+        if not pdf:
+            plt.show()
+        else:
+            return fig
+
+    def getAssymetry1DPlots(self, pdf=False, nbins=100):
+        fig, axes = plt.subplots(nrows=4, ncols=1)
+        plt.suptitle("Histogram of Assymetry of each Tray")
+        ax0, ax1, ax2, ax3 = axes.flatten()
+        ax0.hist(self.events_df['asymL1'], nbins, histtype='step')
+        s = self.events_df['asymL1']
+        mean, std, count = s.describe().values[1], s.describe(
+        ).values[2], s.describe().values[0]
+        textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}".format(
+            mean, std, count)
+        props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+        ax0.text(0.80,
+                 0.95,
+                 textstr,
+                 transform=ax0.transAxes,
+                 fontsize=5,
+                 verticalalignment='top',
+                 bbox=props)
+        ax0.set_title('Tray 1')
+        ax1.hist(self.events_df['asymL2'], nbins, histtype='step')
+        ax1.set_title('Tray 2')
+        s = self.events_df['asymL2']
+        mean, std, count = s.describe().values[1], s.describe(
+        ).values[2], s.describe().values[0]
+        textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}".format(
+            mean, std, count)
+        props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+        ax1.text(0.80,
+                 0.95,
+                 textstr,
+                 transform=ax1.transAxes,
+                 fontsize=5,
+                 verticalalignment='top',
+                 bbox=props)
+        ax2.hist(self.events_df['asymL3'], nbins, histtype='step')
+        ax2.set_title('Tray 3')
+        s = self.events_df['asymL3']
+        mean, std, count = s.describe().values[1], s.describe(
+        ).values[2], s.describe().values[0]
+        textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}".format(
+            mean, std, count)
+        props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+        ax2.text(0.80,
+                 0.95,
+                 textstr,
+                 transform=ax2.transAxes,
+                 fontsize=5,
+                 verticalalignment='top',
+                 bbox=props)
+        ax3.hist(self.events_df['asymL4'], nbins, histtype='step')
+        ax3.set_title('Tray 4')
+        s = self.events_df['asymL4']
+        mean, std, count = s.describe().values[1], s.describe(
+        ).values[2], s.describe().values[0]
+        textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}".format(
+            mean, std, count)
+        props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+        ax3.text(0.80,
+                 0.95,
+                 textstr,
+                 transform=ax3.transAxes,
+                 fontsize=5,
+                 verticalalignment='top',
+                 bbox=props)
+        fig.tight_layout()
+        if not pdf:
+            plt.show()
+        else:
+            return fig
 
     def getDataFrame(self, df):
         return parallelize_dataframe(df, self.completeDataFrame,
@@ -423,13 +1005,10 @@ class MuonDataFrame:
         ev = self.createTDCValues(tdc_hit, event, criteria)
         return tdc_hit, ev
 
-    def getHistogram(
-        self,
-        queryName,
-        title="",
-        nbins=100,
-    ):
+    def getHistogram(self, queryName, title="", nbins=100, pdf=False):
+
         s = self.events_df[queryName]
+        # plt.figure(figsize=(3, 3))
         ax = s.plot.hist(alpha=0.7, bins=nbins)
         mean, std, count = s.describe().values[1], s.describe(
         ).values[2], s.describe().values[0]
@@ -444,7 +1023,10 @@ class MuonDataFrame:
                 verticalalignment='top',
                 bbox=props)
         ax.set_title("Histogram of {} {}".format(queryName, title))
-        plt.show()
+        if not pdf:
+            plt.show()
+        else:
+            return ax
 
     def getKDE(self, queryName, nbins=100):
         s = self.events_df[queryName].to_numpy()
@@ -481,32 +1063,24 @@ class MuonDataFrame:
         plt.title("Histogram of {} {}".format(str(queries), title))
         plt.show()
 
-    def get2DHistogram(self, nbins=250):
-        # L1asym = lambda eventRecord: eventRecord["L2_asym"]
-        # L2asym = lambda eventRecord: eventRecord["L4_asym"]
-        L1asym = lambda eventRecord: eventRecord["L2"]
-        L2asym = lambda eventRecord: eventRecord["R2"]
-        hitMap = Histo2D("hitMap", "Hit Map", "Asymmetry in X", nbins, -160.0,
-                         160.0, L1asym, "Asymmetry in Y", nbins, -160.0, 160.0,
-                         L2asym)
-        for index, row in self.events_df.iterrows():
-            hitMap.processEvent(row)
-        hitMap.endjob()
-
-    # def get2DHistogram(df, queries, nbibs=1000, title=""):
-    # x = df[queries[0]].to_numpy()
-    # y = df[queries[1]].to_numpy()
-    # x = dropna(x)
-    # y = dropna(y)
-    # while (len(x) != len(y)):
-    # if (len(x) > len(y)):
-    # x = x[:-1]
-    # else:
-    # y = y[:-1]
-    # plt.hist2d(x, y)
-    # plt.title("2D Histogram of {} against {} {}".format(
-    # queries[0], queries[1], title))
-    # plt.show()
+    def get2DHistogram(self,
+                       xvals,
+                       yvals,
+                       title,
+                       xlabel,
+                       ylabel,
+                       xmin,
+                       xmax,
+                       ymin,
+                       ymax,
+                       nbins=150,
+                       pdf=False):
+        if not pdf:
+            Histo2D(title.replace(" ", ""), title, xlabel, nbins, xmin, xmax,
+                    xvals, ylabel, nbins, ymin, ymax, yvals, pdf)
+        else:
+            return Histo2D(title.replace(" ", ""), title, xlabel, nbins, xmin,
+                           xmax, xvals, ylabel, nbins, ymin, ymax, yvals, pdf)
 
     def getFilteredEvents(self, conditions):
         df = self.events_df

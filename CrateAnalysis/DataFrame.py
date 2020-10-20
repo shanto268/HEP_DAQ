@@ -2,6 +2,7 @@ import pandas as pd
 # import modin.pandas as pd
 import feather
 from LC3377 import *
+import time
 
 
 class DataFrame:
@@ -67,7 +68,18 @@ class DataFrame:
         return {'deadTime': self.deadTime}
 
     def saveDataFrame(self):
-        print("Saving the DataFrame....")
+        start_time = time.time()
+        # print("--- %s seconds ---" % (time.time() - start_time))
+        # print("Saving the DataFrame....")
         self.df0 = pd.DataFrame.from_dict(self.data_dict)
+        self.df0[[
+            'SCh0', 'SCh1', 'SCh2', 'SCh3', 'SCh4', 'SCh5', 'SCh6', 'SCh7',
+            'SCh8', 'SCh9', 'SCh10', 'SCh11'
+        ]] = pd.DataFrame(
+            self.df0['Scaler'].to_list(),
+            index=self.df0.index,
+        )
+        self.df0.drop('Scaler', axis=1, inplace=True)
+        # self.showDataFrame()
         feather.write_dataframe(self.df0, self.path)
         # self.df0.to_feather(self.path)
