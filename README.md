@@ -11,20 +11,6 @@ CAEN C111C CAMAC Crate Controller Technical Information Manual, file
 name "C111C_user_manual_rev10.pdf". Functional descriptions of various
 CAMAC modules are available on the web.
 
-
-## Directory and Important Files
-The *CrateCode/* directory contains all the data files (*.bin). The *CrateAnalysis/* contains the analysis code (myAnalysisExample.py).
-
-## Example Usage
-The arguments are *fileToStoreRunTimeData* and *dataFileGeneratedByCAMAC* 
-
-```bash
-python myAnalysisExample.py junk ../CrateCode/run318.bin
-```
-If running in SPyder/Ipython:
-
-```python
-%run ./myAnalysisExample.py junk ../CrateCode/run318.bin
-hitMap.redraw(0,15) #code to fix the z-axis limit
-```
-
+## Tutorial Notebook
+This notebook explains the analysis API and usage.
+[Notebook](CrateAnalysis/MuonAnalysisDoc.ipynb)
