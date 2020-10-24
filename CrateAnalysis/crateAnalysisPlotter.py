@@ -22,9 +22,10 @@ if __name__ == "__main__":
 
     mdfo = MuonDataFrame(ifile, isNew=iisNew, d1="last")
     mdf = mdfo.events_df
+    mdfo.gui()
     # mdfo.show()
     # mdfo.getAnaReport()
-    mdfo.generateAnaReport()
+    # mdfo.generateAnaReport()
     # mdfo.computeAssymetries()
     # mdfo.get2DHistogram()
     # mdfo.getScatterPlot(["L1_asym", "L2_asym"])

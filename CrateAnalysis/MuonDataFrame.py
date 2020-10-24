@@ -33,7 +33,7 @@ from collections import defaultdict
 from multiprocessing import Pool
 from pandas_profiling import ProfileReport
 from Histo2d import Histo2D
-from pandasgui import show
+from muondataframegui import show
 from PIL import Image
 from PyPDF2 import PdfFileMerger
 
