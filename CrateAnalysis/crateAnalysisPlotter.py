@@ -31,16 +31,18 @@ data_store.close()
 if __name__ == "__main__":
     try:
         ifile = sys.argv[1]
+        iisNew = sys.argv[2]
     except:
         print("No File passed / Invalid File")
+        iisNew = False
+        print("\nAssuming the file has been analyzed before.")
 
-    ifile = "processed_data/events_data_frame_800.ftr"
     os.environ["MODIN_ENGINE"] = "ray"
-    mdfo = MuonDataFrame(ifile, "last", isNew=False)
+    mdfo = MuonDataFrame(ifile, isNew=iisNew, d1="last")
     mdf = mdfo.events_df
-    mdfo.show()
+    # mdfo.show()
     # mdfo.getAnaReport()
-    # mdfo.generateAnaReport()
+    mdfo.generateAnaReport()
     # mdfo.computeAssymetries()
     # mdfo.get2DHistogram()
     # mdfo.getScatterPlot(["L1_asym", "L2_asym"])

@@ -11,17 +11,6 @@ __email__ = "sadman-ahmed.shanto@ttu.edu"
 """"
 To DO:
     - Methods for generating report (pdf)
-    - pd.HDFStore method
-    - Vectorize all DF columns
-    - Use of numba
-    - Use of evals when possible
-        - Methods for all Plots
-            - histo of layers hit
-            - histo of tdc hits per event
-            - ADC
-            - add histo info on graph
-            - method for histo individual layer operations/assymetry
-            - scaler histo of all elements in the list
     - Parallelize the following tasks:
         - Generate Report
         - Make a copy of this new DF and save it as a .ftr with new name corresponding to decision D1
@@ -44,6 +33,9 @@ from collections import defaultdict
 from multiprocessing import Pool
 from pandas_profiling import ProfileReport
 from Histo2d import Histo2D
+from pandasgui import show
+# from PIL import Image
+
 np.warnings.filterwarnings('ignore')
 """
 # Default Query Terms:
@@ -146,7 +138,7 @@ def scrubbedDataFrame(df, queryName, numStd):
     return df_filtered
 
 
-def getHistogram(df, queryName, title="", nbins=100):
+def getHistogram(df, queryName, title="", nbins=200):
     s = df[queryName]
     ax = s.plot.hist(alpha=0.7, bins=nbins, histtype='step')
     mean, std, count = s.describe().values[1], s.describe(
@@ -164,7 +156,7 @@ def getHistogram(df, queryName, title="", nbins=100):
     plt.show()
 
 
-def getFilteredHistogram(df, queryName, filter, nbins=100, title=""):
+def getFilteredHistogram(df, queryName, filter, nbins=200, title=""):
     df.hist(column=queryName, bins=nbins, by=filter, histtype='step')
     plt.suptitle("Histograms of {} grouped by {} {}".format(
         queryName, filter, title))
@@ -173,7 +165,7 @@ def getFilteredHistogram(df, queryName, filter, nbins=100, title=""):
 
 
 class MuonDataFrame:
-    def __init__(self, path, d1="last", isNew=True):
+    def __init__(self, path, isNew, d1="last"):
         """
         Initialize the MuonDataFrame
 
@@ -181,7 +173,6 @@ class MuonDataFrame:
         :param d1 [string]: type of decision to be made on multiTDC events (acceptable terms are "last", "first", "min", and "max")
                             default value = last
         """
-
         self.events_df = pd.read_feather(path, use_threads=True)
         self.nbins = 150
         self.quant_query_terms = []
@@ -194,6 +185,7 @@ class MuonDataFrame:
         self.d1 = d1
         self.pdfName = path.split(".")[0].split("/")[1] + ".pdf"
         self.runNum = self.pdfName.split(".")[0].split("_")[-1]
+        self.imagelist = []
         self.newFileName = path.split(".")[0].split("/")[0] + "/" + path.split(
             ".")[0].split("/")[1] + "_analyzed.ftr"
         if isNew:
@@ -209,8 +201,10 @@ class MuonDataFrame:
                                 explorative=True)
         profile.to_file("mdf.html")
 
-    def generateAnaReport(self):
-        with PdfPages(self.pdfName) as pdf:
+    def generateAnaReport(self, pdfName=""):
+        if pdfName == "":
+            pdfName = self.pdfName
+        with PdfPages(pdfName) as pdf:
             firstPage = plt.figure(figsize=(11.69, 8.27))
             firstPage.clf()
             txt = 'Analysis of Run: ' + self.runNum + '\n Time Created: ' + str(
@@ -247,6 +241,9 @@ class MuonDataFrame:
             self.getScalerPlots_channels(pdf=True)
             pdf.savefig()
             plt.close()
+            # self.allLayerCorrelationPlots(pdfv=True)
+            # pdf.savefig(dpi=199)
+            # plt.close()
 
             d = pdf.infodict()
             d['Title'] = 'Prototype 1B Data Analysis'
@@ -257,7 +254,10 @@ class MuonDataFrame:
             d['ModDate'] = datetime.datetime.today()
 
         self.allLayerCorrelationPlots()
-        print("The report file {} has been created.".format(self.pdfName))
+        print("The report file {} has been created.".format(pdfName))
+
+    def gui(self):
+        show(self.events_df, settings={'block': True})
 
     def getAnaReport(self):
         self.getDeadtimePlot()
@@ -270,7 +270,7 @@ class MuonDataFrame:
         self.getScalerPlots_header()
         self.getScalerPlots_channels()
 
-    def getScalerPlots_channels(self, pdf=False, nbins=100):
+    def getScalerPlots_channels(self, pdf=False, nbins=200):
         fig, axes = plt.subplots(nrows=4, ncols=2)
         plt.suptitle("Histogram of Scaler Readings (Ch 4 - 11)")
         ax0, ax1, ax2, ax3, ax4, ax5, ax6, ax7 = axes.flatten()
@@ -400,7 +400,7 @@ class MuonDataFrame:
         else:
             return fig
 
-    def getScalerPlots_header(self, pdf=False, nbins=100):
+    def getScalerPlots_header(self, pdf=False, nbins=200):
         fig, axes = plt.subplots(nrows=4, ncols=1)
         plt.suptitle("Histogram of Scaler Readings (Ch 0 - 3)")
         ax0, ax1, ax2, ax3 = axes.flatten()
@@ -483,36 +483,78 @@ class MuonDataFrame:
         print(x)
         return x
 
-    def allLayerCorrelationPlots(self):
+    def allLayerCorrelationPlots(self, pdfv=False):
         xmin = -1
         xmax = 1
         ymin = -1
         ymax = 1
         nbins = 1000
         self.get2DHistogram(self.events_df['asymL1'].values,
-                            self.events_df['asymL2'].values, "L1 vs L2",
-                            "Assymetry in X", "Assymetry in Y", xmin, xmax,
-                            ymin, ymax, nbins)
+                            self.events_df['asymL2'].values,
+                            "L1 vs L2",
+                            "Assymetry in X",
+                            "Assymetry in Y",
+                            xmin,
+                            xmax,
+                            ymin,
+                            ymax,
+                            nbins,
+                            pdf=pdfv)
         self.get2DHistogram(self.events_df['asymL3'].values,
-                            self.events_df['asymL4'].values, "L3 vs L4",
-                            "Assymetry in X", "Assymetry in Y", xmin, xmax,
-                            ymin, ymax, nbins)
+                            self.events_df['asymL4'].values,
+                            "L3 vs L4",
+                            "Assymetry in X",
+                            "Assymetry in Y",
+                            xmin,
+                            xmax,
+                            ymin,
+                            ymax,
+                            nbins,
+                            pdf=pdfv)
         self.get2DHistogram(self.events_df['asymL1'].values,
-                            self.events_df['asymL3'].values, "L1 vs L3",
-                            "Assymetry in X", "Assymetry in Y", xmin, xmax,
-                            ymin, ymax, nbins)
+                            self.events_df['asymL3'].values,
+                            "L1 vs L3",
+                            "Assymetry in X",
+                            "Assymetry in Y",
+                            xmin,
+                            xmax,
+                            ymin,
+                            ymax,
+                            nbins,
+                            pdf=pdfv)
         self.get2DHistogram(self.events_df['asymL2'].values,
-                            self.events_df['asymL4'].values, "L2 vs L4",
-                            "Assymetry in X", "Assymetry in Y", xmin, xmax,
-                            ymin, ymax, nbins)
+                            self.events_df['asymL4'].values,
+                            "L2 vs L4",
+                            "Assymetry in X",
+                            "Assymetry in Y",
+                            xmin,
+                            xmax,
+                            ymin,
+                            ymax,
+                            nbins,
+                            pdf=pdfv)
         self.get2DHistogram(self.events_df['asymL1'].values,
-                            self.events_df['asymL4'].values, "L1 vs L4",
-                            "Assymetry in X", "Assymetry in Y", xmin, xmax,
-                            ymin, ymax, nbins)
+                            self.events_df['asymL4'].values,
+                            "L1 vs L4",
+                            "Assymetry in X",
+                            "Assymetry in Y",
+                            xmin,
+                            xmax,
+                            ymin,
+                            ymax,
+                            nbins,
+                            pdf=pdfv)
         self.get2DHistogram(self.events_df['asymL2'].values,
-                            self.events_df['asymL3'].values, "L2 vs L3",
-                            "Assymetry in X", "Assymetry in Y", xmin, xmax,
-                            ymin, ymax, nbins)
+                            self.events_df['asymL3'].values,
+                            "L2 vs L3",
+                            "Assymetry in X",
+                            "Assymetry in Y",
+                            xmin,
+                            xmax,
+                            ymin,
+                            ymax,
+                            nbins,
+                            pdf=pdfv)
 
     def getDeadtimePlot(self, pdf=False):
         x = self.getHistogram("deadtime", pdf=pdf)
@@ -527,11 +569,12 @@ class MuonDataFrame:
                               pdf=pdf)
         return x
 
-    def getChannelPlots(self, pdf=False, nbins=100):
+    def getChannelPlots(self, pdf=False, nbins=200):
         fig, axes = plt.subplots(nrows=2, ncols=4)
         plt.suptitle("Histogram of All Individual Channels")
         ax0, ax1, ax2, ax3, ax4, ax5, ax6, ax7 = axes.flatten()
         ax0.hist(self.events_df['L1'], nbins, histtype='step')
+        ax0.set_xlim([0, 200])
         s = self.events_df['L1']
         mean, std, count = s.describe().values[1], s.describe(
         ).values[2], s.describe().values[0]
@@ -547,6 +590,7 @@ class MuonDataFrame:
                  bbox=props)
         ax0.set_title('Ch0')
         ax1.hist(self.events_df['R1'], nbins, histtype='step')
+        ax1.set_xlim([0, 200])
         ax1.set_title('Ch1')
         s = self.events_df['R1']
         mean, std, count = s.describe().values[1], s.describe(
@@ -563,6 +607,7 @@ class MuonDataFrame:
                  bbox=props)
         ax2.hist(self.events_df['L2'], nbins, histtype='step')
         ax2.set_title('Ch3')
+        ax2.set_xlim([0, 200])
         s = self.events_df['L2']
         mean, std, count = s.describe().values[1], s.describe(
         ).values[2], s.describe().values[0]
@@ -577,6 +622,7 @@ class MuonDataFrame:
                  verticalalignment='top',
                  bbox=props)
         ax3.hist(self.events_df['R2'], nbins, histtype='step')
+        ax3.set_xlim([0, 200])
         ax3.set_title('Ch4')
         s = self.events_df['R2']
         mean, std, count = s.describe().values[1], s.describe(
@@ -592,6 +638,7 @@ class MuonDataFrame:
                  verticalalignment='top',
                  bbox=props)
         ax4.hist(self.events_df['L3'], nbins, histtype='step')
+        ax4.set_xlim([0, 200])
         ax4.set_title('Ch6')
         s = self.events_df['L3']
         mean, std, count = s.describe().values[1], s.describe(
@@ -607,6 +654,7 @@ class MuonDataFrame:
                  verticalalignment='top',
                  bbox=props)
         ax5.hist(self.events_df['R3'], nbins, histtype='step')
+        ax5.set_xlim([0, 200])
         ax5.set_title('Ch7')
         s = self.events_df['R3']
         mean, std, count = s.describe().values[1], s.describe(
@@ -622,6 +670,7 @@ class MuonDataFrame:
                  verticalalignment='top',
                  bbox=props)
         ax6.hist(self.events_df['L4'], nbins, histtype='step')
+        ax6.set_xlim([0, 200])
         ax6.set_title('Ch9')
         s = self.events_df['L4']
         mean, std, count = s.describe().values[1], s.describe(
@@ -637,6 +686,7 @@ class MuonDataFrame:
                  verticalalignment='top',
                  bbox=props)
         ax7.hist(self.events_df['R4'], nbins, histtype='step')
+        ax7.set_xlim([0, 200])
         ax7.set_title('Ch10')
         s = self.events_df['L2']
         mean, std, count = s.describe().values[1], s.describe(
@@ -657,11 +707,12 @@ class MuonDataFrame:
         else:
             return fig
 
-    def getChannelSumPlots(self, pdf=False, nbins=100):
+    def getChannelSumPlots(self, pdf=False, nbins=200):
         fig, axes = plt.subplots(nrows=4, ncols=1)
         plt.suptitle("Histogram of Sum of Channels in their Respective Trays")
         ax0, ax1, ax2, ax3 = axes.flatten()
         ax0.hist(self.events_df['sumL1'], nbins, histtype='step')
+        ax0.set_xlim([150, 250])
         s = self.events_df['sumL1']
         mean, std, count = s.describe().values[1], s.describe(
         ).values[2], s.describe().values[0]
@@ -677,6 +728,7 @@ class MuonDataFrame:
                  bbox=props)
         ax0.set_title('Tray 1')
         ax1.hist(self.events_df['sumL2'], nbins, histtype='step')
+        ax1.set_xlim([150, 250])
         ax1.set_title('Tray 2')
         s = self.events_df['sumL2']
         mean, std, count = s.describe().values[1], s.describe(
@@ -692,6 +744,7 @@ class MuonDataFrame:
                  verticalalignment='top',
                  bbox=props)
         ax2.hist(self.events_df['sumL3'], nbins, histtype='step')
+        ax2.set_xlim([150, 250])
         ax2.set_title('Tray 3')
         s = self.events_df['sumL3']
         mean, std, count = s.describe().values[1], s.describe(
@@ -707,6 +760,7 @@ class MuonDataFrame:
                  verticalalignment='top',
                  bbox=props)
         ax3.hist(self.events_df['sumL4'], nbins, histtype='step')
+        ax3.set_xlim([150, 250])
         ax3.set_title('Tray 4')
         s = self.events_df['sumL4']
         mean, std, count = s.describe().values[1], s.describe(
@@ -727,12 +781,13 @@ class MuonDataFrame:
         else:
             return fig
 
-    def getChannelDiffPlots(self, pdf=False, nbins=100):
+    def getChannelDiffPlots(self, pdf=False, nbins=200):
         fig, axes = plt.subplots(nrows=4, ncols=1)
         plt.suptitle(
             "Histogram of Difference of Channels in their Respective Trays")
         ax0, ax1, ax2, ax3 = axes.flatten()
         ax0.hist(self.events_df['diffL1'], nbins, histtype='step')
+        ax0.set_xlim([-100, 100])
         s = self.events_df['diffL1']
         mean, std, count = s.describe().values[1], s.describe(
         ).values[2], s.describe().values[0]
@@ -748,6 +803,7 @@ class MuonDataFrame:
                  bbox=props)
         ax0.set_title('Tray 1')
         ax1.hist(self.events_df['diffL2'], nbins, histtype='step')
+        ax1.set_xlim([-100, 100])
         ax1.set_title('Tray 2')
         s = self.events_df['diffL2']
         mean, std, count = s.describe().values[1], s.describe(
@@ -763,6 +819,7 @@ class MuonDataFrame:
                  verticalalignment='top',
                  bbox=props)
         ax2.hist(self.events_df['diffL3'], nbins, histtype='step')
+        ax2.set_xlim([-100, 100])
         ax2.set_title('Tray 3')
         s = self.events_df['diffL3']
         mean, std, count = s.describe().values[1], s.describe(
@@ -778,6 +835,7 @@ class MuonDataFrame:
                  verticalalignment='top',
                  bbox=props)
         ax3.hist(self.events_df['diffL4'], nbins, histtype='step')
+        ax3.set_xlim([-100, 100])
         ax3.set_title('Tray 4')
         s = self.events_df['diffL4']
         mean, std, count = s.describe().values[1], s.describe(
@@ -798,7 +856,7 @@ class MuonDataFrame:
         else:
             return fig
 
-    def getAssymetry1DPlots(self, pdf=False, nbins=100):
+    def getAssymetry1DPlots(self, pdf=False, nbins=200):
         fig, axes = plt.subplots(nrows=4, ncols=1)
         plt.suptitle("Histogram of Assymetry of each Tray")
         ax0, ax1, ax2, ax3 = axes.flatten()
@@ -869,8 +927,14 @@ class MuonDataFrame:
             return fig
 
     def getDataFrame(self, df):
+        # return self.serialize_dataframe(df, self.newFileName)
         return parallelize_dataframe(df, self.completeDataFrame,
                                      self.newFileName)
+
+    def serialize_dataframe(self, df, path):
+        df = self.completeDataFrame(df)
+        feather.write_dataframe(df, path)
+        return df
 
     def completeDataFrame(self, df):
         df['L1'] = self.getTDC(df['TDC'].to_numpy(), 0)
@@ -1007,7 +1071,7 @@ class MuonDataFrame:
         ev = self.createTDCValues(tdc_hit, event, criteria)
         return tdc_hit, ev
 
-    def getHistogram(self, queryName, title="", nbins=100, pdf=False):
+    def getHistogram(self, queryName, title="", nbins=200, pdf=False):
 
         s = self.events_df[queryName]
         # plt.figure(figsize=(3, 3))
@@ -1030,7 +1094,7 @@ class MuonDataFrame:
         else:
             return ax
 
-    def getKDE(self, queryName, nbins=100):
+    def getKDE(self, queryName, nbins=200):
         s = self.events_df[queryName].to_numpy()
         s = pd.Series(s)
         ax = s.plot.kde()
@@ -1049,14 +1113,14 @@ class MuonDataFrame:
         ax.set_title("Probability Density of {}".format(queryName))
         plt.show()
 
-    def getFilteredHistogram(self, queryName, filter, nbins=100, title=""):
+    def getFilteredHistogram(self, queryName, filter, nbins=200, title=""):
         self.events_df.hist(column=queryName, bins=nbins, by=filter)
         plt.suptitle("Histograms of {} grouped by {} {}".format(
             queryName, filter, title))
         plt.ylabel("Frequency")
         plt.show()
 
-    def getComparableHistogram(self, queries, nbins=100, title=""):
+    def getComparableHistogram(self, queries, nbins=200, title=""):
         s = pd.DataFrame(columns=queries)
         s = s.fillna(0)  # with 0s rather than NaNs
         for query in queries:
@@ -1077,12 +1141,13 @@ class MuonDataFrame:
                        ymax,
                        nbins=150,
                        pdf=False):
+        name = title.replace(" ", "") + "_run_" + self.runNum
         if not pdf:
-            Histo2D(title.replace(" ", ""), title, xlabel, nbins, xmin, xmax,
-                    xvals, ylabel, nbins, ymin, ymax, yvals, pdf)
+            Histo2D(name, title, xlabel, nbins, xmin, xmax, xvals, ylabel,
+                    nbins, ymin, ymax, yvals, pdf)
         else:
-            return Histo2D(title.replace(" ", ""), title, xlabel, nbins, xmin,
-                           xmax, xvals, ylabel, nbins, ymin, ymax, yvals, pdf)
+            return Histo2D(name, title, xlabel, nbins, xmin, xmax, xvals,
+                           ylabel, nbins, ymin, ymax, yvals, pdf)
 
     def getFilteredEvents(self, conditions):
         df = self.events_df
@@ -1159,26 +1224,40 @@ class MuonDataFrame:
                 (self.events_df[queryName] < q_hi)
                 & (self.events_df[queryName] > q_low)]
 
+    def keepEvents(self, term, value, cond):
+        if cond == "<":
+            self.events_df = self.events_df[self.events_df[term] < value]
+        elif cond == ">":
+            self.events_df = self.events_df[self.events_df[term] > value]
+        elif cond == "==":
+            self.events_df = self.events_df[self.events_df[term] == value]
+        elif cond == ">=":
+            self.events_df = self.events_df[self.events_df[term] >= value]
+        elif cond == "<=":
+            self.events_df = self.events_df[self.events_df[term] <= value]
+        elif cond == "!=":
+            self.events_df = self.events_df[self.events_df[term] != value]
+
     # @staticmethod
 
-    def getTrimmedHistogram(self, queryName, numStd, nbins=100):
+    def getTrimmedHistogram(self, queryName, numStd, nbins=200):
         df_filtered = scrubbedDataFrame(self.events_df, queryName, numStd)
         getHistogram(df_filtered,
                      queryName,
                      title="(Events within {} std dev)".format(numStd),
                      nbins=nbins)
 
-    def getTrimmed2DHistogram(df, queryName, numStd, nbins=100):
+    def getTrimmed2DHistogram(df, queryName, numStd, nbins=200):
         pass
 
-    def getTrimmedFilteredHistogram(self, queryName, numStd, nbins=100):
+    def getTrimmedFilteredHistogram(self, queryName, numStd, nbins=200):
         df_filtered = scrubbedDataFrame(self.events_df, queryName, numStd)
         getFilteredHistogram(df_filtered,
                              queryName,
                              nbins,
                              title="(Events within {} std dev)".format(numStd))
 
-    def getTrimmedComparableHistogram(self, queries, numStd, nbins=100):
+    def getTrimmedComparableHistogram(self, queries, numStd, nbins=200):
         s = pd.DataFrame(columns=queries)
         s = s.fillna(0)  # with 0s rather than NaNs
         for query in queries:
