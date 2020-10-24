@@ -14,3 +14,11 @@ CAMAC modules are available on the web.
 ## Tutorial Notebook
 This notebook explains the analysis API and usage.
 [Notebook](CrateAnalysis/MuonAnalysisDoc.ipynb)
+
+## Using the Notebook
+1. Clone the repository.
+```
+git clone https://github.com/shanto268/HEP_DAQ.git
+```
+2. Make sure the data files (i.e. the .bin files are in the CrateCode directory) 
+3. Using Anaconda or terminal open the `MuonAnalysisDoc.ipynb` located in the CrateAnalysis directory.
