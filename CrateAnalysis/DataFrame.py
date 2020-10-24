@@ -3,6 +3,7 @@ import pandas as pd
 import feather
 from LC3377 import *
 import time
+import os
 
 
 class DataFrame:
@@ -20,6 +21,8 @@ class DataFrame:
         self.TDC = []
         self.Scaler = []
         self.data_dict = []
+        if not os.path.exists('processed_data'):
+            os.makedirs('processed_data')
         self.path = "processed_data/" + self.name + ".ftr"
 
     def updateDataFrame(self, info, eventNum):
