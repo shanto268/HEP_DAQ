@@ -34,7 +34,8 @@ from multiprocessing import Pool
 from pandas_profiling import ProfileReport
 from Histo2d import Histo2D
 from pandasgui import show
-# from PIL import Image
+from PIL import Image
+from PyPDF2 import PdfFileMerger
 
 np.warnings.filterwarnings('ignore')
 """
@@ -184,6 +185,7 @@ class MuonDataFrame:
         self.query_terms = self.default_query_terms + self.quant_query_terms
         self.d1 = d1
         self.pdfName = path.split(".")[0].split("/")[1] + ".pdf"
+        self.pdfList = []
         self.runNum = self.pdfName.split(".")[0].split("_")[-1]
         self.imagelist = []
         self.newFileName = path.split(".")[0].split("/")[0] + "/" + path.split(
@@ -229,7 +231,7 @@ class MuonDataFrame:
             self.getChannelDiffPlots(pdf=True)
             pdf.savefig()
             plt.close()
-            self.getAssymetry1DPlots(pdf=True)
+            self.getAsymmetry1DPlots(pdf=True)
             pdf.savefig()
             plt.close()
             self.getNumLayersHitPlot(pdf=True)
@@ -241,7 +243,6 @@ class MuonDataFrame:
             self.getScalerPlots_channels(pdf=True)
             pdf.savefig()
             plt.close()
-            # self.allLayerCorrelationPlots(pdfv=True)
             # pdf.savefig(dpi=199)
             # plt.close()
 
@@ -253,8 +254,33 @@ class MuonDataFrame:
             d['CreationDate'] = datetime.datetime(2009, 11, 13)
             d['ModDate'] = datetime.datetime.today()
 
-        self.allLayerCorrelationPlots()
+        self.allLayerCorrelationPlots(pdfv=True)
+        self.convertPNG2PDF()
+        self.createOnePDF(pdfName)
+        # self.allLayerCorrelationPlots()
         print("The report file {} has been created.".format(pdfName))
+
+    def createOnePDF(self, pdfName):
+        for i in self.pdfList:
+            os.remove(i + ".png")
+        self.pdfList = [i + ".pdf" for i in self.pdfList]
+        self.pdfList.insert(0, pdfName)
+        merger = PdfFileMerger()
+
+        for pdf in self.pdfList:
+            merger.append(pdf)
+
+        merger.write(pdfName)
+        merger.close()
+        self.pdfList.pop(0)
+        for i in self.pdfList:
+            os.remove(i)
+
+    def convertPNG2PDF(self):
+        for i in self.pdfList:
+            image1 = Image.open(i + ".png")
+            im1 = image1.convert('RGB')
+            im1.save(i + ".pdf")
 
     def gui(self):
         show(self.events_df, settings={'block': True})
@@ -264,7 +290,7 @@ class MuonDataFrame:
         self.getChannelPlots()
         self.getChannelSumPlots()
         self.getChannelDiffPlots()
-        self.getAssymetry1DPlots()
+        self.getAsymmetry1DPlots()
         self.getNumLayersHitPlot()
         self.allLayerCorrelationPlots()
         self.getScalerPlots_header()
@@ -471,29 +497,29 @@ class MuonDataFrame:
             return fig
 
     def getAsymPlotFig(self, term1, term2):
-        xmin = -1
-        xmax = 1
-        ymin = -1
-        ymax = 1
+        xmin = -0.65
+        xmax = 0.65
+        ymin = -0.65
+        ymax = 0.65
         nbins = 1000
         x = self.get2DHistogram(self.events_df[term1].values,
                                 self.events_df[term2].values, "L1 vs L2",
-                                "Assymetry in X", "Assymetry in Y", xmin, xmax,
+                                "Asymmetry in X", "Asymmetry in Y", xmin, xmax,
                                 ymin, ymax, nbins, True)
         print(x)
         return x
 
     def allLayerCorrelationPlots(self, pdfv=False):
-        xmin = -1
-        xmax = 1
-        ymin = -1
-        ymax = 1
+        xmin = -0.65
+        xmax = 0.65
+        ymin = -0.65
+        ymax = 0.65
         nbins = 1000
         self.get2DHistogram(self.events_df['asymL1'].values,
                             self.events_df['asymL2'].values,
                             "L1 vs L2",
-                            "Assymetry in X",
-                            "Assymetry in Y",
+                            "Asymmetry in X",
+                            "Asymmetry in Y",
                             xmin,
                             xmax,
                             ymin,
@@ -503,8 +529,8 @@ class MuonDataFrame:
         self.get2DHistogram(self.events_df['asymL3'].values,
                             self.events_df['asymL4'].values,
                             "L3 vs L4",
-                            "Assymetry in X",
-                            "Assymetry in Y",
+                            "Asymmetry in X",
+                            "Asymmetry in Y",
                             xmin,
                             xmax,
                             ymin,
@@ -514,8 +540,8 @@ class MuonDataFrame:
         self.get2DHistogram(self.events_df['asymL1'].values,
                             self.events_df['asymL3'].values,
                             "L1 vs L3",
-                            "Assymetry in X",
-                            "Assymetry in Y",
+                            "Asymmetry in X",
+                            "Asymmetry in Y",
                             xmin,
                             xmax,
                             ymin,
@@ -525,8 +551,8 @@ class MuonDataFrame:
         self.get2DHistogram(self.events_df['asymL2'].values,
                             self.events_df['asymL4'].values,
                             "L2 vs L4",
-                            "Assymetry in X",
-                            "Assymetry in Y",
+                            "Asymmetry in X",
+                            "Asymmetry in Y",
                             xmin,
                             xmax,
                             ymin,
@@ -536,8 +562,8 @@ class MuonDataFrame:
         self.get2DHistogram(self.events_df['asymL1'].values,
                             self.events_df['asymL4'].values,
                             "L1 vs L4",
-                            "Assymetry in X",
-                            "Assymetry in Y",
+                            "Asymmetry in X",
+                            "Asymmetry in Y",
                             xmin,
                             xmax,
                             ymin,
@@ -547,8 +573,8 @@ class MuonDataFrame:
         self.get2DHistogram(self.events_df['asymL2'].values,
                             self.events_df['asymL3'].values,
                             "L2 vs L3",
-                            "Assymetry in X",
-                            "Assymetry in Y",
+                            "Asymmetry in X",
+                            "Asymmetry in Y",
                             xmin,
                             xmax,
                             ymin,
@@ -856,9 +882,9 @@ class MuonDataFrame:
         else:
             return fig
 
-    def getAssymetry1DPlots(self, pdf=False, nbins=200):
+    def getAsymmetry1DPlots(self, pdf=False, nbins=200):
         fig, axes = plt.subplots(nrows=4, ncols=1)
-        plt.suptitle("Histogram of Assymetry of each Tray")
+        plt.suptitle("Histogram of Asymmetry of each Tray")
         ax0, ax1, ax2, ax3 = axes.flatten()
         ax0.hist(self.events_df['asymL1'], nbins, histtype='step')
         s = self.events_df['asymL1']
@@ -1142,6 +1168,7 @@ class MuonDataFrame:
                        nbins=150,
                        pdf=False):
         name = title.replace(" ", "") + "_run_" + self.runNum
+        self.pdfList.append(name)
         if not pdf:
             Histo2D(name, title, xlabel, nbins, xmin, xmax, xvals, ylabel,
                     nbins, ymin, ymax, yvals, pdf)

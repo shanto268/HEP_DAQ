@@ -106,6 +106,7 @@ class Histo2D:
             fig.canvas.set_window_title(self.name)
             plt.show()
         else:
+            plt.savefig(self.name + ".png")
             return fig
 
     def plot2DHist(self):
