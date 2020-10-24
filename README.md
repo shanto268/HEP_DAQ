@@ -21,4 +21,5 @@ This notebook explains the analysis API and usage.
 git clone https://github.com/shanto268/HEP_DAQ.git
 ```
 2. Make sure the data files (i.e. the .bin files are in the CrateCode directory) 
-3. Using Anaconda or terminal open the `MuonAnalysisDoc.ipynb` located in the CrateAnalysis directory.
+3. Make sure the CrateAnalysis directory has the *processed_data* directory containing the all the `.ftr` files
+4. Using Anaconda or terminal open the `MuonAnalysisDoc.ipynb` located in the CrateAnalysis directory.

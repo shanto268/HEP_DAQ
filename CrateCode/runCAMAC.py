@@ -210,6 +210,8 @@ def runCAMAC(configModule, maxEvents, maxTimeSec, runNumber, outputFile,
         for eventNumber in range(numEventsLimit):
             # Wait for trigger (LAM)
             h.CCLWT(lam_slot)
+            if (eventNumber % (0.1 * numEventsLimit) == 0):
+                print("{} events have been recorded.".format(eventNumber))
 
             # Disable the data taking so that we don't get ADC hits
             # while we are reading the data out
@@ -281,6 +283,7 @@ def runCAMAC(configModule, maxEvents, maxTimeSec, runNumber, outputFile,
         # Write out the run data
         if not (pickleFile is None):
             pickle.dump(runRecord, pickleFile, fix_imports=False)
+            print(runRecord)
             pickleFile.close()
 
     # Disable the trigger veto by the "busy" signal
@@ -289,7 +292,7 @@ def runCAMAC(configModule, maxEvents, maxTimeSec, runNumber, outputFile,
     # Call "endRun" for the plot updater
     if not (plotUpdater is None):
         plotUpdater.endRun(runNumber, runRecord)
-
     # Return the number of events collected and the elapsed time
     return runRecord[eventCommitKey], (
         stopTime - startTime).total_seconds(), runStatus, runError
+
