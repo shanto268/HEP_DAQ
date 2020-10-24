@@ -1,3 +1,4 @@
 .DS_store
-
+CrateAnalysis/.ipynb_checkpoints/*
 CrateAnalysis/processed_data/*
+CrateAnalysis/*png

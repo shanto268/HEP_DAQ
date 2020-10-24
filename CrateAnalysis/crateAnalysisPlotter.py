@@ -9,24 +9,7 @@ __author__ = "Sadman Ahmed Shanto"
 __date__ = "10/04/2020"
 __email__ = "sadman-ahmed.shanto@ttu.edu"
 
-import feather
-import sys
 from MuonDataFrame import *
-"""
-# Query terms
-'event_num', 'event_time', 'deadtime', 'TDC_L1_L', 'TDC_L1_R',
-'TDC_L2_L', 'TDC_L2_R', 'ADC', 'TDC' , 'numChannelsRead', 'L1_asym',
-'L2_asym', 'L1_TDC_sum', 'L2_TDC_sum', 'L1_TDC_diff', 'L2_TDC_diff'
-"""
-"""
-Access data from HDF5
-# Access data store
-data_store = pd.HDFStore('processed_data.h5')
-
-# Retrieve data using key
-preprocessed_df = data_store['preprocessed_df']
-data_store.close()
-"""
 
 if __name__ == "__main__":
     try:
@@ -37,7 +20,6 @@ if __name__ == "__main__":
         iisNew = False
         print("\nAssuming the file has been analyzed before.")
 
-    os.environ["MODIN_ENGINE"] = "ray"
     mdfo = MuonDataFrame(ifile, isNew=iisNew, d1="last")
     mdf = mdfo.events_df
     # mdfo.show()
