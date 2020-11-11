@@ -2,3 +2,4 @@
 CrateAnalysis/.ipynb_checkpoints/*
 CrateAnalysis/processed_data/*
 CrateAnalysis/*png
+CrateCode/*.bin

@@ -8491,6 +8491,7 @@ SWIGINTERN PyObject *CrateHandle_receiveBlock(CrateHandle const *self,int opcode
         return ttudaq::vectorToNumpy(self->receive_block(
                   opcode, function, slot, address, size, timeout_ms));
     }
+// start
 SWIGINTERN PyObject *CrateHandle_read24Scan(CrateHandle const *self,int function,int slot,int address,int size){
         int buffer[LOCAL_BUFFER_SIZE_24];
 
@@ -8533,6 +8534,54 @@ SWIGINTERN PyObject *CrateHandle_read24Scan(CrateHandle const *self,int function
         }
         return ttudaq::intBufferToNumpy(buffer, size);
     }
+//end
+
+// start
+
+SWIGINTERN PyObject *CrateHandle_read24ScanScaler(CrateHandle const *self,int function,int slot,int address,int size){
+        int buffer[LOCAL_BUFFER_SIZE_24];
+
+        if (size < 0 || size > LOCAL_BUFFER_SIZE_24)
+        {
+            std::ostringstream os;
+            if (size < 0)
+                os << "In read24ScanScaler: scan length can not be negative";
+            else
+                os << "In read24ScanScaler: scan length " << size
+                   << " exceeds the local buffer size";
+            throw std::runtime_error(os.str());
+        }
+
+        if (size)
+        {
+            const CrateOpResult r0 = self->CFSA(function, slot, address, 0);
+            if (r0.Q() == 1)
+            {
+                for (int i=0; i<size; ++i)
+                    buffer[i] = -1;
+            }
+            else
+            {
+                assert(r0.Q() == 0);
+                buffer[0] = r0.datum();
+                for (int i=1; i<size; ++i)
+                {
+                    const CrateOpResult r = self->CFSA(function, slot, address+i, 0);
+                    if (r.Q() != 0)
+                    {
+                        std::ostringstream os;
+                        os << "In read24ScanScaler: got Q != 1 for slot " << slot
+                           << " and subaddress " << address+i;
+                        throw std::runtime_error(os.str());
+                    }
+                    buffer[i] = r.datum();
+                }
+            }
+        }
+        return ttudaq::intBufferToNumpy(buffer, size);
+    }
+// end
+
 SWIGINTERN PyObject *CrateHandle_read24UntilQ0(CrateHandle const *self,int function,int slot,int address){
         int buffer[LOCAL_BUFFER_SIZE_24];
 
@@ -51922,6 +51971,7 @@ fail:
 }
 
 
+//start
 SWIGINTERN PyObject *_wrap_CrateHandle_read24Scan(PyObject *self, PyObject *args) {
   PyObject *resultobj = 0;
   CrateHandle *arg1 = (CrateHandle *) 0 ;
@@ -51983,6 +52033,72 @@ SWIGINTERN PyObject *_wrap_CrateHandle_read24Scan(PyObject *self, PyObject *args
 fail:
   return NULL;
 }
+//end
+
+// start
+
+SWIGINTERN PyObject *_wrap_CrateHandle_read24ScanScaler(PyObject *self, PyObject *args) {
+  PyObject *resultobj = 0;
+  CrateHandle *arg1 = (CrateHandle *) 0 ;
+  int arg2 ;
+  int arg3 ;
+  int arg4 ;
+  int arg5 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  int val2 ;
+  int ecode2 = 0 ;
+  int val3 ;
+  int ecode3 = 0 ;
+  int val4 ;
+  int ecode4 = 0 ;
+  int val5 ;
+  int ecode5 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  PyObject * obj3 = 0 ;
+  PyObject * obj4 = 0 ;
+  PyObject *result = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OOOO:CrateHandle_read24ScanScaler",&obj1,&obj2,&obj3,&obj4)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(self, &argp1,SWIGTYPE_p_CrateHandle, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "CrateHandle_read24ScanScaler" "', argument " "1"" of type '" "CrateHandle const *""'"); 
+  }
+  arg1 = reinterpret_cast< CrateHandle * >(argp1);
+  ecode2 = SWIG_AsVal_int(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "CrateHandle_read24ScanScaler" "', argument " "2"" of type '" "int""'");
+  } 
+  arg2 = static_cast< int >(val2);
+  ecode3 = SWIG_AsVal_int(obj2, &val3);
+  if (!SWIG_IsOK(ecode3)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "CrateHandle_read24ScanScaler" "', argument " "3"" of type '" "int""'");
+  } 
+  arg3 = static_cast< int >(val3);
+  ecode4 = SWIG_AsVal_int(obj3, &val4);
+  if (!SWIG_IsOK(ecode4)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode4), "in method '" "CrateHandle_read24ScanScaler" "', argument " "4"" of type '" "int""'");
+  } 
+  arg4 = static_cast< int >(val4);
+  ecode5 = SWIG_AsVal_int(obj4, &val5);
+  if (!SWIG_IsOK(ecode5)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode5), "in method '" "CrateHandle_read24ScanScaler" "', argument " "5"" of type '" "int""'");
+  } 
+  arg5 = static_cast< int >(val5);
+  {
+    try {
+      result = (PyObject *)CrateHandle_read24ScanScaler((CrateHandle const *)arg1,arg2,arg3,arg4,arg5);
+    } catch (const std::exception& e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
+  resultobj = result;
+  return resultobj;
+fail:
+  return NULL;
+}
+// end
 
 
 SWIGINTERN PyObject *_wrap_CrateHandle_read24UntilQ0(PyObject *self, PyObject *args) {
@@ -59038,6 +59154,7 @@ SWIGINTERN PyMethodDef SwigPyBuiltin__CrateHandle_methods[] = {
   { "ackIRQ", (PyCFunction) _wrap_CrateHandle_ackIRQ, METH_VARARGS, (char *) "" },
   { "receiveBlock", (PyCFunction) _wrap_CrateHandle_receiveBlock, METH_VARARGS, (char *) "" },
   { "read24Scan", (PyCFunction) _wrap_CrateHandle_read24Scan, METH_VARARGS, (char *) "" },
+  { "read24ScanScaler", (PyCFunction) _wrap_CrateHandle_read24ScanScaler, METH_VARARGS, (char *) "" },
   { "read24UntilQ0", (PyCFunction) _wrap_CrateHandle_read24UntilQ0, METH_VARARGS, (char *) "" },
   { "read16UntilQ0Q0", (PyCFunction) _wrap_CrateHandle_read16UntilQ0Q0, METH_VARARGS, (char *) "" },
   { NULL, NULL, 0, NULL } /* Sentinel */

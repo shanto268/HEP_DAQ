@@ -74,6 +74,9 @@ class _ChannelHisto:
         elif nChannels <= 4:
             nRows = 2
             nCols = 2
+        elif nChannels == 8:
+            nRows = 2
+            nCols = 4
         else:
             nRows = int(math.sqrt(nChannels))
             nCols = nRows
@@ -130,7 +133,10 @@ class _ChannelHisto:
                     chId = self.toPlot[chnum]
                     ax.set_title("Slot %d ch %d" % chId)
                     if self.eventCounter > 0:
-                        maxCount = self._xAxisUpperLimit(max(self.plotData[chId]))
+                        try:
+                            maxCount = self._xAxisUpperLimit(max(self.plotData[chId]))
+                        except:
+                            maxCount = self.nBins
                     else:
                         maxCount = self.nBins
                     ax.hist(self.plotData[chId], self.nBins, range=(0, maxCount))
@@ -143,9 +149,14 @@ class ADCHisto(_ChannelHisto):
                                "adc_slots", "ADC Counts", channels_to_plot)
         self.moduleName = "ADCHisto"
 
+class ScalerHisto(_ChannelHisto):
+    def __init__(self, nBins, dutyCycle, vAdj, channels_to_plot=None):
+        _ChannelHisto.__init__(self, nBins, dutyCycle, vAdj, "LeCroy2552",
+                               "scaler_slots_2552", "Scaler Counts", channels_to_plot)
+        self.moduleName = "TDCHisto"
 
 class TDCHisto(_ChannelHisto):
     def __init__(self, nBins, dutyCycle, vAdj, channels_to_plot=None):
-        _ChannelHisto.__init__(self, nBins, dutyCycle, vAdj, "LeCroy2228",
-                               "tdc_slots_2228", "TDC Counts", channels_to_plot)
+        _ChannelHisto.__init__(self, nBins, dutyCycle, vAdj, "LeCroy3377",
+                               "tdc_slots_3377", "TDC Counts", channels_to_plot)
         self.moduleName = "TDCHisto"

@@ -63,9 +63,9 @@
         {
             std::ostringstream os;
             if (size < 0)
-                os << "In read24Scan: scan length can not be negative";
+                os << "In read24ScanScaler: scan length can not be negative";
             else
-                os << "In read24Scan: scan length " << size
+                os << "In read24ScanScaler: scan length " << size
                    << " exceeds the local buffer size";
             throw std::runtime_error(os.str());
         }
@@ -88,7 +88,7 @@
                     if (r.Q() != 0)  /*Might need to change to 1*/
                     {
                         std::ostringstream os;
-                        os << "In read24Scan: got Q != 1 for slot " << slot
+                        os << "In read24ScanScaler: got Q != 1 for slot " << slot
                            << " and subaddress " << address+i;
                         throw std::runtime_error(os.str());
                     }

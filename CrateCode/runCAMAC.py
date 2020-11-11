@@ -80,6 +80,7 @@ def configureDAQDefaults(h):
     runConfiguration["tdc_slots_2228"] = (10, )
     runConfiguration["tdc_channels_2228"] = 8
     runConfiguration["tdc_slots_3377"] = (2, )
+    runConfiguration["tdc_channels_3377"] = 32
     runConfiguration["scaler_slots_2552"] = (5, )  # new
     runConfiguration["scaler_channels"] = 12  # new
 
@@ -164,6 +165,7 @@ def runCAMAC(configModule, maxEvents, maxTimeSec, runNumber, outputFile,
     tdc_slots_2228 = runConfiguration["tdc_slots_2228"]
     tdc_channels_2228 = runConfiguration["tdc_channels_2228"]
     tdc_slots_3377 = runConfiguration["tdc_slots_3377"]
+    tdc_channels_3377 = runConfiguration["tdc_channels_3377"]
     scaler_slots_2552 = runConfiguration["scaler_slots_2552"]  # new
     scaler_channels = runConfiguration["scaler_channels"]  # new
 
@@ -210,7 +212,7 @@ def runCAMAC(configModule, maxEvents, maxTimeSec, runNumber, outputFile,
         for eventNumber in range(numEventsLimit):
             # Wait for trigger (LAM)
             h.CCLWT(lam_slot)
-            if (eventNumber % (0.1 * numEventsLimit) == 0):
+            if (eventNumber%(0.1*numEventsLimit)==0):
                 print("{} events have been recorded.".format(eventNumber))
 
             # Disable the data taking so that we don't get ADC hits
@@ -283,7 +285,6 @@ def runCAMAC(configModule, maxEvents, maxTimeSec, runNumber, outputFile,
         # Write out the run data
         if not (pickleFile is None):
             pickle.dump(runRecord, pickleFile, fix_imports=False)
-            print(runRecord)
             pickleFile.close()
 
     # Disable the trigger veto by the "busy" signal
@@ -295,4 +296,3 @@ def runCAMAC(configModule, maxEvents, maxTimeSec, runNumber, outputFile,
     # Return the number of events collected and the elapsed time
     return runRecord[eventCommitKey], (
         stopTime - startTime).total_seconds(), runStatus, runError
-
