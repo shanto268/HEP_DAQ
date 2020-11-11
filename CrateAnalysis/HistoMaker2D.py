@@ -121,8 +121,8 @@ class HistoMaker2D(AbsAnalysisModule):
         axis.set_title(self._makePlotTitle(zmin, zmax))
         cbar.ax.set_title(self._makeZLabel())
         fig.canvas.set_window_title(self.moduleName)
-        plt.savefig("{}_{}.png".format(self.name, self.runNumber))
-        # plt.show()
+        # plt.savefig("{}_{}.png".format(self.name, self.runNumber))
+        plt.show()
 
     def beginRun(self, runNumber, runInfo):
         self.runNumber = runNumber

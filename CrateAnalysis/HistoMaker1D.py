@@ -9,7 +9,7 @@ __date__ = "June 23 2017"
 import matplotlib.pyplot as plt
 import numpy as np
 from AbsAnalysisModule import AbsAnalysisModule
-from statistics import NormalDist
+# from statistics import NormalDist
 import scipy.stats
 
 
@@ -49,21 +49,16 @@ class HistoMaker1D(AbsAnalysisModule):
             diff_compare = self._data[i][-2] - self._data[i][-3]
             diff_v = np.diff(self._data[i])
             ave_diff = sum(diff_v) / len(diff_v)
-            # print("diff_last_two : {}".format(diff_last_two))
-            # print("diff_compare : {}".format(diff_compare))
-            # print("ave_diff : {}".format(ave_diff))
             self._data[i].pop()
             self._data[i].pop(0)
-            if self.isGaussian:
-                norm = NormalDist.from_samples(self._data[i])
-                print(norm)
+            self._data[i] = [item for item in self._data[i] if item >= 0]
             plot = ax.hist(self._data[i], spec.nbins)
             ax.grid(True)
             ax.set_xlabel(spec.xlabel)
             ax.set_ylabel("Events")
-            ax.set_title(spec.title + " | " + self.title_string)
-        plt.savefig(self.moduleName + ".png")
-        # plt.show()
+            ax.set_title(spec.title)
+        # plt.savefig(self.moduleName + ".png")
+        plt.show()
 
     def beginRun(self, runNumber, runInfo):
         self.moduleName += str(runNumber)
@@ -92,7 +87,7 @@ class HistoInfo1D(AbsAnalysisModule):
         self._specs = specs
         self.SIZE = len(specs)
         self._data = [list() for i in range(len(specs))]
-        
+
     def beginJob(self, allModuleNames):
         pass
 
@@ -102,23 +97,56 @@ class HistoInfo1D(AbsAnalysisModule):
         for i, spec in enumerate(self._specs):
             all_data.append([self._data[i]])
             all_titles.append(spec.title)
+        minVal = min(min(all_data[1][0]), min(all_data[0][0]))
+        maxVal = max(max(all_data[1][0]), max(all_data[0][0]))
+        spec.nbins = int((maxVal - minVal) / 1)
         plt.hist(all_data[0], spec.nbins, alpha=0.5, label='Layer 1 Channel 0')
         plt.hist(all_data[1], spec.nbins, alpha=0.5, label='Layer 1 Channel 1')
         plt.xlabel("TDC Counts")
         plt.ylabel("Frequency")
-        plt.title("TDC Values Layer 1" + " | " + self.title_string)
+        plt.title("TDC Values Layer 1")
         plt.legend(loc='upper right')
-        plt.savefig(self.moduleName + ".png")
-        # plt.show()
+        # plt.savefig(self.moduleName + ".png")
+        plt.show()
 
+        minVal = min(min(all_data[2][0]), min(all_data[3][0]))
+        maxVal = max(max(all_data[2][0]), max(all_data[3][0]))
+        # spec.nbins = (maxVal - minVal) / 1
+        spec.nbins = int((maxVal - minVal) / 1)
         plt.hist(all_data[2], spec.nbins, alpha=0.5, label='Layer 2 Channel 0')
         plt.hist(all_data[3], spec.nbins, alpha=0.5, label='Layer 2 Channel 1')
         plt.xlabel("TDC Counts")
         plt.ylabel("Frequency")
-        plt.title("TDC Values Layer 2" + " | " + self.title_string)
+        plt.title("TDC Values Layer 2")
         plt.legend(loc='upper right')
-        plt.savefig(self.moduleName + ".png")
-        # plt.show()
+        # plt.savefig(self.moduleName + ".png")
+        plt.show()
+
+        minVal = min(min(all_data[4][0]), min(all_data[5][0]))
+        maxVal = max(max(all_data[4][0]), max(all_data[5][0]))
+        # spec.nbins = (maxVal - minVal) / 1
+        spec.nbins = int((maxVal - minVal) / 1)
+        plt.hist(all_data[4], spec.nbins, alpha=0.5, label='Layer 3 Channel 0')
+        plt.hist(all_data[5], spec.nbins, alpha=0.5, label='Layer 3 Channel 1')
+        plt.xlabel("TDC Counts")
+        plt.ylabel("Frequency")
+        plt.title("TDC Values Layer 3")
+        plt.legend(loc='upper right')
+        # plt.savefig(self.moduleName + ".png")
+        plt.show()
+
+        minVal = min(min(all_data[6][0]), min(all_data[7][0]))
+        maxVal = max(max(all_data[6][0]), max(all_data[7][0]))
+        # spec.nbins = (maxVal - minVal) / 1
+        spec.nbins = int((maxVal - minVal) / 1)
+        plt.hist(all_data[6], spec.nbins, alpha=0.5, label='Layer 4 Channel 0')
+        plt.hist(all_data[7], spec.nbins, alpha=0.5, label='Layer 4 Channel 1')
+        plt.xlabel("TDC Counts")
+        plt.ylabel("Frequency")
+        plt.title("TDC Values Layer 4")
+        plt.legend(loc='upper right')
+        # plt.savefig(self.moduleName + ".png")
+        plt.show()
 
     def beginRun(self, runNumber, runInfo):
         self.moduleName += str(runNumber)

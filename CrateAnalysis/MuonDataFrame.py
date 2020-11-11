@@ -284,6 +284,7 @@ class MuonDataFrame:
 
     def gui(self):
         show(self.events_df, settings={'block': True})
+        # show(self.events_df)
 
     def getAnaReport(self):
         self.getDeadtimePlot()
@@ -737,7 +738,7 @@ class MuonDataFrame:
         fig, axes = plt.subplots(nrows=4, ncols=1)
         plt.suptitle("Histogram of Sum of Channels in their Respective Trays")
         ax0, ax1, ax2, ax3 = axes.flatten()
-        ax0.hist(self.events_df['sumL1'], nbins, histtype='step')
+        ax0.hist(self.events_df['sumL1'], bins=nbins, histtype='step')
         ax0.set_xlim([150, 250])
         s = self.events_df['sumL1']
         mean, std, count = s.describe().values[1], s.describe(

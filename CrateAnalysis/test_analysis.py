@@ -15,8 +15,8 @@ from HistoMaker2D import *
 from ADCHisto import *
 from LC3377PrintingModule import *
 from LC3377Definition import *
-from TDCUnpacker import *
-from TDCAnalyzer import *
+from TDCUnpackerRun import *
+from TDCAnalyzerRun import *
 from NoiseCleaner import *
 from datetime import datetime
 from EventDataFrame import *
@@ -44,44 +44,64 @@ def main(argv):
     mod4 = EventCounter("Counter 1")
     mod5 = TDCPrintingModule(outputPrefix + "_tdc")
     mod6 = LC3377PrintingModule()
-    mod7 = TDCUnpacker("TDCUnpacker")
-    mod8 = TDCAnalyzer("TDCAnalyzer")
+    mod7 = TDCUnpackerRun("TDCUnpacker")
+    mod8 = TDCAnalyzerRun("TDCAnalyzer")
     # mod9 = ChannelOperations("ChannelOperations")
     # mod10 = NoiseCleaner("NoiseCleaner")
-    mod11 = EventDataFrame("EventDataFrame")
+    # mod11 = EventDataFrame("EventDataFrame")
     mod12 = MissingTDCCounter("MissingTDCCounter")
     gptr = GenericPrintingModule(("hw_event_count", "deadtime"))
+    """
+    PLOTTING METHODS - START
+    """
+    h0 = Histo1DSpec("Dead Time", "Counts", 100, lambda x: x["deadtime"])
+    h1 = Histo1DSpec("Number of hits per Event", "Counts", 10,
+                     lambda x: x["len_unpacked_3377Data"])
+    deadtime = HistoMaker1D((h0, ), "deadtime_")
+    numHit = HistoMaker1D((h1, ), "NumHitsPerEvent_")
+    tdc_comp, tdc_sep = getTDC(nbins=250)
+    """
+    PLOTTING METHODS - END
+    """
 
-    global nbins
-    nbins = 250
-
-    slot1 = 2
-    channel1 = 0
-    slot2 = 2
-    channel2 = 1
-
-    slot3 = 2
-    channel3 = 3
-    slot4 = 2
-    channel4 = 4
-
-    tdcChannelsAll = ((slot1, 1), (slot1, 2), (slot1, 3), (slot1, 4))
-    tdcChannelsL1 = ((slot1, 1), (slot1, 2))
-    tdcChannelsL2 = ((slot1, 3), (slot1, 4))
-
-    xdefinitionL1 = LC3377Definition(slot1, channel1)
-    ydefinitionL1 = LC3377Definition(slot2, channel2)
-
-    xdefinitionL2 = LC3377Definition(slot3, channel3)
-    ydefinitionL2 = LC3377Definition(slot4, channel4)
-
-    # modules = (mod0, mod1, mod7, mod8, mod11)
-    # modules = (mod0, mod1, mod7, mod8)
-    modules = (mod0, mod1, mod7, mod8, mod12)
+    plots = (deadtime, numHit, tdc_comp, tdc_sep)
+    modules = (mod1, mod7, mod8, mod12) + plots
 
     # processWithCuts(modules1, modules2, inputFiles)
     processDefault(modules, inputFiles)
     return 0
+
+
+def getTDC(nbins=200):
+    tdc_slot = 2
+
+    xL1 = LC3377Definition(tdc_slot, 0)
+    yL1 = LC3377Definition(tdc_slot, 1)
+
+    xL2 = LC3377Definition(tdc_slot, 3)
+    yL2 = LC3377Definition(tdc_slot, 4)
+
+    xL3 = LC3377Definition(tdc_slot, 6)
+    yL3 = LC3377Definition(tdc_slot, 7)
+
+    xL4 = LC3377Definition(tdc_slot, 9)
+    yL4 = LC3377Definition(tdc_slot, 10)
+
+    h1x = Histo1DSpec("Layer1x", "TDC Counts Layer 1x", nbins, xL1)
+    h1y = Histo1DSpec("Layer1y", "TDC Counts Layer 1y", nbins, yL1)
+
+    h2x = Histo1DSpec("Layer2x", "TDC Counts Layer 2x", nbins, xL2)
+    h2y = Histo1DSpec("Layer2y", "TDC Counts Layer 2y", nbins, yL2)
+
+    h3x = Histo1DSpec("Layer1x", "TDC Counts Layer 3x", nbins, xL3)
+    h3y = Histo1DSpec("Layer1y", "TDC Counts Layer 3y", nbins, yL3)
+
+    h4x = Histo1DSpec("Layer2x", "TDC Counts Layer 4x", nbins, xL4)
+    h4y = Histo1DSpec("Layer2y", "TDC Counts Layer 4y", nbins, yL4)
+
+    return HistoInfo1D((h1x, h1y, h2x, h2y, h3x, h3y, h4x, h4y),
+                       "Comparative"), HistoMaker1D(
+                           (h1x, h1y, h2x, h2y, h3x, h3y, h4x, h4y), "All")
 
 
 def processWithCuts(modules1, modules2, inputFiles):
