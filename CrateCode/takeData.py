@@ -15,7 +15,7 @@ def main(totalEvents, test_num):
     maxEvents = totalEvents
     maxTimeSec = 0
     runNumber = test_num
-    outputFile = "run{}.bin".format(test_num)
+    outputFile = "data_sets/run{}_{}.bin".format(test_num, totalEvents)
     # Check argument validity
     ok = True
     if maxEvents < 0:
@@ -29,14 +29,13 @@ def main(totalEvents, test_num):
         return 1
     global MUONRATE
     wtime = round(totalEvents * float(MUONRATE))
-    if doPlot:
-        print("Starting DAQ system with diagnostic plots...")
-    else:
-        print("Starting DAQ system....")
-    if wtime == 0:
-        print("Process will take roughly {} min".format(1))
-    else:
-        print("Process will take roughly {} mins".format(wtime))
+    print(25 * "=")
+    print("\nRun {} for {} Events \n".format(test_num, totalEvents))
+    print("Starting DAQ system....")
+    # if wtime == 0:
+    # print("Process will take roughly {} min".format(1))
+    # else:
+    # print("Process will take roughly {} mins".format(wtime))
     # Configure the histogram plotter.
     # The channels to plot: a tuple of (slot, channel) pairs.
     # "None" will take all channels configured in the DAQ.
@@ -61,6 +60,11 @@ def main(totalEvents, test_num):
     if not (outputFile == "None" or outputFile == "none"):
         print('Run %d data is stored in the file "%s"' %
               (runNumber, outputFile))
+    print("Uploading File to Quanah.....\n")
+    os.system("upload.sh {}".format(outputFile))
+    print("File {} has been successfully uploaded to Quanah\n".format(outputFile))
+    print(25 * "=")
+    print()
     return 0
 
 

@@ -218,8 +218,7 @@ def runCAMAC(configModule, maxEvents, maxTimeSec, runNumber, outputFile,
 
             if (eventNumber == 100):
                 end_time = (time.time() - start_time)
-                print(end_time)
-                wtime = round(((end_time / 100) * maxEvents)/60)
+                wtime = round(((end_time / 100) * maxEvents) / 60)
                 print("Process will take roughly {} mins".format(wtime))
 
             if (eventNumber % (0.1 * numEventsLimit) == 0):

@@ -77,7 +77,7 @@ def main(argv):
 
     # modules = (mod0, mod1, mod7, mod8, mod11)
     # modules = (mod0, mod1, mod7, mod8)
-    modules = (mod0, mod1, mod7, mod8, mod12)
+    modules = (mod0, mod1, mod7, mod8, mod11)
 
     # processWithCuts(modules1, modules2, inputFiles)
     processDefault(modules, inputFiles)

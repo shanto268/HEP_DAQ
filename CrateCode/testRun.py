@@ -20,7 +20,7 @@ def main(totalEvents, test_num, doPlot):
     maxEvents = totalEvents
     maxTimeSec = 0
     runNumber = test_num
-    outputFile = "test{}.bin".format(test_num)
+    outputFile = "test/test{}_{}.bin".format(test_num, totalEvents)
     # Check argument validity
     ok = True
     if maxEvents < 0:
@@ -72,6 +72,8 @@ def main(totalEvents, test_num, doPlot):
     if not (outputFile == "None" or outputFile == "none"):
         print('Run %d data is stored in the file "%s"' %
               (runNumber, outputFile))
+    print("Uploading File to Quanah.....")
+    os.system("upload.sh {}".format(outputFile))
     return 0
     # return outputFile
 
