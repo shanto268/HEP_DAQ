@@ -91,6 +91,18 @@ class HistoInfo1D(AbsAnalysisModule):
     def beginJob(self, allModuleNames):
         pass
 
+    def addPLotBox(self, mean, std, count):
+        textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}".format(
+            mean, std, count)
+        props = dict(boxstyle='round', facecolor='wheat', alpha=0.7)
+        ax.text(0.80,
+                0.95,
+                textstr,
+                transform=ax.transAxes,
+                fontsize=12,
+                verticalalignment='top',
+                bbox=props)
+
     def endJob(self):
         all_data = []
         all_titles = []
@@ -100,8 +112,14 @@ class HistoInfo1D(AbsAnalysisModule):
         minVal = min(min(all_data[1][0]), min(all_data[0][0]))
         maxVal = max(max(all_data[1][0]), max(all_data[0][0]))
         spec.nbins = int((maxVal - minVal) / 1)
-        plt.hist(all_data[0], spec.nbins, alpha=0.5, label='Layer 1 Channel 0')
-        plt.hist(all_data[1], spec.nbins, alpha=0.5, label='Layer 1 Channel 1')
+        plt.hist(all_data[0],
+                 spec.nbins,
+                 alpha=0.5,
+                 label='L1 Ch0 counts: {}'.format(len(all_data[0][0])))
+        plt.hist(all_data[1],
+                 spec.nbins,
+                 alpha=0.5,
+                 label='L1 Ch1 counts: {}'.format(len(all_data[1][0])))
         plt.xlabel("TDC Counts")
         plt.ylabel("Frequency")
         plt.title("TDC Values Layer 1")
@@ -113,8 +131,14 @@ class HistoInfo1D(AbsAnalysisModule):
         maxVal = max(max(all_data[2][0]), max(all_data[3][0]))
         # spec.nbins = (maxVal - minVal) / 1
         spec.nbins = int((maxVal - minVal) / 1)
-        plt.hist(all_data[2], spec.nbins, alpha=0.5, label='Layer 2 Channel 0')
-        plt.hist(all_data[3], spec.nbins, alpha=0.5, label='Layer 2 Channel 1')
+        plt.hist(all_data[2],
+                 spec.nbins,
+                 alpha=0.5,
+                 label='L2 Ch0 counts: {}'.format(len(all_data[2][0])))
+        plt.hist(all_data[3],
+                 spec.nbins,
+                 alpha=0.5,
+                 label='L2 Ch1 counts: {}'.format(len(all_data[3][0])))
         plt.xlabel("TDC Counts")
         plt.ylabel("Frequency")
         plt.title("TDC Values Layer 2")
@@ -126,8 +150,14 @@ class HistoInfo1D(AbsAnalysisModule):
         maxVal = max(max(all_data[4][0]), max(all_data[5][0]))
         # spec.nbins = (maxVal - minVal) / 1
         spec.nbins = int((maxVal - minVal) / 1)
-        plt.hist(all_data[4], spec.nbins, alpha=0.5, label='Layer 3 Channel 0')
-        plt.hist(all_data[5], spec.nbins, alpha=0.5, label='Layer 3 Channel 1')
+        plt.hist(all_data[4],
+                 spec.nbins,
+                 alpha=0.5,
+                 label='L3 Ch0 counts: {}'.format(len(all_data[4][0])))
+        plt.hist(all_data[5],
+                 spec.nbins,
+                 alpha=0.5,
+                 label='L3 Ch1 counts: {}'.format(len(all_data[5][0])))
         plt.xlabel("TDC Counts")
         plt.ylabel("Frequency")
         plt.title("TDC Values Layer 3")
@@ -139,8 +169,14 @@ class HistoInfo1D(AbsAnalysisModule):
         maxVal = max(max(all_data[6][0]), max(all_data[7][0]))
         # spec.nbins = (maxVal - minVal) / 1
         spec.nbins = int((maxVal - minVal) / 1)
-        plt.hist(all_data[6], spec.nbins, alpha=0.5, label='Layer 4 Channel 0')
-        plt.hist(all_data[7], spec.nbins, alpha=0.5, label='Layer 4 Channel 1')
+        plt.hist(all_data[6],
+                 spec.nbins,
+                 alpha=0.5,
+                 label='L4 Ch0 counts: {}'.format(len(all_data[6][0])))
+        plt.hist(all_data[7],
+                 spec.nbins,
+                 alpha=0.5,
+                 label='L4 Ch1 counts: {}'.format(len(all_data[7][0])))
         plt.xlabel("TDC Counts")
         plt.ylabel("Frequency")
         plt.title("TDC Values Layer 4")

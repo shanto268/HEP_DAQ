@@ -32,16 +32,16 @@ def main(totalEvents, test_num, doPlot):
     if not ok:
         print(__doc__)
         return 1
-    global MUONRATE
-    wtime = round(totalEvents * float(MUONRATE))
+    # global MUONRATE
+    # wtime = round(totalEvents * float(MUONRATE))
     if doPlot:
         print("Starting DAQ system with diagnostic plots...")
     else:
         print("Starting DAQ system....")
-    if wtime == 0:
-        print("Process will take roughly {} min".format(1))
-    else:
-        print("Process will take roughly {} mins".format(wtime))
+    # if wtime == 0:
+    # print("Process will take roughly {} min".format(1))
+    # else:
+    # print("Process will take roughly {} mins".format(wtime))
 
     # Configure the histogram plotter.
     # The channels to plot: a tuple of (slot, channel) pairs.

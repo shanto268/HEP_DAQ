@@ -35,8 +35,17 @@ from pandas_profiling import ProfileReport
 from Histo2d import Histo2D
 from muondataframegui import show
 from PIL import Image
-from PyPDF2 import PdfFileMerger
+from PyPDF2 import PdfFileWriter, PdfFileReader, PdfFileMerger
 
+
+def append_pdf(input, output):
+    [
+        output.addPage(input.getPage(page_num))
+        for page_num in range(input.numPages)
+    ]
+
+
+output = PdfFileWriter()
 np.warnings.filterwarnings('ignore')
 """
 # Default Query Terms:
@@ -197,6 +206,11 @@ class MuonDataFrame:
             self.events_df = pd.read_feather(self.newFileName,
                                              use_threads=True)
 
+        self.og_df = self.events_df
+
+    def reload(self):
+        self.events_df = self.og_df
+
     def generateReport(self):
         profile = ProfileReport(self.events_df,
                                 title='Prototype 1B Profiling Report',
@@ -257,20 +271,33 @@ class MuonDataFrame:
         self.allLayerCorrelationPlots(pdfv=True)
         self.convertPNG2PDF()
         self.createOnePDF(pdfName)
-        # self.allLayerCorrelationPlots()
+        # self.mergePDF(pdfName)
         print("The report file {} has been created.".format(pdfName))
+
+    def mergePDF(self, pdfName):
+        for i in self.pdfList:
+            os.remove(i + ".png")
+        self.pdfList = [i + ".pdf" for i in self.pdfList]
+        self.pdfList.insert(0, pdfName)
+        output = PdfFileWriter()
+        for i in self.pdfList:
+            append_pdf(PdfFileReader(file(i, "rb")), output)
+        output.write(file(pdfName, "wb"))
 
     def createOnePDF(self, pdfName):
         for i in self.pdfList:
             os.remove(i + ".png")
         self.pdfList = [i + ".pdf" for i in self.pdfList]
         self.pdfList.insert(0, pdfName)
+
         merger = PdfFileMerger()
-
         for pdf in self.pdfList:
-            merger.append(pdf)
+            merger.append(PdfFileReader(pdf), 'rb')
+        with open(pdfName, 'wb') as new_file:
+            merger.write(new_file)
 
-        merger.write(pdfName)
+        # with open(output, 'wb') as f:
+        # merger.write(pdfName)
         merger.close()
         self.pdfList.pop(0)
         for i in self.pdfList:
@@ -1205,6 +1232,11 @@ class MuonDataFrame:
         if arr.ndim == 1:
             dropped = dropped.flatten()
         return dropped
+
+    def getFilteredPlot(self, term, value, cond, title=""):
+        self.keepEvents(term, value, cond)
+        self.getPlot(term, title=title)
+        self.reload()
 
     def getPlot(self, query, title=""):
         self.events_df[query].plot()

@@ -11,6 +11,7 @@ import importlib
 import pickle
 import sys
 from datetime import datetime, timedelta
+import time
 from LC3377 import *
 
 # def enableDataTaking(h, enable):
@@ -212,7 +213,16 @@ def runCAMAC(configModule, maxEvents, maxTimeSec, runNumber, outputFile,
         for eventNumber in range(numEventsLimit):
             # Wait for trigger (LAM)
             h.CCLWT(lam_slot)
-            if (eventNumber%(0.1*numEventsLimit)==0):
+            if (eventNumber == 1):
+                start_time = time.time()
+
+            if (eventNumber == 100):
+                end_time = (time.time() - start_time)
+                print(end_time)
+                wtime = round(((end_time / 100) * maxEvents)/60)
+                print("Process will take roughly {} mins".format(wtime))
+
+            if (eventNumber % (0.1 * numEventsLimit) == 0):
                 print("{} events have been recorded.".format(eventNumber))
 
             # Disable the data taking so that we don't get ADC hits
