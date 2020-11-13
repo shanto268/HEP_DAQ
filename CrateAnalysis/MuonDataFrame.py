@@ -189,7 +189,8 @@ class MuonDataFrame:
         self.default_query_terms = [
             'event_num', 'event_time', 'deadtime', 'ADC', 'TDC', 'SCh0',
             'SCh1', 'SCh2', 'SCh3', 'SCh4', 'SCh5', 'SCh6', 'SCh7', 'SCh8',
-            'SCh9', 'SCh10', 'SCh11'
+            'SCh9', 'SCh10', 'SCh11', 'l1hit', 'l2hit', 'l3hit', 'l4hit',
+            'r1hit', 'r2hit', 'r3hit', 'r4hit'
         ]
         self.query_terms = self.default_query_terms + self.quant_query_terms
         self.d1 = d1
@@ -207,6 +208,7 @@ class MuonDataFrame:
                                              use_threads=True)
 
         self.og_df = self.events_df
+        self.total = len(self.og_df.index)
 
     def reload(self):
         self.events_df = self.og_df
@@ -613,6 +615,38 @@ class MuonDataFrame:
     def getDeadtimePlot(self, pdf=False):
         x = self.getHistogram("deadtime", pdf=pdf)
         return x
+
+    def getChannelStatusPlot(self, pdf=False):
+        l1_p = list(self.og_df['l1hit'].values).count(1)
+        l2_p = list(self.og_df['l2hit'].values).count(1)
+        l3_p = list(self.og_df['l3hit'].values).count(1)
+        l4_p = list(self.og_df['l4hit'].values).count(1)
+
+        r1_p = list(self.og_df['r1hit'].values).count(1)
+        r2_p = list(self.og_df['r2hit'].values).count(1)
+        r3_p = list(self.og_df['r3hit'].values).count(1)
+        r4_p = list(self.og_df['r4hit'].values).count(1)
+
+        yvals = [
+            l1_p / self.total, l2_p / self.total, l3_p / self.total,
+            l4_p / self.total, r1_p / self.total, r2_p / self.total,
+            r3_p / self.total, r4_p / self.total
+        ]
+        yvals = [i * 100 for i in yvals]
+        xvals = [
+            "Ch 0", "Ch 1", "Ch 3", "Ch 4", "Ch 6", "Ch 7", "Ch 9", "Ch 10"
+        ]
+        barlist = plt.bar(xvals, yvals)
+        barlist[0].set_color('r')
+        barlist[1].set_color('r')
+        barlist[4].set_color('r')
+        barlist[5].set_color('r')
+        plt.title("Percentage of Good Events")
+        ax = barlist
+        if not pdf:
+            plt.show()
+        else:
+            return ax
 
     def getADCPlot(self):
         pass
@@ -1126,7 +1160,6 @@ class MuonDataFrame:
         return tdc_hit, ev
 
     def getHistogram(self, queryName, title="", nbins=200, pdf=False):
-
         s = self.events_df[queryName]
         # plt.figure(figsize=(3, 3))
         ax = s.plot.hist(alpha=0.7, bins=nbins)
