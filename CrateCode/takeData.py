@@ -3,6 +3,7 @@ import os, sys, csv, time
 from runCAMAC import runCAMAC
 from ADCHisto import ADCHisto, TDCHisto
 from MultipleUpdater import *
+from Notify import Notify
 """
 Arguments: 
     i) number of events
@@ -62,9 +63,11 @@ def main(totalEvents, test_num):
               (runNumber, outputFile))
     print("Uploading File to Quanah.....\n")
     os.system("upload.sh {}".format(outputFile))
-    print("File {} has been successfully uploaded to Quanah\n".format(outputFile))
+    print("File {} has been successfully uploaded to Quanah\n".format(
+        outputFile))
     print(25 * "=")
     print()
+    Notify(outputFile)
     return 0
 
 
