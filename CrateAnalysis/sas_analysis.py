@@ -2,7 +2,7 @@
 Usage: analysisExample.py outputPrefix inputFile0 ...
 """
 
-import sys
+import sys, ray
 from ChannelOperations import *
 from runAnalysisSequence import runAnalysisSequence
 from updatedRunAnalysisSequence import updatedRunAnalysisSequence
@@ -95,10 +95,12 @@ def processWithCuts(modules1, modules2, inputFiles):
 
 def processDefault(modules_og, inputFiles):
     t0 = datetime.now()
-    n, newRunRecord = runAnalysisSequence(modules_og, inputFiles)  #no cuts
+    job_id = runAnalysisSequence.remote(modules_og, inputFiles)
+    n, newRunRecord = ray.get(job_id)
     dt = datetime.now() - t0
     print('Processed %d events in %g sec' % (n, dt.total_seconds()))
 
 
 if __name__ == '__main__':
+    ray.init(ignore_reinit_error=True)
     sys.exit(main(sys.argv[1:]))

@@ -1,5 +1,6 @@
 import sys
 import pickle
+import ray
 
 
 def _eprint(*args, **kwargs):
@@ -47,6 +48,7 @@ def _callEventSequence(moduleSequence, runNumber, evNumber, eventInfo):
                 break
 
 
+@ray.remote(num_cpus=2)
 def runAnalysisSequence(moduleSequence,
                         inputFiles,
                         maxEventsToProcess=0,

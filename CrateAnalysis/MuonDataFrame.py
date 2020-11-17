@@ -36,6 +36,7 @@ from Histo2d import Histo2D
 from muondataframegui import show
 from PIL import Image
 from PyPDF2 import PdfFileWriter, PdfFileReader, PdfFileMerger
+from multipledispatch import dispatch
 
 
 def append_pdf(input, output):
@@ -1271,11 +1272,22 @@ class MuonDataFrame:
         self.getPlot(term, title=title)
         self.reload()
 
-    def getPlot(self, query, title=""):
+    @dispatch(str)
+    def getPlot(self, query):
         self.events_df[query].plot()
         plt.xlabel("Event Number")
         plt.ylabel(str(query))
-        plt.title("Plot of {} event series {}".format(query, title))
+        plt.title("Plot of {} event series ".format(query))
+        plt.show()
+
+    @dispatch(list)
+    def getPlot(self, queries, title=""):
+        plt.plot(self.events_df[queries[0]].values,
+                 self.events_df[queries[1]].values)
+        plt.xlabel(str(queries[0]))
+        plt.ylabel(str(queries[1]))
+        plt.title("Line Plot of {} against {} {}".format(
+            queries[0], queries[1], title))
         plt.show()
 
     def getScatterPlot(self, queries, title=""):
