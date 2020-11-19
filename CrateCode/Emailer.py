@@ -28,7 +28,7 @@ class Emailer:
         #Headers
         headers = [
             "From:" + GMAIL_USERNAME, "Subject:" + subject, "To: " + recipient,
-            "MIME-Version: 1.0", "Content-Type: text/html"
+            "MIME-Version: 1.0", "Content-Type: text/plain"
         ]
         headers = "\r\n".join(headers)
 
@@ -44,7 +44,8 @@ class Emailer:
         #Send email then exit
         session.sendmail(GMAIL_USERNAME, recipient,
                          headers + "\r\n\r\n" + content)
-        session.quit
+        # session.quit()
+        session.close()
 
     def sendtext(self, recipient, subject, content):
         session = smtplib.SMTP(SMTP_SERVER, SMTP_PORT)
@@ -64,7 +65,7 @@ class Emailer:
     def alert(self):
         emails = self.email_list
         incidentTime = time.datetime.now()
-        self.emailContent += " at time {}".format(incidentTime)
+        self.emailContent += "\n incident time {}".format(incidentTime)
         #Sends an email to the "sendTo" address with the specified "emailSubject" as the subject and "emailContent" as the email content.
         for email in emails:
             print("Emailing {}".format(email))
@@ -73,7 +74,7 @@ class Emailer:
     def alert_text(self):
         texts = self.text_list
         incidentTime = time.datetime.now()
-        self.emailContent += " at time {}".format(incidentTime)
+        self.emailContent += "\n incident time {}".format(incidentTime)
         #Sends an email to the "sendTo" address with the specified "emailSubject" as the subject and "emailContent" as the email content.
         for text in texts:
             print("Texting {}".format(text))

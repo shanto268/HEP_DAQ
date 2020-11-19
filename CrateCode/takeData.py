@@ -67,7 +67,8 @@ def main(totalEvents, test_num):
         outputFile))
     print(25 * "=")
     print()
-    Notify(outputFile)
+    fileName = outputFile.split("/")[1]
+    Notify(fileName)
     return 0
 
 

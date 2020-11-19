@@ -33,7 +33,7 @@ from collections import defaultdict
 from multiprocessing import Pool
 from pandas_profiling import ProfileReport
 from Histo2d import Histo2D
-from muondataframegui import show
+#from muondataframegui import show
 from PIL import Image
 from PyPDF2 import PdfFileWriter, PdfFileReader, PdfFileMerger
 from multipledispatch import dispatch
@@ -239,6 +239,9 @@ class MuonDataFrame:
             self.getDeadtimePlot(pdf=True)
             pdf.savefig()
             plt.close()
+            self.getChannelStatusPlot(pdf=True)
+            pdf.savefig()
+            plt.close()
             self.getChannelPlots(pdf=True)
             pdf.savefig()
             plt.close()
@@ -271,7 +274,9 @@ class MuonDataFrame:
             d['CreationDate'] = datetime.datetime(2009, 11, 13)
             d['ModDate'] = datetime.datetime.today()
 
+        # self.getFingerPlots(pdfv=False)
         self.allLayerCorrelationPlots(pdfv=True)
+        self.getFingerPlots(pdfv=True)
         self.convertPNG2PDF()
         self.createOnePDF(pdfName)
         # self.mergePDF(pdfName)
@@ -312,9 +317,9 @@ class MuonDataFrame:
             im1 = image1.convert('RGB')
             im1.save(i + ".pdf")
 
-    def gui(self):
-        show(self.events_df, settings={'block': True})
-        # show(self.events_df)
+    # def gui(self):
+    # show(self.events_df, settings={'block': True})
+    # show(self.events_df)
 
     def getAnaReport(self):
         self.getDeadtimePlot()
@@ -548,7 +553,7 @@ class MuonDataFrame:
         nbins = 1000
         self.get2DHistogram(self.events_df['asymL1'].values,
                             self.events_df['asymL2'].values,
-                            "L1 vs L2",
+                            "Asymetry: L1 vs L2",
                             "Asymmetry in X",
                             "Asymmetry in Y",
                             xmin,
@@ -559,7 +564,7 @@ class MuonDataFrame:
                             pdf=pdfv)
         self.get2DHistogram(self.events_df['asymL3'].values,
                             self.events_df['asymL4'].values,
-                            "L3 vs L4",
+                            "Asymetry: L3 vs L4",
                             "Asymmetry in X",
                             "Asymmetry in Y",
                             xmin,
@@ -570,7 +575,7 @@ class MuonDataFrame:
                             pdf=pdfv)
         self.get2DHistogram(self.events_df['asymL1'].values,
                             self.events_df['asymL3'].values,
-                            "L1 vs L3",
+                            "Asymmetry: L1 vs L3",
                             "Asymmetry in X",
                             "Asymmetry in Y",
                             xmin,
@@ -581,7 +586,7 @@ class MuonDataFrame:
                             pdf=pdfv)
         self.get2DHistogram(self.events_df['asymL2'].values,
                             self.events_df['asymL4'].values,
-                            "L2 vs L4",
+                            "Asymmetry: L2 vs L4",
                             "Asymmetry in X",
                             "Asymmetry in Y",
                             xmin,
@@ -592,7 +597,7 @@ class MuonDataFrame:
                             pdf=pdfv)
         self.get2DHistogram(self.events_df['asymL1'].values,
                             self.events_df['asymL4'].values,
-                            "L1 vs L4",
+                            "Asymmetry: L1 vs L4",
                             "Asymmetry in X",
                             "Asymmetry in Y",
                             xmin,
@@ -603,9 +608,68 @@ class MuonDataFrame:
                             pdf=pdfv)
         self.get2DHistogram(self.events_df['asymL2'].values,
                             self.events_df['asymL3'].values,
-                            "L2 vs L3",
+                            "Asymmetry: L2 vs L3",
                             "Asymmetry in X",
                             "Asymmetry in Y",
+                            xmin,
+                            xmax,
+                            ymin,
+                            ymax,
+                            nbins,
+                            pdf=pdfv)
+
+    def getFingerPlots(self, pdfv=False):
+        xmin = 0
+        xmax = 300
+        ymin = -0
+        ymax = 300
+        nbins = 250
+        x = "L1"
+        y = "R1"
+        self.get2DHistogram(self.events_df[x].values,
+                            self.events_df[y].values,
+                            "{} vs {}".format(x, y),
+                            x,
+                            y,
+                            xmin,
+                            xmax,
+                            ymin,
+                            ymax,
+                            nbins,
+                            pdf=pdfv)
+        x = "L2"
+        y = "R2"
+        self.get2DHistogram(self.events_df[x].values,
+                            self.events_df[y].values,
+                            "{} vs {}".format(x, y),
+                            x,
+                            y,
+                            xmin,
+                            xmax,
+                            ymin,
+                            ymax,
+                            nbins,
+                            pdf=pdfv)
+        x = "L3"
+        y = "R3"
+        self.get2DHistogram(self.events_df[x].values,
+                            self.events_df[y].values,
+                            "{} vs {}".format(x, y),
+                            x,
+                            y,
+                            xmin,
+                            xmax,
+                            ymin,
+                            ymax,
+                            nbins,
+                            pdf=pdfv)
+        x = "L4"
+        y = "R4"
+        self.get2DHistogram(self.events_df[x].values,
+                            self.events_df[y].values,
+                            "{} vs {}".format(x, y),
+                            x,
+                            y,
                             xmin,
                             xmax,
                             ymin,

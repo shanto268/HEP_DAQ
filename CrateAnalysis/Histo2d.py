@@ -101,6 +101,17 @@ class Histo2D:
         axis.set_xlabel(self.xlabel)
         axis.set_ylabel(self.ylabel)
         axis.set_title(self._makePlotTitle(zmin, zmax))
+        xbins, ybins, overflow = self.nxbins, self.nybins, self.overflow
+        textstr = "XBins: {:0.0f}\nYBins: {:0.0f}\nOverflow: {}".format(
+            xbins, ybins, overflow)
+        props = dict(boxstyle='round', facecolor='wheat', alpha=0.7)
+        axis.text(0.75,
+                  1.1,
+                  textstr,
+                  transform=axis.transAxes,
+                  fontsize=10,
+                  verticalalignment='top',
+                  bbox=props)
         cbar.ax.set_title(self._makeZLabel())
         if not self.pdf:
             fig.canvas.set_window_title(self.name)
