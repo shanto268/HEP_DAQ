@@ -10,10 +10,6 @@ __date__ = "10/06/2020"
 __email__ = "sadman-ahmed.shanto@ttu.edu"
 """"
 To DO:
-    - Methods for generating report (pdf)
-    - Parallelize the following tasks:
-        - Generate Report
-        - Make a copy of this new DF and save it as a .ftr with new name corresponding to decision D1
     - Event Display/Tracking
     - Imaging
 """
@@ -37,6 +33,7 @@ from Histo2d import Histo2D
 from PIL import Image
 from PyPDF2 import PdfFileWriter, PdfFileReader, PdfFileMerger
 from multipledispatch import dispatch
+import matplotlib as mpl
 
 np.warnings.filterwarnings('ignore')
 
@@ -317,18 +314,18 @@ class MuonDataFrame:
     # show(self.events_df)
 
     def getAnaReport(self):
-        self.getDeadtimePlot()
-        self.getChannelPlots()
-        self.getChannelSumPlots()
-        self.getChannelDiffPlots()
-        self.getAsymmetry1DPlots()
-        self.getNumLayersHitPlot()
-        self.allLayerCorrelationPlots(nbins=1000)
-        self.allLayerCorrelationPlots(nbins=22)
-        self.getScalerPlots_header()
-        self.getScalerPlots_channels()
+        # self.getDeadtimePlot()
+        # self.getChannelPlots()
+        # self.getChannelSumPlots()
+        # self.getChannelDiffPlots()
+        # self.getAsymmetry1DPlots()
+        # self.getNumLayersHitPlot()
+        self.allLayerCorrelationPlots(nbins=200)
+        # self.allLayerCorrelationPlots(nbins=22)
+        # self.getScalerPlots_header()
+        # self.getScalerPlots_channels()
 
-    def getScalerPlots_channels(self, pdf=False, amount=2):
+    def getScalerPlots_channels(self, pdf=False, amount=5):
         fig, axes = plt.subplots(nrows=4, ncols=2)
         plt.suptitle("Histogram of Scaler Readings (Ch 4 - 11)")
         ax0, ax1, ax2, ax3, ax4, ax5, ax6, ax7 = axes.flatten()
@@ -466,7 +463,7 @@ class MuonDataFrame:
         else:
             return fig
 
-    def getScalerPlots_header(self, pdf=False, amount=3):
+    def getScalerPlots_header(self, pdf=False, amount=5):
         fig, axes = plt.subplots(nrows=4, ncols=1)
         plt.suptitle("Histogram of Scaler Readings (Ch 0 - 3)")
         ax0, ax1, ax2, ax3 = axes.flatten()
@@ -550,6 +547,37 @@ class MuonDataFrame:
                                 ymin, ymax, nbins, True)
         print(x)
         return x
+
+    def getM2DPlot(self):
+        x = [8 for i in range(65)]
+        y = [
+            75, 74, 73, 72, 71, 70, 69, 68, 67, 66, 65, 64, 63, 62, 61, 60, 59,
+            58, 57, 56, 55, 54, 53, 52, 51, 50, 49, 48, 47, 46, 45, 44, 43, 42,
+            41, 40, 39, 38, 37, 36, 35, 34, 33, 32, 31, 30, 29, 28, 27, 26, 25,
+            24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11
+        ]
+        z = [
+            895, 800, 710, 635, 565, 500, 440, 392, 347, 304, 268, 235, 205,
+            179, 156, 135, 117, 101, 89, 76, 64, 55, 47, 40, 34, 29, 25, 20,
+            16, 14, 12, 9, 7, 6, 5, 4, 3, 2.5, 2, 1.7, 1.3, 1, 0.775, 0.60,
+            0.45, 0.35, 0.25, 0.18, 0.14, 0.10, 0.07, 0.05, 0.035, 0.025,
+            0.020, 0.015, 0.010, 0.007, 0.006, 0.005, 0.005, 0.005, 0.005,
+            0.005, 0.005
+        ]
+        fig = plt.figure()
+        plt.hist2d(x, y, weights=z, bins=len(x), cmap='plasma')
+        cb = plt.colorbar()
+        cb.set_label('height')
+        plt.show()
+        plt.hist2d(x,
+                   y,
+                   weights=z,
+                   bins=len(x),
+                   norm=mpl.colors.LogNorm(vmin=min(z), vmax=max(z)),
+                   cmap='plasma')
+        cb = plt.colorbar(extend='both')
+        cb.set_label('height')
+        plt.show()
 
     def allLayerCorrelationPlots(self, pdfv=False, nbins=1000, title=""):
         xmin = -0.65
@@ -728,16 +756,19 @@ class MuonDataFrame:
         return x
 
     def getChannelPlots(self, pdf=False, nbins=200):
+        xmin = 0
+        xmax = 200
         fig, axes = plt.subplots(nrows=2, ncols=4)
         plt.suptitle("Histogram of All Individual Channels")
         ax0, ax1, ax2, ax3, ax4, ax5, ax6, ax7 = axes.flatten()
         ax0.hist(self.events_df['L1'], nbins, histtype='step')
-        ax0.set_xlim([0, 200])
+        ax0.set_xlim([xmin, xmax])
         s = self.events_df['L1']
         mean, std, count = s.describe().values[1], s.describe(
         ).values[2], s.describe().values[0]
-        textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}".format(
-            mean, std, count)
+        ovflow = ((xmax < s.values) | (s.values < xmin)).sum()
+        textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}\nBins: {}\nOverflow: {}".format(
+            mean, std, count, nbins, ovflow)
         props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
         ax0.text(0.80,
                  0.95,
@@ -748,13 +779,14 @@ class MuonDataFrame:
                  bbox=props)
         ax0.set_title('Ch0')
         ax1.hist(self.events_df['R1'], nbins, histtype='step')
-        ax1.set_xlim([0, 200])
+        ax1.set_xlim([xmin, xmax])
         ax1.set_title('Ch1')
         s = self.events_df['R1']
         mean, std, count = s.describe().values[1], s.describe(
         ).values[2], s.describe().values[0]
-        textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}".format(
-            mean, std, count)
+        ovflow = ((xmax < s.values) | (s.values < xmin)).sum()
+        textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}\nBins: {}\nOverflow: {}".format(
+            mean, std, count, nbins, ovflow)
         props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
         ax1.text(0.80,
                  0.95,
@@ -765,12 +797,13 @@ class MuonDataFrame:
                  bbox=props)
         ax2.hist(self.events_df['L2'], nbins, histtype='step')
         ax2.set_title('Ch3')
-        ax2.set_xlim([0, 200])
+        ax2.set_xlim([xmin, xmax])
         s = self.events_df['L2']
         mean, std, count = s.describe().values[1], s.describe(
         ).values[2], s.describe().values[0]
-        textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}".format(
-            mean, std, count)
+        ovflow = ((xmax < s.values) | (s.values < xmin)).sum()
+        textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}\nBins: {}\nOverflow: {}".format(
+            mean, std, count, nbins, ovflow)
         props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
         ax2.text(0.80,
                  0.95,
@@ -780,13 +813,14 @@ class MuonDataFrame:
                  verticalalignment='top',
                  bbox=props)
         ax3.hist(self.events_df['R2'], nbins, histtype='step')
-        ax3.set_xlim([0, 200])
+        ax3.set_xlim([xmin, xmax])
         ax3.set_title('Ch4')
         s = self.events_df['R2']
         mean, std, count = s.describe().values[1], s.describe(
         ).values[2], s.describe().values[0]
-        textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}".format(
-            mean, std, count)
+        ovflow = ((xmax < s.values) | (s.values < xmin)).sum()
+        textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}\nBins: {}\nOverflow: {}".format(
+            mean, std, count, nbins, ovflow)
         props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
         ax3.text(0.80,
                  0.95,
@@ -796,13 +830,14 @@ class MuonDataFrame:
                  verticalalignment='top',
                  bbox=props)
         ax4.hist(self.events_df['L3'], nbins, histtype='step')
-        ax4.set_xlim([0, 200])
+        ax4.set_xlim([xmin, xmax])
         ax4.set_title('Ch6')
         s = self.events_df['L3']
         mean, std, count = s.describe().values[1], s.describe(
         ).values[2], s.describe().values[0]
-        textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}".format(
-            mean, std, count)
+        ovflow = ((xmax < s.values) | (s.values < xmin)).sum()
+        textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}\nBins: {}\nOverflow: {}".format(
+            mean, std, count, nbins, ovflow)
         props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
         ax4.text(0.80,
                  0.95,
@@ -812,13 +847,14 @@ class MuonDataFrame:
                  verticalalignment='top',
                  bbox=props)
         ax5.hist(self.events_df['R3'], nbins, histtype='step')
-        ax5.set_xlim([0, 200])
+        ax5.set_xlim([xmin, xmax])
         ax5.set_title('Ch7')
         s = self.events_df['R3']
         mean, std, count = s.describe().values[1], s.describe(
         ).values[2], s.describe().values[0]
-        textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}".format(
-            mean, std, count)
+        ovflow = ((xmax < s.values) | (s.values < xmin)).sum()
+        textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}\nBins: {}\nOverflow: {}".format(
+            mean, std, count, nbins, ovflow)
         props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
         ax5.text(0.80,
                  0.95,
@@ -828,13 +864,14 @@ class MuonDataFrame:
                  verticalalignment='top',
                  bbox=props)
         ax6.hist(self.events_df['L4'], nbins, histtype='step')
-        ax6.set_xlim([0, 200])
+        ax6.set_xlim([xmin, xmax])
         ax6.set_title('Ch9')
         s = self.events_df['L4']
         mean, std, count = s.describe().values[1], s.describe(
         ).values[2], s.describe().values[0]
-        textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}".format(
-            mean, std, count)
+        ovflow = ((xmax < s.values) | (s.values < xmin)).sum()
+        textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}\nBins: {}\nOverflow: {}".format(
+            mean, std, count, nbins, ovflow)
         props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
         ax6.text(0.80,
                  0.95,
@@ -844,13 +881,14 @@ class MuonDataFrame:
                  verticalalignment='top',
                  bbox=props)
         ax7.hist(self.events_df['R4'], nbins, histtype='step')
-        ax7.set_xlim([0, 200])
+        ax7.set_xlim([xmin, xmax])
         ax7.set_title('Ch10')
         s = self.events_df['L2']
         mean, std, count = s.describe().values[1], s.describe(
         ).values[2], s.describe().values[0]
-        textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}".format(
-            mean, std, count)
+        ovflow = ((xmax < s.values) | (s.values < xmin)).sum()
+        textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}\nBins: {}\nOverflow: {}".format(
+            mean, std, count, nbins, ovflow)
         props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
         ax7.text(0.80,
                  0.95,
@@ -1041,7 +1079,7 @@ class MuonDataFrame:
         else:
             return fig
 
-    def getAsymmetry1DPlots(self, pdf=False, amount=5):
+    def getAsymmetry1DPlots(self, pdf=False, amount=10):
         fig, axes = plt.subplots(nrows=4, ncols=1)
         plt.suptitle("Histogram of Asymmetry of each Tray")
         ax0, ax1, ax2, ax3 = axes.flatten()
