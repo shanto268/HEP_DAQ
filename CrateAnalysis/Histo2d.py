@@ -106,7 +106,7 @@ class Histo2D:
             xbins, ybins, overflow)
         props = dict(boxstyle='round', facecolor='wheat', alpha=0.7)
         axis.text(0.75,
-                  1.1,
+                  0.95,
                   textstr,
                   transform=axis.transAxes,
                   fontsize=10,
