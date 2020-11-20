@@ -10,6 +10,7 @@ __date__ = "10/04/2020"
 __email__ = "sadman-ahmed.shanto@ttu.edu"
 
 from MuonDataFrame import *
+from Notify import Notify
 
 if __name__ == "__main__":
     try:
@@ -21,13 +22,14 @@ if __name__ == "__main__":
         print("\nAssuming the file has been analyzed before.")
 
     mdfo = MuonDataFrame(ifile, isNew=iisNew, d1="last")
-    # mdfo.getM2DPlot()
-    # mdf = mdfo.events_df
-    mdfo.generateAnaReport()
-    # mdfo.getAnaReport()
-    # mdfo.getChannelStatusPlot()
+    pdfName = mdfo.generateAnaReport()
+    Notify().sendPdfEmail(pdfName)
+    #mdf = mdfo.events_df
+    #mdfo.getChannelStatusPlot()
     # mdfo.gui()
     # mdfo.show()
+    #mdfo.getAnaReport()
+    # mdfo.generateAnaReport()
     # mdfo.computeAssymetries()
     # mdfo.get2DHistogram()
     # mdfo.getScatterPlot(["L1_asym", "L2_asym"])
