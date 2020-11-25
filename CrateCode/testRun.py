@@ -8,12 +8,6 @@ Arguments:
     i) number of events
     ii) boolean for plotting
 """
-"""
-Plan:
-    0) analyze data in run time using runCAMAC
-    1) from readout print out stats and final plots
-"""
-
 
 def main(totalEvents, test_num, doPlot):
     configModule = "NuralTest"
@@ -72,8 +66,6 @@ def main(totalEvents, test_num, doPlot):
     if not (outputFile == "None" or outputFile == "none"):
         print('Run %d data is stored in the file "%s"' %
               (runNumber, outputFile))
-    print("Uploading File to Quanah.....")
-    os.system("upload.sh {}".format(outputFile))
     return 0
     # return outputFile
 
@@ -96,8 +88,8 @@ def plotDiagnostics(doPlot, histo, histo2):
         return None
 
 
-def analyzeData(test_num):
-    outputFile = "test{}.bin".format(test_num)
+def analyzeData(test_num, totalEvents):
+    outputFile = "test/test{}_{}.bin".format(test_num, totalEvents)
     os.system(
         'python /home/daq/CAMAC/CrateAnalysis_sas/test_analysis.py junk {}'.
         format(outputFile))
@@ -111,7 +103,7 @@ if __name__ == "__main__":
         doPlot = True
         testNum = updateEnvVar()
         main(totalEvents, testNum, doPlot)
-        analyzeData(testNum)
+        analyzeData(testNum, totalEvents)
 
     elif doPlot == "False":
         doPlot = False

@@ -17,6 +17,19 @@ class Notify():
         sender = Emailer(emailList, sms_list, subjectLine, emailContent)
         sender.sendPdf(pfile)
 
+    def text(self, emailList, sms_list, subjectLine, emailContent):
+        sender = Emailer(emailList, sms_list, subjectLine, emailContent)
+        sender.alert_text()
+
+    def sendSmartBotMessage(self):
+        emailList = ["narsis.sailale@ttu.edu"]
+        sms_list = ['6822034263@vtext.com']
+        subjectLine = "Smart Bot Message"
+        link = "https://app.reviewr.com/s1/pitch?subid=6632207&evtid=6422912"
+        emailContent = "Hi friend, please don't forget to vote for me {}. ".format(
+            link)
+        self.text(emailList, sms_list, subjectLine, emailContent)
+
     def sendEmail(self):
         emailList = ["sadman-ahmed.shanto@ttu.edu", "nural.akchurin@ttu.edu"]
         sms_list = ['8067900156@sms.mycricket.com']

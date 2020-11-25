@@ -117,7 +117,8 @@ class Emailer:
     def alert_text(self):
         texts = self.text_list
         incidentTime = time.datetime.now()
-        self.emailContent += "\n incident time {}".format(incidentTime)
+        self.emailContent += "\n All you have to do is create an account on this link and click the thumbs above the video"
+        # self.emailContent += "\n incident time {}".format(incidentTime)
         #Sends an email to the "sendTo" address with the specified "emailSubject" as the subject and "emailContent" as the email content.
         for text in texts:
             print("Texting {}".format(text))

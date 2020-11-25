@@ -684,6 +684,10 @@ class MuonDataFrame:
         x = self.getHistogram("deadtime", pdf=pdf)
         return x
 
+    def getEfficiencyPlot(self, pdf=False):
+        ax = ""
+        return ax
+
     def getChannelStatusPlot(self, pdf=False):
         l1_p = list(self.og_df['l1hit'].values).count(1)
         l2_p = list(self.og_df['l2hit'].values).count(1)

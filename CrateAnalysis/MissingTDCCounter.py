@@ -85,6 +85,9 @@ class MissingTDCCounter(DummyModule):
     def endRun(self, runNumber, runRecord):
         self.total = (len(runRecord) - 9) / 100
 
+    def beginRun(self, runNumber, runRecord):
+        self.total = (len(runRecord) - 9) / 100
+
     def endJob(self):
         """Plot Graph Here:
             divide each value by self.total
