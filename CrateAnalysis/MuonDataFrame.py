@@ -192,7 +192,7 @@ class MuonDataFrame:
         self.runNum = self.pdfName.split(".")[0].split("_")[-1]
         self.imagelist = []
         self.newFileName = path.split(".")[0].split("/")[0] + "/" + path.split(
-            ".")[0].split("/")[1] + "_analyzed.ftr"
+            ".")[0].split("/")[1] + ".ftr"
         if isNew:
             self.events_df = self.getDataFrame(
                 pd.read_feather(path, use_threads=True))
