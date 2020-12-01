@@ -84,6 +84,8 @@ def configureDAQDefaults(h):
     runConfiguration["tdc_channels_3377"] = 32
     runConfiguration["scaler_slots_2552"] = (5, )  # new
     runConfiguration["scaler_channels"] = 12  # new
+    runConfiguration["fiber_test_channel"] = 1  # new
+    runConfiguration["fiber_test_slot"] = (17, )  # new
 
     # Enable busy signal on the controller combo channel 1
     h.stdCMDSR("nim_enablecombo 1 0")
@@ -169,6 +171,7 @@ def runCAMAC(configModule, maxEvents, maxTimeSec, runNumber, outputFile,
     tdc_channels_3377 = runConfiguration["tdc_channels_3377"]
     scaler_slots_2552 = runConfiguration["scaler_slots_2552"]  # new
     scaler_channels = runConfiguration["scaler_channels"]  # new
+    fiber_test_slot = runConfiguration["fiber_test_slot"]  # new
 
     # Initialize various variables
     runStatus = "WaitForBusy"

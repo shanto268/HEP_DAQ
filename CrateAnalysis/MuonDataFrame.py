@@ -212,14 +212,32 @@ class MuonDataFrame:
                                 explorative=True)
         profile.to_file("mdf.html")
 
+    def getStartTime(self):
+        x = self.events_df['event_time'].values[0]
+        x = pd.to_datetime(str(x))
+        return x.strftime("%b %d %Y %H:%M:%S")
+
+    def getEndTime(self):
+        x = self.events_df['event_time'].values[-1]
+        x = pd.to_datetime(str(x))
+        return x.strftime("%b %d %Y %H:%M:%S")
+
+    def getFrontPageInfo(self):
+        fLine = "Analysis of Run: " + self.runNum
+        sLine = "\nRun Start: " + str(self.getStartTime())
+        tLine = "\nRun End: " + str(self.getEndTime())
+        foLine = "\n\n\n\nReport Generated at: " + str(
+            datetime.datetime.today().strftime("%b %d %Y %H:%M:%S"))
+        txt = fLine + sLine + tLine + foLine
+        return txt
+
     def generateAnaReport(self, pdfName=""):
         if pdfName == "":
             pdfName = self.pdfName
         with PdfPages(pdfName) as pdf:
             firstPage = plt.figure(figsize=(11.69, 8.27))
             firstPage.clf()
-            txt = 'Analysis of Run: ' + self.runNum + '\n Time Created: ' + str(
-                datetime.datetime.today())
+            txt = self.getFrontPageInfo()
             firstPage.text(0.5,
                            0.5,
                            txt,
