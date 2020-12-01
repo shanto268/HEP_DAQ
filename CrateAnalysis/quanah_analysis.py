@@ -2,7 +2,8 @@
 Usage: analysisExample.py outputPrefix inputFile0 ...
 """
 
-import sys, ray, os, time
+import sys, os, time
+import ray
 from ChannelOperations import *
 from runAnalysisSequence import runAnalysisSequence
 from updatedRunAnalysisSequence import updatedRunAnalysisSequence
@@ -97,6 +98,14 @@ def processWithCuts(modules1, modules2, inputFiles):
 
 def processDefault(modules_og, inputFiles):
     t0 = datetime.now()
+    n, newRunRecord = runAnalysisSequence(modules_og, inputFiles)
+    dt = datetime.now() - t0
+    print('Processed %d events in %g sec' % (n, dt.total_seconds()))
+
+
+def processDefault_ray(modules_og, inputFiles):
+    #uncomment ray decorator in runanalysis file
+    t0 = datetime.now()
     job_id = runAnalysisSequence.remote(modules_og, inputFiles)
     n, newRunRecord = ray.get(job_id)
     dt = datetime.now() - t0
@@ -105,10 +114,10 @@ def processDefault(modules_og, inputFiles):
 
 if __name__ == '__main__':
     eventNum = 0
-    ray.init(ignore_reinit_error=True)
+   # ray.init(ignore_reinit_error=True)
     main(sys.argv[1:])
     start = time.time()
-    os.system(
-        "python3 crateAnalysisPlotter.py processed_data/events_data_frame_{}.ftr True"
-        .format(eventNum))
     print("Analzyed .ftr file created in {} seconds".format(time.time() - start))
+    os.system(
+        "python3 crateAnalysisPlotter_quanah.py processed_data/events_data_frame_{}.ftr True"
+        .format(eventNum))

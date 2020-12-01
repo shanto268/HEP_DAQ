@@ -176,7 +176,7 @@ class MuonDataFrame:
         :param d1 [string]: type of decision to be made on multiTDC events (acceptable terms are "last", "first", "min", and "max")
                             default value = last
         """
-        self.events_df = pd.read_feather(path, use_threads=True)
+        self.events_df = pd.read_feather(path, use_threads=False)
         self.nbins = 150
         self.quant_query_terms = []
         self.default_query_terms = [
