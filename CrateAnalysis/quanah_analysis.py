@@ -37,7 +37,8 @@ def main(argv):
     global eventNum
     outputPrefix = argv[0]
     inputFiles = argv[1:]
-    eventNum = inputFiles[-1].split("/")[-1].split(".")[0].split("n")[1].split("_")[0]
+    eventNum = inputFiles[-1].split("/")[-1].split(".")[0].split("n")[1].split(
+        "_")[0]
 
     # Create various analysis modules
     mod0 = VerboseModule("VerboseModule", True, True, 10, True, True)
@@ -114,10 +115,11 @@ def processDefault_ray(modules_og, inputFiles):
 
 if __name__ == '__main__':
     eventNum = 0
-   # ray.init(ignore_reinit_error=True)
+    # ray.init(ignore_reinit_error=True)
     main(sys.argv[1:])
     start = time.time()
-    print("Analzyed .ftr file created in {} seconds".format(time.time() - start))
+    print("Analzyed .h5 file created in {} seconds".format(time.time() -
+                                                           start))
     os.system(
-        "python3 crateAnalysisPlotter_quanah.py processed_data/events_data_frame_{}.ftr True"
+        "python3 crateAnalysisPlotter_quanah.py processed_data/events_data_frame_{}.h5 True"
         .format(eventNum))

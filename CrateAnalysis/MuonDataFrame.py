@@ -14,7 +14,7 @@ To DO:
     - Imaging
 """
 
-import feather
+# import feather
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -47,12 +47,15 @@ def append_pdf(input, output):
 
 
 def parallelize_dataframe(df, func, path, n_cores=2):
+    print(path)
     df_split = np.array_split(df, n_cores)
     pool = Pool(n_cores)
     df = pd.concat(pool.map(func, df_split))
     pool.close()
     pool.join()
-    feather.write_dataframe(df, path)
+    # df.to_hdf(path, key=path, format="table")
+    df.to_hdf(path, key=path)
+    # feather.write_dataframe(df, path)
     return df
 
 
@@ -176,7 +179,8 @@ class MuonDataFrame:
         :param d1 [string]: type of decision to be made on multiTDC events (acceptable terms are "last", "first", "min", and "max")
                             default value = last
         """
-        self.events_df = pd.read_feather(path, use_threads=False)
+        self.newFileName = path.split(".")[0].split("/")[0] + "/" + path.split(
+            ".")[0].split("/")[1] + ".h5"
         self.nbins = 150
         self.quant_query_terms = []
         self.default_query_terms = [
@@ -187,21 +191,39 @@ class MuonDataFrame:
         ]
         self.query_terms = self.default_query_terms + self.quant_query_terms
         self.d1 = d1
+        if isNew:
+            try:
+                with pd.HDFStore(path) as hdf:
+                    key1 = hdf.keys()[0]
+                self.events_df = self.getDataFrame(
+                    pd.read_hdf(path, key=key1, use_threads=True))
+                #format="table",
+            except:
+                self.events_df = self.getDataFrame(
+                    #pd.read_hdf(path, format="table", use_threads=True))
+                    pd.read_hdf(path, use_threads=True))
+        else:
+            with pd.HDFStore(path) as hdf:
+                key2 = hdf.keys()[1]
+            self.events_df = pd.read_hdf(self.newFileName,
+                                         key=key2,
+                                         use_threads=True)
+            #  format="table",
         self.pdfName = path.split(".")[0].split("/")[1] + ".pdf"
         self.pdfList = []
         self.runNum = self.pdfName.split(".")[0].split("_")[-1]
         self.imagelist = []
-        self.newFileName = path.split(".")[0].split("/")[0] + "/" + path.split(
-            ".")[0].split("/")[1] + ".ftr"
-        if isNew:
-            self.events_df = self.getDataFrame(
-                pd.read_feather(path, use_threads=True))
-        else:
-            self.events_df = pd.read_feather(self.newFileName,
-                                             use_threads=True)
-
         self.og_df = self.events_df
         self.total = len(self.og_df.index)
+
+    def getCSVOutputFile(self, numEvents):
+        df = self.events_df
+        df.drop('ADC', axis=1, inplace=True)
+        df.drop('TDC', axis=1, inplace=True)
+        name = "processed_data/events_data_frame_{}.csv".format(self.runNum)
+        numEvents += 1
+        df.iloc[:numEvents, :].to_csv(name, header=True, index=False)
+        print("{} has been created".format(name))
 
     def reload(self):
         self.events_df = self.og_df
@@ -1165,7 +1187,8 @@ class MuonDataFrame:
 
     def serialize_dataframe(self, df, path):
         df = self.completeDataFrame(df)
-        feather.write_dataframe(df, path)
+        # feather.write_dataframe(df, path)
+        df.to_hdf(path, key=path)
         return df
 
     def completeDataFrame(self, df):

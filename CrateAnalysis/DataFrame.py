@@ -33,7 +33,7 @@ class DataFrame:
         self.r4 = 9
         if not os.path.exists('processed_data'):
             os.makedirs('processed_data')
-        self.path = "processed_data/" + self.name + ".ftr"
+        self.path = "processed_data/" + self.name + ".h5"
 
     def updateDataFrame(self, info, eventNum):
         self.data_dict.append(self.getDataDict(info, eventNum))
@@ -155,6 +155,17 @@ class DataFrame:
         )
         self.df0.drop('Scaler', axis=1, inplace=True)
         # self.df0 = self.df0.drop(0)
-        feather.write_dataframe(self.df0, self.path)
+        # self.df0.to_hdf(self.path, self.name, format="table")
+        data_store = pd.HDFStore(self.path)
+        data_store[self.name] = self.df0
+        data_store.close()
+       # data_store.append(self.name, self.df0, data_columns=True)
+        # feather.write_dataframe(self.df0, self.path)
         # self.showDataFrame()
         # self.df0.to_feather(self.path)
+
+        # with data_store as hdf:
+        # hdf.put(key=self.name,
+        # value=self.df0,
+        # format='table',
+        # data_columns=True)
