@@ -219,6 +219,15 @@ class MuonDataFrame:
         df["Run_Num"] = int(self.runNum)
         return df
 
+    def getCompleteCSVOutputFile(self):
+        df = self.events_df
+        df.drop('ADC', axis=1, inplace=True)
+        df.drop('TDC', axis=1, inplace=True)
+        df = self.addRunNumColumn(df)
+        name = "processed_data/events_data_frame_{}.csv".format(self.runNum)
+        df.to_csv(name, header=True, index=False)
+        print("{} has been created".format(name))
+
     def getCSVOutputFile(self, numEvents):
         df = self.events_df
         df.drop('ADC', axis=1, inplace=True)
