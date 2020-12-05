@@ -47,7 +47,6 @@ def append_pdf(input, output):
 
 
 def parallelize_dataframe(df, func, path, n_cores=2):
-    print(path)
     df_split = np.array_split(df, n_cores)
     pool = Pool(n_cores)
     df = pd.concat(pool.map(func, df_split))
@@ -191,7 +190,7 @@ class MuonDataFrame:
         ]
         self.query_terms = self.default_query_terms + self.quant_query_terms
         self.d1 = d1
-        if isNew:
+        if isNew == "True":
             try:
                 with pd.HDFStore(path) as hdf:
                     key1 = hdf.keys()[0]
@@ -216,10 +215,15 @@ class MuonDataFrame:
         self.og_df = self.events_df
         self.total = len(self.og_df.index)
 
+    def addRunNumColumn(self, df):
+        df["Run_Num"] = int(self.runNum)
+        return df
+
     def getCSVOutputFile(self, numEvents):
         df = self.events_df
         df.drop('ADC', axis=1, inplace=True)
         df.drop('TDC', axis=1, inplace=True)
+        df = self.addRunNumColumn(df)
         name = "processed_data/events_data_frame_{}.csv".format(self.runNum)
         numEvents += 1
         df.iloc[:numEvents, :].to_csv(name, header=True, index=False)
