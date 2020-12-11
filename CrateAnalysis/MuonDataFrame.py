@@ -290,13 +290,13 @@ class MuonDataFrame:
             self.getChannelPlots(pdf=True)
             pdf.savefig()
             plt.close()
-            self.getChannelSumPlots(pdf=True)
+            self.getChannelSumPlots(pdf=True, isBinned=True)
             pdf.savefig()
             plt.close()
-            self.getChannelDiffPlots(pdf=True)
+            self.getChannelDiffPlots(pdf=True, isBinned=True)
             pdf.savefig()
             plt.close()
-            self.getAsymmetry1DPlots(pdf=True)
+            self.getAsymmetry1DPlots(pdf=True, isBinned=True, bins=100)
             pdf.savefig()
             plt.close()
             self.getNumLayersHitPlot(pdf=True)
@@ -753,9 +753,9 @@ class MuonDataFrame:
         r4_p = list(self.og_df['r4hit'].values).count(1)
 
         yvals = [
-            l1_p / self.total, l2_p / self.total, l3_p / self.total,
-            l4_p / self.total, r1_p / self.total, r2_p / self.total,
-            r3_p / self.total, r4_p / self.total
+            l1_p / self.total, r1_p / self.total, l2_p / self.total,
+            r2_p / self.total, l3_p / self.total, r3_p / self.total,
+            l4_p / self.total, r4_p / self.total
         ]
         yvals = [i * 100 for i in yvals]
         xvals = [
@@ -910,7 +910,7 @@ class MuonDataFrame:
         ax7.hist(self.events_df['R4'], nbins, histtype='step')
         ax7.set_xlim([xmin, xmax])
         ax7.set_title('Ch10')
-        s = self.events_df['L2']
+        s = self.events_df['R4']
         mean, std, count = s.describe().values[1], s.describe(
         ).values[2], s.describe().values[0]
         ovflow = ((xmax < s.values) | (s.values < xmin)).sum()
@@ -930,268 +930,526 @@ class MuonDataFrame:
         else:
             return fig
 
-    def getChannelSumPlots(self, pdf=False, amount=5):
-        fig, axes = plt.subplots(nrows=4, ncols=1)
-        xmin, xmax = 150, 250
-        plt.suptitle("Histogram of Sum of Channels in their Respective Trays")
-        ax0, ax1, ax2, ax3 = axes.flatten()
-        nbins = len(self.events_df['sumL1']) // amount
-        ovflow = ((xmax < self.events_df['sumL1'].values) |
-                  (self.events_df['sumL1'].values < xmin)).sum()
-        ax0.hist(self.events_df['sumL1'], bins=nbins, histtype='step')
-        ax0.set_xlim([xmin, xmax])
-        s = self.events_df['sumL1']
-        mean, std, count = s.describe().values[1], s.describe(
-        ).values[2], s.describe().values[0]
-        textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}\nBin: {}\nOverflow: {}".format(
-            mean, std, count, nbins, ovflow)
-        props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
-        ax0.text(0.90,
-                 0.95,
-                 textstr,
-                 transform=ax0.transAxes,
-                 fontsize=5,
-                 verticalalignment='top',
-                 bbox=props)
-        ax0.set_title('Tray 1')
-        nbins = len(self.events_df['sumL2']) // amount
-        ovflow = ((xmax < self.events_df['sumL2'].values) |
-                  (self.events_df['sumL2'].values < xmin)).sum()
-        ax1.hist(self.events_df['sumL2'], nbins, histtype='step')
-        ax1.set_xlim([xmin, xmax])
-        ax1.set_title('Tray 2')
-        s = self.events_df['sumL2']
-        mean, std, count = s.describe().values[1], s.describe(
-        ).values[2], s.describe().values[0]
-        textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}\nBin: {}\nOverflow: {}".format(
-            mean, std, count, nbins, ovflow)
-        props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
-        ax1.text(0.90,
-                 0.95,
-                 textstr,
-                 transform=ax1.transAxes,
-                 fontsize=5,
-                 verticalalignment='top',
-                 bbox=props)
-        nbins = len(self.events_df['sumL3']) // amount
-        ovflow = ((xmax < self.events_df['sumL3'].values) |
-                  (self.events_df['sumL3'].values < xmin)).sum()
-        ax2.hist(self.events_df['sumL3'], nbins, histtype='step')
-        ax2.set_xlim([xmin, xmax])
-        ax2.set_title('Tray 3')
-        s = self.events_df['sumL3']
-        mean, std, count = s.describe().values[1], s.describe(
-        ).values[2], s.describe().values[0]
-        textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}\nBin: {}\nOverflow: {}".format(
-            mean, std, count, nbins, ovflow)
-        props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
-        ax2.text(0.90,
-                 0.95,
-                 textstr,
-                 transform=ax2.transAxes,
-                 fontsize=5,
-                 verticalalignment='top',
-                 bbox=props)
-        nbins = len(self.events_df['sumL4']) // amount
-        ovflow = ((xmax < self.events_df['sumL4'].values) |
-                  (self.events_df['sumL4'].values < xmin)).sum()
-        ax3.hist(self.events_df['sumL4'], nbins, histtype='step')
-        ax3.set_xlim([xmin, xmax])
-        ax3.set_title('Tray 4')
-        s = self.events_df['sumL4']
-        mean, std, count = s.describe().values[1], s.describe(
-        ).values[2], s.describe().values[0]
-        textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}\nBin: {}\nOverflow: {}".format(
-            mean, std, count, nbins, ovflow)
-        props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
-        ax3.text(0.90,
-                 0.95,
-                 textstr,
-                 transform=ax3.transAxes,
-                 fontsize=5,
-                 verticalalignment='top',
-                 bbox=props)
-        fig.tight_layout()
-        if not pdf:
-            plt.show()
+    def getChannelSumPlots(self, pdf=False, isBinned=True, bins=50, amount=5):
+        if isBinned:
+            fig, axes = plt.subplots(nrows=4, ncols=1)
+            xmin, xmax = 150, 250
+            plt.suptitle(
+                "Histogram of Sum of Channels in their Respective Trays")
+            ax0, ax1, ax2, ax3 = axes.flatten()
+            nbins = bins
+            ovflow = ((xmax < self.events_df['sumL1'].values) |
+                      (self.events_df['sumL1'].values < xmin)).sum()
+            ax0.hist(self.events_df['sumL1'], bins=nbins, histtype='step')
+            ax0.set_xlim([xmin, xmax])
+            s = self.events_df['sumL1']
+            mean, std, count = s.describe().values[1], s.describe(
+            ).values[2], s.describe().values[0]
+            textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}\nBin: {}\nOverflow: {}".format(
+                mean, std, count, nbins, ovflow)
+            props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+            ax0.text(0.90,
+                     0.95,
+                     textstr,
+                     transform=ax0.transAxes,
+                     fontsize=5,
+                     verticalalignment='top',
+                     bbox=props)
+            ax0.set_title('Tray 1')
+            ovflow = ((xmax < self.events_df['sumL2'].values) |
+                      (self.events_df['sumL2'].values < xmin)).sum()
+            ax1.hist(self.events_df['sumL2'], nbins, histtype='step')
+            ax1.set_xlim([xmin, xmax])
+            ax1.set_title('Tray 2')
+            s = self.events_df['sumL2']
+            mean, std, count = s.describe().values[1], s.describe(
+            ).values[2], s.describe().values[0]
+            textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}\nBin: {}\nOverflow: {}".format(
+                mean, std, count, nbins, ovflow)
+            props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+            ax1.text(0.90,
+                     0.95,
+                     textstr,
+                     transform=ax1.transAxes,
+                     fontsize=5,
+                     verticalalignment='top',
+                     bbox=props)
+            ovflow = ((xmax < self.events_df['sumL3'].values) |
+                      (self.events_df['sumL3'].values < xmin)).sum()
+            ax2.hist(self.events_df['sumL3'], nbins, histtype='step')
+            ax2.set_xlim([xmin, xmax])
+            ax2.set_title('Tray 3')
+            s = self.events_df['sumL3']
+            mean, std, count = s.describe().values[1], s.describe(
+            ).values[2], s.describe().values[0]
+            textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}\nBin: {}\nOverflow: {}".format(
+                mean, std, count, nbins, ovflow)
+            props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+            ax2.text(0.90,
+                     0.95,
+                     textstr,
+                     transform=ax2.transAxes,
+                     fontsize=5,
+                     verticalalignment='top',
+                     bbox=props)
+            ovflow = ((xmax < self.events_df['sumL4'].values) |
+                      (self.events_df['sumL4'].values < xmin)).sum()
+            ax3.hist(self.events_df['sumL4'], nbins, histtype='step')
+            ax3.set_xlim([xmin, xmax])
+            ax3.set_title('Tray 4')
+            s = self.events_df['sumL4']
+            mean, std, count = s.describe().values[1], s.describe(
+            ).values[2], s.describe().values[0]
+            textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}\nBin: {}\nOverflow: {}".format(
+                mean, std, count, nbins, ovflow)
+            props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+            ax3.text(0.90,
+                     0.95,
+                     textstr,
+                     transform=ax3.transAxes,
+                     fontsize=5,
+                     verticalalignment='top',
+                     bbox=props)
+            fig.tight_layout()
+            if not pdf:
+                plt.show()
+            else:
+                return fig
         else:
-            return fig
+            fig, axes = plt.subplots(nrows=4, ncols=1)
+            xmin, xmax = 150, 250
+            plt.suptitle(
+                "Histogram of Sum of Channels in their Respective Trays")
+            ax0, ax1, ax2, ax3 = axes.flatten()
+            nbins = len(self.events_df['sumL1']) // amount
+            ovflow = ((xmax < self.events_df['sumL1'].values) |
+                      (self.events_df['sumL1'].values < xmin)).sum()
+            ax0.hist(self.events_df['sumL1'], bins=nbins, histtype='step')
+            ax0.set_xlim([xmin, xmax])
+            s = self.events_df['sumL1']
+            mean, std, count = s.describe().values[1], s.describe(
+            ).values[2], s.describe().values[0]
+            textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}\nBin: {}\nOverflow: {}".format(
+                mean, std, count, nbins, ovflow)
+            props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+            ax0.text(0.90,
+                     0.95,
+                     textstr,
+                     transform=ax0.transAxes,
+                     fontsize=5,
+                     verticalalignment='top',
+                     bbox=props)
+            ax0.set_title('Tray 1')
+            nbins = len(self.events_df['sumL2']) // amount
+            ovflow = ((xmax < self.events_df['sumL2'].values) |
+                      (self.events_df['sumL2'].values < xmin)).sum()
+            ax1.hist(self.events_df['sumL2'], nbins, histtype='step')
+            ax1.set_xlim([xmin, xmax])
+            ax1.set_title('Tray 2')
+            s = self.events_df['sumL2']
+            mean, std, count = s.describe().values[1], s.describe(
+            ).values[2], s.describe().values[0]
+            textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}\nBin: {}\nOverflow: {}".format(
+                mean, std, count, nbins, ovflow)
+            props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+            ax1.text(0.90,
+                     0.95,
+                     textstr,
+                     transform=ax1.transAxes,
+                     fontsize=5,
+                     verticalalignment='top',
+                     bbox=props)
+            nbins = len(self.events_df['sumL3']) // amount
+            ovflow = ((xmax < self.events_df['sumL3'].values) |
+                      (self.events_df['sumL3'].values < xmin)).sum()
+            ax2.hist(self.events_df['sumL3'], nbins, histtype='step')
+            ax2.set_xlim([xmin, xmax])
+            ax2.set_title('Tray 3')
+            s = self.events_df['sumL3']
+            mean, std, count = s.describe().values[1], s.describe(
+            ).values[2], s.describe().values[0]
+            textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}\nBin: {}\nOverflow: {}".format(
+                mean, std, count, nbins, ovflow)
+            props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+            ax2.text(0.90,
+                     0.95,
+                     textstr,
+                     transform=ax2.transAxes,
+                     fontsize=5,
+                     verticalalignment='top',
+                     bbox=props)
+            nbins = len(self.events_df['sumL4']) // amount
+            ovflow = ((xmax < self.events_df['sumL4'].values) |
+                      (self.events_df['sumL4'].values < xmin)).sum()
+            ax3.hist(self.events_df['sumL4'], nbins, histtype='step')
+            ax3.set_xlim([xmin, xmax])
+            ax3.set_title('Tray 4')
+            s = self.events_df['sumL4']
+            mean, std, count = s.describe().values[1], s.describe(
+            ).values[2], s.describe().values[0]
+            textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}\nBin: {}\nOverflow: {}".format(
+                mean, std, count, nbins, ovflow)
+            props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+            ax3.text(0.90,
+                     0.95,
+                     textstr,
+                     transform=ax3.transAxes,
+                     fontsize=5,
+                     verticalalignment='top',
+                     bbox=props)
+            fig.tight_layout()
+            if not pdf:
+                plt.show()
+            else:
+                return fig
 
-    def getChannelDiffPlots(self, pdf=False, amount=5):
-        fig, axes = plt.subplots(nrows=4, ncols=1)
-        xmin = -100
-        xmax = 100
-        plt.suptitle(
-            "Histogram of Difference of Channels in their Respective Trays")
-        nbins = len(self.events_df['diffL1']) // amount
-        ovflow = ((xmax < self.events_df['diffL1'].values) |
-                  (self.events_df['diffL1'].values < xmin)).sum()
-        ax0, ax1, ax2, ax3 = axes.flatten()
-        ax0.hist(self.events_df['diffL1'], nbins, histtype='step')
-        ax0.set_xlim([xmin, xmax])
-        s = self.events_df['diffL1']
-        mean, std, count = s.describe().values[1], s.describe(
-        ).values[2], s.describe().values[0]
-        textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}\nBin: {}\nOverflow: {}".format(
-            mean, std, count, nbins, ovflow)
-        props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
-        ax0.text(0.90,
-                 0.95,
-                 textstr,
-                 transform=ax0.transAxes,
-                 fontsize=5,
-                 verticalalignment='top',
-                 bbox=props)
-        ax0.set_title('Tray 1')
-        nbins = len(self.events_df['diffL2']) // amount
-        ovflow = ((xmax < self.events_df['diffL2'].values) |
-                  (self.events_df['diffL2'].values < xmin)).sum()
-        ax1.hist(self.events_df['diffL2'], nbins, histtype='step')
-        ax1.set_xlim([xmin, xmax])
-        ax1.set_title('Tray 2')
-        s = self.events_df['diffL2']
-        mean, std, count = s.describe().values[1], s.describe(
-        ).values[2], s.describe().values[0]
-        textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}\nBin: {}\nOverflow: {}".format(
-            mean, std, count, nbins, ovflow)
-        props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
-        ax1.text(0.90,
-                 0.95,
-                 textstr,
-                 transform=ax1.transAxes,
-                 fontsize=5,
-                 verticalalignment='top',
-                 bbox=props)
-        nbins = len(self.events_df['diffL3']) // amount
-        ovflow = ((xmax < self.events_df['diffL3'].values) |
-                  (self.events_df['diffL3'].values < xmin)).sum()
-        ax2.hist(self.events_df['diffL3'], nbins, histtype='step')
-        ax2.set_xlim([xmin, xmax])
-        ax2.set_title('Tray 3')
-        s = self.events_df['diffL3']
-        mean, std, count = s.describe().values[1], s.describe(
-        ).values[2], s.describe().values[0]
-        textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}\nBin: {}\nOverflow: {}".format(
-            mean, std, count, nbins, ovflow)
-        props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
-        ax2.text(0.90,
-                 0.95,
-                 textstr,
-                 transform=ax2.transAxes,
-                 fontsize=5,
-                 verticalalignment='top',
-                 bbox=props)
-        nbins = len(self.events_df['diffL4']) // amount
-        ovflow = ((xmax < self.events_df['diffL4'].values) |
-                  (self.events_df['diffL4'].values < xmin)).sum()
-        ax3.hist(self.events_df['diffL4'], nbins, histtype='step')
-        ax3.set_xlim([xmin, xmax])
-        ax3.set_title('Tray 4')
-        s = self.events_df['diffL4']
-        mean, std, count = s.describe().values[1], s.describe(
-        ).values[2], s.describe().values[0]
-        textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}\nBin: {}\nOverflow: {}".format(
-            mean, std, count, nbins, ovflow)
-        props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
-        ax3.text(0.90,
-                 0.95,
-                 textstr,
-                 transform=ax3.transAxes,
-                 fontsize=5,
-                 verticalalignment='top',
-                 bbox=props)
-        fig.tight_layout()
-        if not pdf:
-            plt.show()
+    def getChannelDiffPlots(self, pdf=False, isBinned=True, bins=50, amount=5):
+        if isBinned:
+            fig, axes = plt.subplots(nrows=4, ncols=1)
+            xmin = -100
+            xmax = 100
+            plt.suptitle(
+                "Histogram of Difference of Channels in their Respective Trays"
+            )
+            nbins = bins
+            ovflow = ((xmax < self.events_df['diffL1'].values) |
+                      (self.events_df['diffL1'].values < xmin)).sum()
+            ax0, ax1, ax2, ax3 = axes.flatten()
+            ax0.hist(self.events_df['diffL1'], nbins, histtype='step')
+            ax0.set_xlim([xmin, xmax])
+            s = self.events_df['diffL1']
+            mean, std, count = s.describe().values[1], s.describe(
+            ).values[2], s.describe().values[0]
+            textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}\nBin: {}\nOverflow: {}".format(
+                mean, std, count, nbins, ovflow)
+            props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+            ax0.text(0.90,
+                     0.95,
+                     textstr,
+                     transform=ax0.transAxes,
+                     fontsize=5,
+                     verticalalignment='top',
+                     bbox=props)
+            ax0.set_title('Tray 1')
+            ovflow = ((xmax < self.events_df['diffL2'].values) |
+                      (self.events_df['diffL2'].values < xmin)).sum()
+            ax1.hist(self.events_df['diffL2'], nbins, histtype='step')
+            ax1.set_xlim([xmin, xmax])
+            ax1.set_title('Tray 2')
+            s = self.events_df['diffL2']
+            mean, std, count = s.describe().values[1], s.describe(
+            ).values[2], s.describe().values[0]
+            textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}\nBin: {}\nOverflow: {}".format(
+                mean, std, count, nbins, ovflow)
+            props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+            ax1.text(0.90,
+                     0.95,
+                     textstr,
+                     transform=ax1.transAxes,
+                     fontsize=5,
+                     verticalalignment='top',
+                     bbox=props)
+            ovflow = ((xmax < self.events_df['diffL3'].values) |
+                      (self.events_df['diffL3'].values < xmin)).sum()
+            ax2.hist(self.events_df['diffL3'], nbins, histtype='step')
+            ax2.set_xlim([xmin, xmax])
+            ax2.set_title('Tray 3')
+            s = self.events_df['diffL3']
+            mean, std, count = s.describe().values[1], s.describe(
+            ).values[2], s.describe().values[0]
+            textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}\nBin: {}\nOverflow: {}".format(
+                mean, std, count, nbins, ovflow)
+            props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+            ax2.text(0.90,
+                     0.95,
+                     textstr,
+                     transform=ax2.transAxes,
+                     fontsize=5,
+                     verticalalignment='top',
+                     bbox=props)
+            ovflow = ((xmax < self.events_df['diffL4'].values) |
+                      (self.events_df['diffL4'].values < xmin)).sum()
+            ax3.hist(self.events_df['diffL4'], nbins, histtype='step')
+            ax3.set_xlim([xmin, xmax])
+            ax3.set_title('Tray 4')
+            s = self.events_df['diffL4']
+            mean, std, count = s.describe().values[1], s.describe(
+            ).values[2], s.describe().values[0]
+            textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}\nBin: {}\nOverflow: {}".format(
+                mean, std, count, nbins, ovflow)
+            props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+            ax3.text(0.90,
+                     0.95,
+                     textstr,
+                     transform=ax3.transAxes,
+                     fontsize=5,
+                     verticalalignment='top',
+                     bbox=props)
+            fig.tight_layout()
+            if not pdf:
+                plt.show()
+            else:
+                return fig
         else:
-            return fig
+            fig, axes = plt.subplots(nrows=4, ncols=1)
+            xmin = -100
+            xmax = 100
+            plt.suptitle(
+                "Histogram of Difference of Channels in their Respective Trays"
+            )
+            nbins = len(self.events_df['diffL1']) // amount
+            ovflow = ((xmax < self.events_df['diffL1'].values) |
+                      (self.events_df['diffL1'].values < xmin)).sum()
+            ax0, ax1, ax2, ax3 = axes.flatten()
+            ax0.hist(self.events_df['diffL1'], nbins, histtype='step')
+            ax0.set_xlim([xmin, xmax])
+            s = self.events_df['diffL1']
+            mean, std, count = s.describe().values[1], s.describe(
+            ).values[2], s.describe().values[0]
+            textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}\nBin: {}\nOverflow: {}".format(
+                mean, std, count, nbins, ovflow)
+            props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+            ax0.text(0.90,
+                     0.95,
+                     textstr,
+                     transform=ax0.transAxes,
+                     fontsize=5,
+                     verticalalignment='top',
+                     bbox=props)
+            ax0.set_title('Tray 1')
+            nbins = len(self.events_df['diffL2']) // amount
+            ovflow = ((xmax < self.events_df['diffL2'].values) |
+                      (self.events_df['diffL2'].values < xmin)).sum()
+            ax1.hist(self.events_df['diffL2'], nbins, histtype='step')
+            ax1.set_xlim([xmin, xmax])
+            ax1.set_title('Tray 2')
+            s = self.events_df['diffL2']
+            mean, std, count = s.describe().values[1], s.describe(
+            ).values[2], s.describe().values[0]
+            textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}\nBin: {}\nOverflow: {}".format(
+                mean, std, count, nbins, ovflow)
+            props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+            ax1.text(0.90,
+                     0.95,
+                     textstr,
+                     transform=ax1.transAxes,
+                     fontsize=5,
+                     verticalalignment='top',
+                     bbox=props)
+            nbins = len(self.events_df['diffL3']) // amount
+            ovflow = ((xmax < self.events_df['diffL3'].values) |
+                      (self.events_df['diffL3'].values < xmin)).sum()
+            ax2.hist(self.events_df['diffL3'], nbins, histtype='step')
+            ax2.set_xlim([xmin, xmax])
+            ax2.set_title('Tray 3')
+            s = self.events_df['diffL3']
+            mean, std, count = s.describe().values[1], s.describe(
+            ).values[2], s.describe().values[0]
+            textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}\nBin: {}\nOverflow: {}".format(
+                mean, std, count, nbins, ovflow)
+            props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+            ax2.text(0.90,
+                     0.95,
+                     textstr,
+                     transform=ax2.transAxes,
+                     fontsize=5,
+                     verticalalignment='top',
+                     bbox=props)
+            nbins = len(self.events_df['diffL4']) // amount
+            ovflow = ((xmax < self.events_df['diffL4'].values) |
+                      (self.events_df['diffL4'].values < xmin)).sum()
+            ax3.hist(self.events_df['diffL4'], nbins, histtype='step')
+            ax3.set_xlim([xmin, xmax])
+            ax3.set_title('Tray 4')
+            s = self.events_df['diffL4']
+            mean, std, count = s.describe().values[1], s.describe(
+            ).values[2], s.describe().values[0]
+            textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}\nBin: {}\nOverflow: {}".format(
+                mean, std, count, nbins, ovflow)
+            props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+            ax3.text(0.90,
+                     0.95,
+                     textstr,
+                     transform=ax3.transAxes,
+                     fontsize=5,
+                     verticalalignment='top',
+                     bbox=props)
+            fig.tight_layout()
+            if not pdf:
+                plt.show()
+            else:
+                return fig
 
-    def getAsymmetry1DPlots(self, pdf=False, amount=10):
-        fig, axes = plt.subplots(nrows=4, ncols=1)
-        plt.suptitle("Histogram of Asymmetry of each Tray")
-        ax0, ax1, ax2, ax3 = axes.flatten()
-        xmin, xmax = -0.25, 0.25
-        nbins = len(self.events_df['asymL1']) // amount
-        ovflow = ((xmax < self.events_df['asymL1'].values) |
-                  (self.events_df['asymL1'].values < xmin)).sum()
-        ax0.hist(self.events_df['asymL1'], nbins, histtype='step')
-        s = self.events_df['asymL1']
-        mean, std, count = s.describe().values[1], s.describe(
-        ).values[2], s.describe().values[0]
-        textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}\nBin: {}\nOverflow: {}".format(
-            mean, std, count, nbins, ovflow)
-        props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
-        ax0.text(0.90,
-                 0.95,
-                 textstr,
-                 transform=ax0.transAxes,
-                 fontsize=5,
-                 verticalalignment='top',
-                 bbox=props)
-        ax0.set_xlim([xmin, xmax])
-        ax0.set_title('Tray 1')
-        nbins = len(self.events_df['asymL2']) // amount
-        ovflow = ((xmax < self.events_df['asymL2'].values) |
-                  (self.events_df['asymL2'].values < xmin)).sum()
-        ax1.hist(self.events_df['asymL2'], nbins, histtype='step')
-        ax1.set_xlim([xmin, xmax])
-        ax1.set_title('Tray 2')
-        s = self.events_df['asymL2']
-        mean, std, count = s.describe().values[1], s.describe(
-        ).values[2], s.describe().values[0]
-        textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}\nBin: {}\nOverflow: {}".format(
-            mean, std, count, nbins, ovflow)
-        props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
-        ax1.text(0.90,
-                 0.95,
-                 textstr,
-                 transform=ax1.transAxes,
-                 fontsize=5,
-                 verticalalignment='top',
-                 bbox=props)
-        nbins = len(self.events_df['asymL3']) // amount
-        ovflow = ((xmax < self.events_df['asymL3'].values) |
-                  (self.events_df['asymL3'].values < xmin)).sum()
-        ax2.hist(self.events_df['asymL3'], nbins, histtype='step')
-        ax2.set_xlim([xmin, xmax])
-        ax2.set_title('Tray 3')
-        s = self.events_df['asymL3']
-        mean, std, count = s.describe().values[1], s.describe(
-        ).values[2], s.describe().values[0]
-        textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}\nBin: {}\nOverflow: {}".format(
-            mean, std, count, nbins, ovflow)
-        props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
-        ax2.text(0.90,
-                 0.95,
-                 textstr,
-                 transform=ax2.transAxes,
-                 fontsize=5,
-                 verticalalignment='top',
-                 bbox=props)
-        nbins = len(self.events_df['asymL4']) // amount
-        ovflow = ((xmax < self.events_df['asymL4'].values) |
-                  (self.events_df['asymL4'].values < xmin)).sum()
-        ax3.hist(self.events_df['asymL4'], nbins, histtype='step')
-        ax3.set_xlim([xmin, xmax])
-        ax3.set_title('Tray 4')
-        s = self.events_df['asymL4']
-        mean, std, count = s.describe().values[1], s.describe(
-        ).values[2], s.describe().values[0]
-        textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}\nBin: {}\nOverflow: {}".format(
-            mean, std, count, nbins, ovflow)
-        props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
-        ax3.text(0.90,
-                 0.95,
-                 textstr,
-                 transform=ax3.transAxes,
-                 fontsize=5,
-                 verticalalignment='top',
-                 bbox=props)
-        fig.tight_layout()
-        if not pdf:
-            plt.show()
+    def getAsymmetry1DPlots(self, pdf=False, isBinned=True, bins=50, amount=5):
+        if isBinned:
+            fig, axes = plt.subplots(nrows=4, ncols=1)
+            plt.suptitle("Histogram of Asymmetry of each Tray")
+            ax0, ax1, ax2, ax3 = axes.flatten()
+            xmin, xmax = -0.25, 0.25
+            nbins = bins
+            ovflow = ((xmax < self.events_df['asymL1'].values) |
+                      (self.events_df['asymL1'].values < xmin)).sum()
+            ax0.hist(self.events_df['asymL1'], nbins, histtype='step')
+            s = self.events_df['asymL1']
+            mean, std, count = s.describe().values[1], s.describe(
+            ).values[2], s.describe().values[0]
+            textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}\nBin: {}\nOverflow: {}".format(
+                mean, std, count, nbins, ovflow)
+            props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+            ax0.text(0.90,
+                     0.95,
+                     textstr,
+                     transform=ax0.transAxes,
+                     fontsize=5,
+                     verticalalignment='top',
+                     bbox=props)
+            ax0.set_xlim([xmin, xmax])
+            ax0.set_title('Tray 1')
+            ovflow = ((xmax < self.events_df['asymL2'].values) |
+                      (self.events_df['asymL2'].values < xmin)).sum()
+            ax1.hist(self.events_df['asymL2'], nbins, histtype='step')
+            ax1.set_xlim([xmin, xmax])
+            ax1.set_title('Tray 2')
+            s = self.events_df['asymL2']
+            mean, std, count = s.describe().values[1], s.describe(
+            ).values[2], s.describe().values[0]
+            textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}\nBin: {}\nOverflow: {}".format(
+                mean, std, count, nbins, ovflow)
+            props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+            ax1.text(0.90,
+                     0.95,
+                     textstr,
+                     transform=ax1.transAxes,
+                     fontsize=5,
+                     verticalalignment='top',
+                     bbox=props)
+            ovflow = ((xmax < self.events_df['asymL3'].values) |
+                      (self.events_df['asymL3'].values < xmin)).sum()
+            ax2.hist(self.events_df['asymL3'], nbins, histtype='step')
+            ax2.set_xlim([xmin, xmax])
+            ax2.set_title('Tray 3')
+            s = self.events_df['asymL3']
+            mean, std, count = s.describe().values[1], s.describe(
+            ).values[2], s.describe().values[0]
+            textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}\nBin: {}\nOverflow: {}".format(
+                mean, std, count, nbins, ovflow)
+            props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+            ax2.text(0.90,
+                     0.95,
+                     textstr,
+                     transform=ax2.transAxes,
+                     fontsize=5,
+                     verticalalignment='top',
+                     bbox=props)
+            ovflow = ((xmax < self.events_df['asymL4'].values) |
+                      (self.events_df['asymL4'].values < xmin)).sum()
+            ax3.hist(self.events_df['asymL4'], nbins, histtype='step')
+            ax3.set_xlim([xmin, xmax])
+            ax3.set_title('Tray 4')
+            s = self.events_df['asymL4']
+            mean, std, count = s.describe().values[1], s.describe(
+            ).values[2], s.describe().values[0]
+            textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}\nBin: {}\nOverflow: {}".format(
+                mean, std, count, nbins, ovflow)
+            props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+            ax3.text(0.90,
+                     0.95,
+                     textstr,
+                     transform=ax3.transAxes,
+                     fontsize=5,
+                     verticalalignment='top',
+                     bbox=props)
+            fig.tight_layout()
+            if not pdf:
+                plt.show()
+            else:
+                return fig
         else:
-            return fig
+            fig, axes = plt.subplots(nrows=4, ncols=1)
+            plt.suptitle("Histogram of Asymmetry of each Tray")
+            ax0, ax1, ax2, ax3 = axes.flatten()
+            xmin, xmax = -0.25, 0.25
+            nbins = len(self.events_df['asymL1']) // amount
+            ovflow = ((xmax < self.events_df['asymL1'].values) |
+                      (self.events_df['asymL1'].values < xmin)).sum()
+            ax0.hist(self.events_df['asymL1'], nbins, histtype='step')
+            s = self.events_df['asymL1']
+            mean, std, count = s.describe().values[1], s.describe(
+            ).values[2], s.describe().values[0]
+            textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}\nBin: {}\nOverflow: {}".format(
+                mean, std, count, nbins, ovflow)
+            props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+            ax0.text(0.90,
+                     0.95,
+                     textstr,
+                     transform=ax0.transAxes,
+                     fontsize=5,
+                     verticalalignment='top',
+                     bbox=props)
+            ax0.set_xlim([xmin, xmax])
+            ax0.set_title('Tray 1')
+            nbins = len(self.events_df['asymL2']) // amount
+            ovflow = ((xmax < self.events_df['asymL2'].values) |
+                      (self.events_df['asymL2'].values < xmin)).sum()
+            ax1.hist(self.events_df['asymL2'], nbins, histtype='step')
+            ax1.set_xlim([xmin, xmax])
+            ax1.set_title('Tray 2')
+            s = self.events_df['asymL2']
+            mean, std, count = s.describe().values[1], s.describe(
+            ).values[2], s.describe().values[0]
+            textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}\nBin: {}\nOverflow: {}".format(
+                mean, std, count, nbins, ovflow)
+            props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+            ax1.text(0.90,
+                     0.95,
+                     textstr,
+                     transform=ax1.transAxes,
+                     fontsize=5,
+                     verticalalignment='top',
+                     bbox=props)
+            nbins = len(self.events_df['asymL3']) // amount
+            ovflow = ((xmax < self.events_df['asymL3'].values) |
+                      (self.events_df['asymL3'].values < xmin)).sum()
+            ax2.hist(self.events_df['asymL3'], nbins, histtype='step')
+            ax2.set_xlim([xmin, xmax])
+            ax2.set_title('Tray 3')
+            s = self.events_df['asymL3']
+            mean, std, count = s.describe().values[1], s.describe(
+            ).values[2], s.describe().values[0]
+            textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}\nBin: {}\nOverflow: {}".format(
+                mean, std, count, nbins, ovflow)
+            props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+            ax2.text(0.90,
+                     0.95,
+                     textstr,
+                     transform=ax2.transAxes,
+                     fontsize=5,
+                     verticalalignment='top',
+                     bbox=props)
+            nbins = len(self.events_df['asymL4']) // amount
+            ovflow = ((xmax < self.events_df['asymL4'].values) |
+                      (self.events_df['asymL4'].values < xmin)).sum()
+            ax3.hist(self.events_df['asymL4'], nbins, histtype='step')
+            ax3.set_xlim([xmin, xmax])
+            ax3.set_title('Tray 4')
+            s = self.events_df['asymL4']
+            mean, std, count = s.describe().values[1], s.describe(
+            ).values[2], s.describe().values[0]
+            textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}\nBin: {}\nOverflow: {}".format(
+                mean, std, count, nbins, ovflow)
+            props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+            ax3.text(0.90,
+                     0.95,
+                     textstr,
+                     transform=ax3.transAxes,
+                     fontsize=5,
+                     verticalalignment='top',
+                     bbox=props)
+            fig.tight_layout()
+            if not pdf:
+                plt.show()
+            else:
+                return fig
 
     def getDataFrame(self, df):
         # return self.serialize_dataframe(df, self.newFileName)

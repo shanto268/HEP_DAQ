@@ -22,10 +22,10 @@ if __name__ == "__main__":
 
     mdfo = MuonDataFrame(ifile, isNew=iisNew, d1="last")
     # mdfo.getCSVOutputFile(100000)
-    mdfo.getCompleteCSVOutputFile()
+    mdfo.generateAnaReport()
+    #mdfo.getCompleteCSVOutputFile()
     # mdfo.getM2DPlot()
     # mdf = mdfo.events_df
-    # mdfo.generateAnaReport()
     # mdfo.getAnaReport()
     # mdfo.getChannelStatusPlot()
     # mdfo.gui()
