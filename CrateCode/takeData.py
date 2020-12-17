@@ -40,8 +40,8 @@ def main(totalEvents, test_num):
     # Configure the histogram plotter.
     # The channels to plot: a tuple of (slot, channel) pairs.
     # "None" will take all channels configured in the DAQ.
-    channels_to_plot = ((2, 0), (2, 1), (2, 3), (2, 4), (2, 6), (2, 7), (2, 9),
-                        (2, 10))
+    channels_to_plot = ((2, 0), (2, 1), (2, 2), (2, 3), (2, 6), (2, 7), (2, 8),
+                        (2, 9))
     nBins = 100
     updateAfterHowManyEvents = 10
     verticalSpaceAdjustment = 0.4

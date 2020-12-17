@@ -61,12 +61,12 @@ class DataFrame:
             else:
                 self.r1 = 0
 
-            if 3 in channels:
+            if 2 in channels:
                 self.l2 = 1
             else:
                 self.l2 = 0
 
-            if 4 in channels:
+            if 3 in channels:
                 self.r2 = 1
             else:
                 self.r2 = 0
@@ -81,12 +81,12 @@ class DataFrame:
             else:
                 self.r3 = 0
 
-            if 9 in channels:
+            if 8 in channels:
                 self.l4 = 1
             else:
                 self.l4 = 0
 
-            if 10 in channels:
+            if 9 in channels:
                 # print(channels)
                 self.r4 = 1
             else:
@@ -159,13 +159,14 @@ class DataFrame:
         data_store = pd.HDFStore(self.path)
         data_store[self.name] = self.df0
         data_store.close()
-       # data_store.append(self.name, self.df0, data_columns=True)
-        # feather.write_dataframe(self.df0, self.path)
-        # self.showDataFrame()
-        # self.df0.to_feather(self.path)
 
-        # with data_store as hdf:
-        # hdf.put(key=self.name,
-        # value=self.df0,
-        # format='table',
-        # data_columns=True)
+    # data_store.append(self.name, self.df0, data_columns=True)
+    # feather.write_dataframe(self.df0, self.path)
+    # self.showDataFrame()
+    # self.df0.to_feather(self.path)
+
+    # with data_store as hdf:
+    # hdf.put(key=self.name,
+    # value=self.df0,
+    # format='table',
+    # data_columns=True)

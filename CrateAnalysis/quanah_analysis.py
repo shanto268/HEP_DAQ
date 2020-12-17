@@ -121,5 +121,5 @@ if __name__ == '__main__':
     print("Analzyed .h5 file created in {} seconds".format(time.time() -
                                                            start))
     os.system(
-        "python3 crateAnalysisPlotter_quanah.py processed_data/events_data_frame_{}.h5 True"
+        "python3 crateAnalysisPlotter_quanah.py processed_data/events_data_frame_{}.h5 False"
         .format(eventNum))

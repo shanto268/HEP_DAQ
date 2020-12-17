@@ -49,12 +49,12 @@ class MissingTDCCounter(DummyModule):
             else:
                 self.r1.append(0)
 
-            if 3 in channels:
+            if 2 in channels:
                 self.l2.append(1)
             else:
                 self.l2.append(0)
 
-            if 4 in channels:
+            if 3 in channels:
                 self.r2.append(1)
             else:
                 self.r2.append(0)
@@ -69,12 +69,12 @@ class MissingTDCCounter(DummyModule):
             else:
                 self.r3.append(0)
 
-            if 9 in channels:
+            if 8 in channels:
                 self.l4.append(1)
             else:
                 self.l4.append(0)
 
-            if 10 in channels:
+            if 9 in channels:
                 # print(channels)
                 self.r4.append(1)
             else:
@@ -110,12 +110,13 @@ class MissingTDCCounter(DummyModule):
         # print("r4_p : ", r4_p)
 
         yvals = [
-            l1_p / self.total, l2_p / self.total, l3_p / self.total,
-            l4_p / self.total, r1_p / self.total, r2_p / self.total,
-            r3_p / self.total, r4_p / self.total
+            l1_p / self.total, r1_p / self.total, l2_p / self.total,
+            r2_p / self.total, l3_p / self.total, r3_p / self.total,
+            l4_p / self.total, r4_p / self.total
         ]
+
         xvals = [
-            "Ch 0", "Ch 1", "Ch 3", "Ch 4", "Ch 6", "Ch 7", "Ch 9", "Ch 10"
+            "Ch 0", "Ch 1", "Ch 2", "Ch 3", "Ch 6", "Ch 7", "Ch 8", "Ch 9"
         ]
         barlist = plt.bar(xvals, yvals)
         barlist[0].set_color('r')

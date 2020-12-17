@@ -95,8 +95,7 @@ def processWithCuts(modules1, modules2, inputFiles):
 
 def processDefault(modules_og, inputFiles):
     t0 = datetime.now()
-    job_id = runAnalysisSequence.remote(modules_og, inputFiles)
-    n, newRunRecord = ray.get(job_id)
+    n, newRunRecord  = runAnalysisSequence(modules_og, inputFiles)
     dt = datetime.now() - t0
     print('Processed %d events in %g sec' % (n, dt.total_seconds()))
 

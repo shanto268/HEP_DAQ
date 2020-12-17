@@ -49,10 +49,10 @@ class TDCAnalyzerRun(DummyModule):
             tdcCalc.update({"Layer1diff": L1d})
             tdcCalc.update({"Layer1asym": L1a})
 
-        if (2, 3) in tdcData and (2, 4) in tdcData and lenTDCData >= 2:
+        if (2, 2) in tdcData and (2, 3) in tdcData and lenTDCData >= 2:
             layer_num = 2
-            add_TDC = tdcData[(2, 3)] + tdcData[(2, 4)]
-            sub_TDC = tdcData[(2, 3)] - tdcData[(2, 4)]
+            add_TDC = tdcData[(2, 2)] + tdcData[(2, 3)]
+            sub_TDC = tdcData[(2, 2)] - tdcData[(2, 3)]
             channelOp2.update({"add_TDC": add_TDC})
             channelOp2.update({"sub_TDC": sub_TDC})
             L2d = sub_TDC

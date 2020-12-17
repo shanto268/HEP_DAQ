@@ -20,9 +20,10 @@ import numpy as np
 import pandas as pd
 import sys
 import os
-from matplotlib.backends.backend_pdf import PdfPages
+import matplotlib as mpl
 import itertools
 import datetime
+from matplotlib.backends.backend_pdf import PdfPages
 from collections import Counter
 from collections import OrderedDict
 from collections import defaultdict
@@ -33,7 +34,7 @@ from Histo2d import Histo2D
 from PIL import Image
 from PyPDF2 import PdfFileWriter, PdfFileReader, PdfFileMerger
 from multipledispatch import dispatch
-import matplotlib as mpl
+from Notify import Notify
 
 np.warnings.filterwarnings('ignore')
 
@@ -185,7 +186,7 @@ class MuonDataFrame:
         self.default_query_terms = [
             'event_num', 'event_time', 'deadtime', 'ADC', 'TDC', 'SCh0',
             'SCh1', 'SCh2', 'SCh3', 'SCh4', 'SCh5', 'SCh6', 'SCh7', 'SCh8',
-            'SCh9', 'SCh10', 'SCh11', 'l1hit', 'l2hit', 'l3hit', 'l4hit',
+            'SCh9', 'SCh9', 'SCh11', 'l1hit', 'l2hit', 'l3hit', 'l4hit',
             'r1hit', 'r2hit', 'r3hit', 'r4hit'
         ]
         self.query_terms = self.default_query_terms + self.quant_query_terms
@@ -218,6 +219,10 @@ class MuonDataFrame:
     def addRunNumColumn(self, df):
         df["Run_Num"] = int(self.runNum)
         return df
+
+    def sendReportEmail(self):
+        pdfName = self.generateAnaReport()
+        Notify().sendPdfEmail(pdfName)
 
     def getCompleteCSVOutputFile(self):
         df = self.events_df
@@ -481,7 +486,7 @@ class MuonDataFrame:
                  bbox=props)
         s = self.events_df['SCh10']
         nbins = (max(s.values) - min(s.values)) // amount
-        ax6.hist(self.events_df['SCh10'], nbins, histtype='step')
+        ax6.hist(self.events_df['SCh9'], nbins, histtype='step')
         ax6.set_title('Ch10 (4L)')
         mean, std, count = s.describe().values[1], s.describe(
         ).values[2], s.describe().values[0]
@@ -759,7 +764,7 @@ class MuonDataFrame:
         ]
         yvals = [i * 100 for i in yvals]
         xvals = [
-            "Ch 0", "Ch 1", "Ch 3", "Ch 4", "Ch 6", "Ch 7", "Ch 9", "Ch 10"
+            "Ch 0", "Ch 1", "Ch 2", "Ch 3", "Ch 6", "Ch 7", "Ch 8", "Ch 9"
         ]
         barlist = plt.bar(xvals, yvals)
         barlist[0].set_color('r')
@@ -823,7 +828,7 @@ class MuonDataFrame:
                  verticalalignment='top',
                  bbox=props)
         ax2.hist(self.events_df['L2'], nbins, histtype='step')
-        ax2.set_title('Ch3')
+        ax2.set_title('Ch2')
         ax2.set_xlim([xmin, xmax])
         s = self.events_df['L2']
         mean, std, count = s.describe().values[1], s.describe(
@@ -841,7 +846,7 @@ class MuonDataFrame:
                  bbox=props)
         ax3.hist(self.events_df['R2'], nbins, histtype='step')
         ax3.set_xlim([xmin, xmax])
-        ax3.set_title('Ch4')
+        ax3.set_title('Ch3')
         s = self.events_df['R2']
         mean, std, count = s.describe().values[1], s.describe(
         ).values[2], s.describe().values[0]
@@ -892,7 +897,7 @@ class MuonDataFrame:
                  bbox=props)
         ax6.hist(self.events_df['L4'], nbins, histtype='step')
         ax6.set_xlim([xmin, xmax])
-        ax6.set_title('Ch9')
+        ax6.set_title('Ch8')
         s = self.events_df['L4']
         mean, std, count = s.describe().values[1], s.describe(
         ).values[2], s.describe().values[0]
@@ -909,7 +914,7 @@ class MuonDataFrame:
                  bbox=props)
         ax7.hist(self.events_df['R4'], nbins, histtype='step')
         ax7.set_xlim([xmin, xmax])
-        ax7.set_title('Ch10')
+        ax7.set_title('Ch9')
         s = self.events_df['R4']
         mean, std, count = s.describe().values[1], s.describe(
         ).values[2], s.describe().values[0]
@@ -1453,24 +1458,48 @@ class MuonDataFrame:
 
     def getDataFrame(self, df):
         # return self.serialize_dataframe(df, self.newFileName)
-        return parallelize_dataframe(df, self.completeDataFrame,
+        return parallelize_dataframe(df, self.completeDataFrameNoADCTDC,
                                      self.newFileName)
 
     def serialize_dataframe(self, df, path):
-        df = self.completeDataFrame(df)
+        df = self.completeDataFrameNoADCTDC(df)
         # feather.write_dataframe(df, path)
         df.to_hdf(path, key=path)
+        return df
+
+    def completeDataFrameNoADCTDC(self, df):
+        df['L1'] = self.getTDC(df['TDC'].to_numpy(), 0)
+        df['R1'] = self.getTDC(df['TDC'].values, 1)
+        df['L2'] = self.getTDC(df['TDC'].values, 2)
+        df['R2'] = self.getTDC(df['TDC'].values, 3)
+        df['L3'] = self.getTDC(df['TDC'].values, 6)
+        df['R3'] = self.getTDC(df['TDC'].values, 7)
+        df['L4'] = self.getTDC(df['TDC'].values, 8)
+        df['R4'] = self.getTDC(df['TDC'].values, 9)
+        df['sumL1'] = df.eval('L1 + R1')
+        df['sumL2'] = df.eval('L2 + R2')
+        df['sumL3'] = df.eval('L3 + R3')
+        df['sumL4'] = df.eval('L4 + R4')
+        df['diffL1'] = df.eval('L1 - R1')
+        df['diffL2'] = df.eval('L2 - R2')
+        df['diffL3'] = df.eval('L3 - R3')
+        df['diffL4'] = df.eval('L4 - R4')
+        df['asymL1'] = df.eval('diffL1 / sumL1')
+        df['asymL2'] = df.eval('diffL2 / sumL2')
+        df['asymL3'] = df.eval('diffL3 / sumL3')
+        df['asymL4'] = df.eval('diffL4 / sumL4')
+        df['numLHit'] = self.removeMultiHits(df['TDC'].values)
         return df
 
     def completeDataFrame(self, df):
         df['L1'] = self.getTDC(df['TDC'].to_numpy(), 0)
         df['R1'] = self.getTDC(df['TDC'].values, 1)
-        df['L2'] = self.getTDC(df['TDC'].values, 3)
-        df['R2'] = self.getTDC(df['TDC'].values, 4)
+        df['L2'] = self.getTDC(df['TDC'].values, 2)
+        df['R2'] = self.getTDC(df['TDC'].values, 3)
         df['L3'] = self.getTDC(df['TDC'].values, 6)
         df['R3'] = self.getTDC(df['TDC'].values, 7)
-        df['L4'] = self.getTDC(df['TDC'].values, 9)
-        df['R4'] = self.getTDC(df['TDC'].values, 10)
+        df['L4'] = self.getTDC(df['TDC'].values, 8)
+        df['R4'] = self.getTDC(df['TDC'].values, 9)
         df['sumL1'] = df.eval('L1 + R1')
         df['sumL2'] = df.eval('L2 + R2')
         df['sumL3'] = df.eval('L3 + R3')

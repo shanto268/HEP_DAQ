@@ -78,14 +78,14 @@ def getTDC(nbins=200):
     xL1 = LC3377Definition(tdc_slot, 0)
     yL1 = LC3377Definition(tdc_slot, 1)
 
-    xL2 = LC3377Definition(tdc_slot, 3)
-    yL2 = LC3377Definition(tdc_slot, 4)
+    xL2 = LC3377Definition(tdc_slot, 2)
+    yL2 = LC3377Definition(tdc_slot, 3)
 
     xL3 = LC3377Definition(tdc_slot, 6)
     yL3 = LC3377Definition(tdc_slot, 7)
 
-    xL4 = LC3377Definition(tdc_slot, 9)
-    yL4 = LC3377Definition(tdc_slot, 10)
+    xL4 = LC3377Definition(tdc_slot, 8)
+    yL4 = LC3377Definition(tdc_slot, 9)
 
     h1x = Histo1DSpec("Layer1x", "TDC Counts Layer 1x", nbins, xL1)
     h1y = Histo1DSpec("Layer1y", "TDC Counts Layer 1y", nbins, yL1)
@@ -93,11 +93,11 @@ def getTDC(nbins=200):
     h2x = Histo1DSpec("Layer2x", "TDC Counts Layer 2x", nbins, xL2)
     h2y = Histo1DSpec("Layer2y", "TDC Counts Layer 2y", nbins, yL2)
 
-    h3x = Histo1DSpec("Layer1x", "TDC Counts Layer 3x", nbins, xL3)
-    h3y = Histo1DSpec("Layer1y", "TDC Counts Layer 3y", nbins, yL3)
+    h3x = Histo1DSpec("Layer3x", "TDC Counts Layer 3x", nbins, xL3)
+    h3y = Histo1DSpec("Layer3y", "TDC Counts Layer 3y", nbins, yL3)
 
-    h4x = Histo1DSpec("Layer2x", "TDC Counts Layer 4x", nbins, xL4)
-    h4y = Histo1DSpec("Layer2y", "TDC Counts Layer 4y", nbins, yL4)
+    h4x = Histo1DSpec("Layer4x", "TDC Counts Layer 4x", nbins, xL4)
+    h4y = Histo1DSpec("Layer4y", "TDC Counts Layer 4y", nbins, yL4)
 
     return HistoInfo1D((h1x, h1y, h2x, h2y, h3x, h3y, h4x, h4y),
                        "Comparative"), HistoMaker1D(

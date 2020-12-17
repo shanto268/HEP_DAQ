@@ -9,6 +9,7 @@ Arguments:
     ii) boolean for plotting
 """
 
+
 def main(totalEvents, test_num, doPlot):
     configModule = "NuralTest"
     maxEvents = totalEvents
@@ -40,8 +41,8 @@ def main(totalEvents, test_num, doPlot):
     # Configure the histogram plotter.
     # The channels to plot: a tuple of (slot, channel) pairs.
     # "None" will take all channels configured in the DAQ.
-    channels_to_plot = ((2, 0), (2, 1), (2, 3), (2, 4), (2, 6), (2, 7), (2, 9),
-                        (2, 10))
+    channels_to_plot = ((2, 0), (2, 1), (2, 2), (2, 3), (2, 6), (2, 7), (2, 8),
+                        (2, 9))
     scaler_channels = ((5, 4), (5, 5), (5, 6), (5, 7), (5, 8), (5, 9), (5, 10),
                        (5, 11))
     nBins = 2
