@@ -221,8 +221,8 @@ class MuonDataFrame:
         return df
 
     def sendReportEmail(self):
-        pdfName = self.generateAnaReport()
-        Notify().sendPdfEmail(pdfName)
+        csvName = "processed_data/events_data_frame_{}.csv".format(self.runNum)
+        Notify().sendPdfEmail(self.pdfName, csvName)
 
     def getCompleteCSVOutputFile(self):
         df = self.events_df
@@ -292,6 +292,9 @@ class MuonDataFrame:
             self.getChannelStatusPlot(pdf=True)
             pdf.savefig()
             plt.close()
+            self.getCounterPlots(pdf=True)
+            pdf.savefig()
+            plt.close()
             self.getChannelPlots(pdf=True)
             pdf.savefig()
             plt.close()
@@ -331,7 +334,6 @@ class MuonDataFrame:
         self.createOnePDF(pdfName)
         # self.mergePDF(pdfName)
         print("The report file {} has been created.".format(pdfName))
-        return pdfName
 
     def mergePDF(self, pdfName):
         for i in self.pdfList:
@@ -786,6 +788,52 @@ class MuonDataFrame:
                               title="(Number of Layers Hit Per Event)",
                               pdf=pdf)
         return x
+
+    def getCounterPlots(self, pdf=False, nbins=100):
+        xmin = 0
+        xmax = 100
+        fig, axes = plt.subplots(nrows=1, ncols=2)
+        plt.suptitle("Top and Bottom Counters")
+        ax0, ax1 = axes.flatten()
+        ax0.hist(self.events_df['TopCounter'], nbins, histtype='step')
+        ax0.set_xlim([xmin, xmax])
+        s = self.events_df['TopCounter']
+        mean, std, count = s.describe().values[1], s.describe(
+        ).values[2], s.describe().values[0]
+        ovflow = ((xmax < s.values) | (s.values < xmin)).sum()
+        textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}\nBins: {}\nOverflow: {}".format(
+            mean, std, count, nbins, ovflow)
+        props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+        ax0.text(0.80,
+                 0.95,
+                 textstr,
+                 transform=ax0.transAxes,
+                 fontsize=5,
+                 verticalalignment='top',
+                 bbox=props)
+        ax0.set_title('Top Counter')
+        ax1.hist(self.events_df['BottomCounter'], nbins, histtype='step')
+        ax1.set_xlim([xmin, xmax])
+        ax1.set_title('Bottom Counter')
+        s = self.events_df['BottomCounter']
+        mean, std, count = s.describe().values[1], s.describe(
+        ).values[2], s.describe().values[0]
+        ovflow = ((xmax < s.values) | (s.values < xmin)).sum()
+        textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}\nBins: {}\nOverflow: {}".format(
+            mean, std, count, nbins, ovflow)
+        props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+        ax1.text(0.80,
+                 0.95,
+                 textstr,
+                 transform=ax1.transAxes,
+                 fontsize=5,
+                 verticalalignment='top',
+                 bbox=props)
+        fig.tight_layout()
+        if not pdf:
+            plt.show()
+        else:
+            return fig
 
     def getChannelPlots(self, pdf=False, nbins=200):
         xmin = 0
@@ -1476,6 +1524,8 @@ class MuonDataFrame:
         df['R3'] = self.getTDC(df['TDC'].values, 7)
         df['L4'] = self.getTDC(df['TDC'].values, 8)
         df['R4'] = self.getTDC(df['TDC'].values, 9)
+        df['TopCounter'] = self.getTDC(df['TDC'].values, 4)
+        df['BottomCounter'] = self.getTDC(df['TDC'].values, 10)
         df['sumL1'] = df.eval('L1 + R1')
         df['sumL2'] = df.eval('L2 + R2')
         df['sumL3'] = df.eval('L3 + R3')
@@ -1500,6 +1550,8 @@ class MuonDataFrame:
         df['R3'] = self.getTDC(df['TDC'].values, 7)
         df['L4'] = self.getTDC(df['TDC'].values, 8)
         df['R4'] = self.getTDC(df['TDC'].values, 9)
+        df['TopCounter'] = self.getTDC(df['TDC'].values, 4)
+        df['BottomCounter'] = self.getTDC(df['TDC'].values, 10)
         df['sumL1'] = df.eval('L1 + R1')
         df['sumL2'] = df.eval('L2 + R2')
         df['sumL3'] = df.eval('L3 + R3')
@@ -1810,6 +1862,10 @@ class MuonDataFrame:
             self.events_df = self.events_df[self.events_df[term] != value]
 
     # @staticmethod
+
+    def keepEventsWithinStdDev(self, queryName, numStd):
+        df_filtered = scrubbedDataFrame(self.events_df, queryName, numStd)
+        self.events_df = df_filtered
 
     def getTrimmedHistogram(self, queryName, numStd, nbins=200):
         df_filtered = scrubbedDataFrame(self.events_df, queryName, numStd)

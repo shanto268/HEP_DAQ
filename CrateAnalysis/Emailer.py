@@ -24,7 +24,8 @@ class Emailer:
         self.emailContent = emailContent
         self.path2pdf = ""
 
-    def send_email_pdf_figs(self, path_to_pdf, subject, message, destination):
+    def send_email_pdf_figs(self, path_to_pdf, path2csv, subject, message,
+                            destination):
         server = smtplib.SMTP(SMTP_SERVER, SMTP_PORT)
         server.starttls()
         server.login(GMAIL_USERNAME, GMAIL_PASSWORD)
@@ -45,6 +46,16 @@ class Emailer:
                           'attachment',
                           filename=str(path_to_pdf))
         msg.attach(attach)
+
+        csvName = path2csv.split("/")[-1]
+        with open(path2csv, 'rb') as file:
+            # Attach the file with filename to the email
+
+            csvFile = MIMEApplication(file.read(), _subtype="csv")
+            csvFile.add_header('Content-Disposition',
+                               'attachment',
+                               filename=csvName)
+            msg.attach(csvFile)
         # send msg
         server.send_message(msg)
         server.close()
@@ -58,13 +69,13 @@ class Emailer:
             print("Emailing {}".format(email))
             self.sendmail(email, self.subjectLine, self.emailContent)
 
-    def sendPdf(self, path2pdf):
+    def sendPdf(self, path2pdf, path2csv):
         self.path2pdf = path2pdf
         emails = self.email_list
         #Sends an email to the "sendTo" address with the specified "emailSubject" as the subject and "emailContent" as the email content.
         for email in emails:
             print("Emailing {}".format(email))
-            self.send_email_pdf_figs(self.path2pdf, self.subjectLine,
+            self.send_email_pdf_figs(self.path2pdf, path2csv, self.subjectLine,
                                      self.emailContent, email)
 
     def sendmail(self, recipient, subject, content):

@@ -4,6 +4,7 @@ from runCAMAC import runCAMAC
 from ADCHisto import ADCHisto, TDCHisto
 from MultipleUpdater import *
 from Notify import Notify
+from startQuanahAnalysis import analyzeOnQuanah
 """
 Arguments: 
     i) number of events
@@ -63,12 +64,13 @@ def main(totalEvents, test_num):
               (runNumber, outputFile))
     print("Uploading File to Quanah.....\n")
     os.system("upload.sh {}".format(outputFile))
-    print("File {} has been successfully uploaded to Quanah\n".format(
-        outputFile))
+    print("File {} has been successfully uploaded to Quanah\n".format(outputFile))
     print(25 * "=")
     print()
     fileName = outputFile.split("/")[1]
     Notify(fileName).sendEmail()
+    analyzeOnQuanah(fileName)
+    print("File {} has been analyzed on Quanah\n".format("fileName"))
     return 0
 
 
