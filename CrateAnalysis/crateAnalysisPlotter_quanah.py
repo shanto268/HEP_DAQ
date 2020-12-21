@@ -28,6 +28,9 @@ if __name__ == "__main__":
         print("\nAssuming the file has been analyzed before.")
 
     mdfo = MuonDataFrame(ifile, isNew=iisNew, d1="last")
-    # mdfo.getCSVOutputFile(10000)
-    mdfo.sendReportEmail()
-    #mdfo.generateAnaReport()
+    mdfo.generateAnaReport()
+    mdfo.getCompleteCSVOutputFile()
+    try:
+        mdfo.sendReportEmail()
+    except:
+        mdfo.sendReportEmailRecovery()

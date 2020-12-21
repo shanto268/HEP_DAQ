@@ -24,6 +24,33 @@ class Emailer:
         self.emailContent = emailContent
         self.path2pdf = ""
 
+    def send_email_pdf_only(self, path_to_pdf, path2csv, subject, message,
+                            destination):
+        server = smtplib.SMTP(SMTP_SERVER, SMTP_PORT)
+        server.starttls()
+        server.login(GMAIL_USERNAME, GMAIL_PASSWORD)
+        # Craft message (obj)
+        msg = MIMEMultipart()
+
+        message = f'{message}\n\nSent from APDL_DAQ_Machine and Quanah.'
+        msg['Subject'] = subject
+        msg['From'] = GMAIL_USERNAME
+        msg['To'] = destination
+        # Insert the text to the msg going by e-mail
+        msg.attach(MIMEText(message, "plain"))
+        # Attach the pdf to the msg going by e-mail
+        with open(path_to_pdf, "rb") as f:
+            #attach = email.mime.application.MIMEApplication(f.read(),_subtype="pdf")
+            attach = MIMEApplication(f.read(), _subtype="pdf")
+        attach.add_header('Content-Disposition',
+                          'attachment',
+                          filename=str(path_to_pdf))
+        msg.attach(attach)
+
+        # send msg
+        server.send_message(msg)
+        server.close()
+
     def send_email_pdf_figs(self, path_to_pdf, path2csv, subject, message,
                             destination):
         server = smtplib.SMTP(SMTP_SERVER, SMTP_PORT)
@@ -76,6 +103,15 @@ class Emailer:
         for email in emails:
             print("Emailing {}".format(email))
             self.send_email_pdf_figs(self.path2pdf, path2csv, self.subjectLine,
+                                     self.emailContent, email)
+
+    def sendPdfOnly(self, path2pdf, path2csv):
+        self.path2pdf = path2pdf
+        emails = self.email_list
+        #Sends an email to the "sendTo" address with the specified "emailSubject" as the subject and "emailContent" as the email content.
+        for email in emails:
+            print("Emailing {}".format(email))
+            self.send_email_pdf_only(self.path2pdf, path2csv, self.subjectLine,
                                      self.emailContent, email)
 
     def sendmail(self, recipient, subject, content):

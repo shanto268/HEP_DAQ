@@ -17,6 +17,11 @@ class Notify():
         sender = Emailer(emailList, sms_list, subjectLine, emailContent)
         sender.sendPdf(pfile, cfile)
 
+    def emailRecovery(self, emailList, sms_list, subjectLine, emailContent,
+                      pfile, cfile):
+        sender = Emailer(emailList, sms_list, subjectLine, emailContent)
+        sender.sendPdfOnly(pfile, cfile)
+
     def sendEmail(self):
         emailList = ["sadman-ahmed.shanto@ttu.edu", "nural.akchurin@ttu.edu"]
         sms_list = ['8067900156@sms.mycricket.com']
@@ -39,3 +44,14 @@ class Notify():
             run)
         self.emailWithPdf(emailList, sms_list, subjectLine, emailContent,
                           pfile, cfile)
+
+    def sendEmailRecovery(self, pfile, cfile):
+        emailList = ["sadman-ahmed.shanto@ttu.edu", "nural.akchurin@ttu.edu"]
+        # emailList = ["sadman-ahmed.shanto@ttu.edu"]
+        sms_list = ['8067900156@sms.mycricket.com']
+        run = pfile.split("_")[-1].split(".")[0]
+        subjectLine = "Report Pdf For Run {}".format(run)
+        emailContent = "The analysis report for run {} is attached to this email.".format(
+            run)
+        self.emailRecovery(emailList, sms_list, subjectLine, emailContent,
+                           pfile, cfile)

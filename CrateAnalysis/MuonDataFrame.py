@@ -224,6 +224,10 @@ class MuonDataFrame:
         csvName = "processed_data/events_data_frame_{}.csv".format(self.runNum)
         Notify().sendPdfEmail(self.pdfName, csvName)
 
+    def sendReportEmailRecovery(self):
+        csvName = "processed_data/events_data_frame_{}.csv".format(self.runNum)
+        Notify().sendEmailRecovery(self.pdfName, csvName)
+
     def getCompleteCSVOutputFile(self):
         df = self.events_df
         df.drop('ADC', axis=1, inplace=True)
@@ -304,7 +308,7 @@ class MuonDataFrame:
             self.getChannelDiffPlots(pdf=True, isBinned=True)
             pdf.savefig()
             plt.close()
-            self.getAsymmetry1DPlots(pdf=True, isBinned=True, bins=100)
+            self.getAsymmetry1DPlots(pdf=True, isBinned=True, nbin=100)
             pdf.savefig()
             plt.close()
             self.getNumLayersHitPlot(pdf=True)
@@ -322,7 +326,7 @@ class MuonDataFrame:
             d['Author'] = 'Sadman Ahmed Shanto'
             d['Subject'] = 'Storing Analysis Results'
             d['Keywords'] = 'Muon APDL'
-            d['CreationDate'] = datetime.datetime(2009, 11, 13)
+            d['CreationDate'] = datetime.datetime(2020, 12, 21)
             d['ModDate'] = datetime.datetime.today()
 
         self.allLayerCorrelationPlots(pdfv=True,
@@ -789,9 +793,15 @@ class MuonDataFrame:
                               pdf=pdf)
         return x
 
-    def getCounterPlots(self, pdf=False, nbins=100):
+    def getBins(self, xmin, xmax, nbins):
+        x = list(range(xmin, xmax))
+        n = round((xmax - xmin) / nbins)
+        return x[::n]
+
+    def getCounterPlots(self, pdf=False, nbin=100):
         xmin = 0
         xmax = 100
+        nbins = self.getBins(xmin, xmax, nbin)
         fig, axes = plt.subplots(nrows=1, ncols=2)
         plt.suptitle("Top and Bottom Counters")
         ax0, ax1 = axes.flatten()
@@ -802,7 +812,7 @@ class MuonDataFrame:
         ).values[2], s.describe().values[0]
         ovflow = ((xmax < s.values) | (s.values < xmin)).sum()
         textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}\nBins: {}\nOverflow: {}".format(
-            mean, std, count, nbins, ovflow)
+            mean, std, count, nbin, ovflow)
         props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
         ax0.text(0.80,
                  0.95,
@@ -820,7 +830,7 @@ class MuonDataFrame:
         ).values[2], s.describe().values[0]
         ovflow = ((xmax < s.values) | (s.values < xmin)).sum()
         textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}\nBins: {}\nOverflow: {}".format(
-            mean, std, count, nbins, ovflow)
+            mean, std, count, nbin, ovflow)
         props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
         ax1.text(0.80,
                  0.95,
@@ -835,9 +845,10 @@ class MuonDataFrame:
         else:
             return fig
 
-    def getChannelPlots(self, pdf=False, nbins=200):
+    def getChannelPlots(self, pdf=False, nbin=200):
         xmin = 0
         xmax = 200
+        nbins = self.getBins(xmin, xmax, nbin)
         fig, axes = plt.subplots(nrows=2, ncols=4)
         plt.suptitle("Histogram of All Individual Channels")
         ax0, ax1, ax2, ax3, ax4, ax5, ax6, ax7 = axes.flatten()
@@ -848,7 +859,7 @@ class MuonDataFrame:
         ).values[2], s.describe().values[0]
         ovflow = ((xmax < s.values) | (s.values < xmin)).sum()
         textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}\nBins: {}\nOverflow: {}".format(
-            mean, std, count, nbins, ovflow)
+            mean, std, count, nbin, ovflow)
         props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
         ax0.text(0.80,
                  0.95,
@@ -866,7 +877,7 @@ class MuonDataFrame:
         ).values[2], s.describe().values[0]
         ovflow = ((xmax < s.values) | (s.values < xmin)).sum()
         textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}\nBins: {}\nOverflow: {}".format(
-            mean, std, count, nbins, ovflow)
+            mean, std, count, nbin, ovflow)
         props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
         ax1.text(0.80,
                  0.95,
@@ -883,7 +894,7 @@ class MuonDataFrame:
         ).values[2], s.describe().values[0]
         ovflow = ((xmax < s.values) | (s.values < xmin)).sum()
         textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}\nBins: {}\nOverflow: {}".format(
-            mean, std, count, nbins, ovflow)
+            mean, std, count, nbin, ovflow)
         props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
         ax2.text(0.80,
                  0.95,
@@ -900,7 +911,7 @@ class MuonDataFrame:
         ).values[2], s.describe().values[0]
         ovflow = ((xmax < s.values) | (s.values < xmin)).sum()
         textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}\nBins: {}\nOverflow: {}".format(
-            mean, std, count, nbins, ovflow)
+            mean, std, count, nbin, ovflow)
         props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
         ax3.text(0.80,
                  0.95,
@@ -917,7 +928,7 @@ class MuonDataFrame:
         ).values[2], s.describe().values[0]
         ovflow = ((xmax < s.values) | (s.values < xmin)).sum()
         textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}\nBins: {}\nOverflow: {}".format(
-            mean, std, count, nbins, ovflow)
+            mean, std, count, nbin, ovflow)
         props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
         ax4.text(0.80,
                  0.95,
@@ -934,7 +945,7 @@ class MuonDataFrame:
         ).values[2], s.describe().values[0]
         ovflow = ((xmax < s.values) | (s.values < xmin)).sum()
         textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}\nBins: {}\nOverflow: {}".format(
-            mean, std, count, nbins, ovflow)
+            mean, std, count, nbin, ovflow)
         props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
         ax5.text(0.80,
                  0.95,
@@ -951,7 +962,7 @@ class MuonDataFrame:
         ).values[2], s.describe().values[0]
         ovflow = ((xmax < s.values) | (s.values < xmin)).sum()
         textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}\nBins: {}\nOverflow: {}".format(
-            mean, std, count, nbins, ovflow)
+            mean, std, count, nbin, ovflow)
         props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
         ax6.text(0.80,
                  0.95,
@@ -968,7 +979,7 @@ class MuonDataFrame:
         ).values[2], s.describe().values[0]
         ovflow = ((xmax < s.values) | (s.values < xmin)).sum()
         textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}\nBins: {}\nOverflow: {}".format(
-            mean, std, count, nbins, ovflow)
+            mean, std, count, nbin, ovflow)
         props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
         ax7.text(0.80,
                  0.95,
@@ -983,14 +994,14 @@ class MuonDataFrame:
         else:
             return fig
 
-    def getChannelSumPlots(self, pdf=False, isBinned=True, bins=50, amount=5):
+    def getChannelSumPlots(self, pdf=False, isBinned=True, nbin=50, amount=5):
         if isBinned:
             fig, axes = plt.subplots(nrows=4, ncols=1)
             xmin, xmax = 150, 250
+            nbins = self.getBins(xmin, xmax, nbin)
             plt.suptitle(
                 "Histogram of Sum of Channels in their Respective Trays")
             ax0, ax1, ax2, ax3 = axes.flatten()
-            nbins = bins
             ovflow = ((xmax < self.events_df['sumL1'].values) |
                       (self.events_df['sumL1'].values < xmin)).sum()
             ax0.hist(self.events_df['sumL1'], bins=nbins, histtype='step')
@@ -999,7 +1010,7 @@ class MuonDataFrame:
             mean, std, count = s.describe().values[1], s.describe(
             ).values[2], s.describe().values[0]
             textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}\nBin: {}\nOverflow: {}".format(
-                mean, std, count, nbins, ovflow)
+                mean, std, count, nbin, ovflow)
             props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
             ax0.text(0.90,
                      0.95,
@@ -1018,7 +1029,7 @@ class MuonDataFrame:
             mean, std, count = s.describe().values[1], s.describe(
             ).values[2], s.describe().values[0]
             textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}\nBin: {}\nOverflow: {}".format(
-                mean, std, count, nbins, ovflow)
+                mean, std, count, nbin, ovflow)
             props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
             ax1.text(0.90,
                      0.95,
@@ -1036,7 +1047,7 @@ class MuonDataFrame:
             mean, std, count = s.describe().values[1], s.describe(
             ).values[2], s.describe().values[0]
             textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}\nBin: {}\nOverflow: {}".format(
-                mean, std, count, nbins, ovflow)
+                mean, std, count, nbin, ovflow)
             props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
             ax2.text(0.90,
                      0.95,
@@ -1054,7 +1065,7 @@ class MuonDataFrame:
             mean, std, count = s.describe().values[1], s.describe(
             ).values[2], s.describe().values[0]
             textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}\nBin: {}\nOverflow: {}".format(
-                mean, std, count, nbins, ovflow)
+                mean, std, count, nbin, ovflow)
             props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
             ax3.text(0.90,
                      0.95,
@@ -1083,7 +1094,7 @@ class MuonDataFrame:
             mean, std, count = s.describe().values[1], s.describe(
             ).values[2], s.describe().values[0]
             textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}\nBin: {}\nOverflow: {}".format(
-                mean, std, count, nbins, ovflow)
+                mean, std, count, nbin, ovflow)
             props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
             ax0.text(0.90,
                      0.95,
@@ -1103,7 +1114,7 @@ class MuonDataFrame:
             mean, std, count = s.describe().values[1], s.describe(
             ).values[2], s.describe().values[0]
             textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}\nBin: {}\nOverflow: {}".format(
-                mean, std, count, nbins, ovflow)
+                mean, std, count, nbin, ovflow)
             props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
             ax1.text(0.90,
                      0.95,
@@ -1122,7 +1133,7 @@ class MuonDataFrame:
             mean, std, count = s.describe().values[1], s.describe(
             ).values[2], s.describe().values[0]
             textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}\nBin: {}\nOverflow: {}".format(
-                mean, std, count, nbins, ovflow)
+                mean, std, count, nbin, ovflow)
             props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
             ax2.text(0.90,
                      0.95,
@@ -1141,7 +1152,7 @@ class MuonDataFrame:
             mean, std, count = s.describe().values[1], s.describe(
             ).values[2], s.describe().values[0]
             textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}\nBin: {}\nOverflow: {}".format(
-                mean, std, count, nbins, ovflow)
+                mean, std, count, nbin, ovflow)
             props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
             ax3.text(0.90,
                      0.95,
@@ -1156,7 +1167,7 @@ class MuonDataFrame:
             else:
                 return fig
 
-    def getChannelDiffPlots(self, pdf=False, isBinned=True, bins=50, amount=5):
+    def getChannelDiffPlots(self, pdf=False, isBinned=True, nbin=50, amount=5):
         if isBinned:
             fig, axes = plt.subplots(nrows=4, ncols=1)
             xmin = -100
@@ -1164,7 +1175,7 @@ class MuonDataFrame:
             plt.suptitle(
                 "Histogram of Difference of Channels in their Respective Trays"
             )
-            nbins = bins
+            nbins = self.getBins(xmin, xmax, nbin)
             ovflow = ((xmax < self.events_df['diffL1'].values) |
                       (self.events_df['diffL1'].values < xmin)).sum()
             ax0, ax1, ax2, ax3 = axes.flatten()
@@ -1174,7 +1185,7 @@ class MuonDataFrame:
             mean, std, count = s.describe().values[1], s.describe(
             ).values[2], s.describe().values[0]
             textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}\nBin: {}\nOverflow: {}".format(
-                mean, std, count, nbins, ovflow)
+                mean, std, count, nbin, ovflow)
             props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
             ax0.text(0.90,
                      0.95,
@@ -1193,7 +1204,7 @@ class MuonDataFrame:
             mean, std, count = s.describe().values[1], s.describe(
             ).values[2], s.describe().values[0]
             textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}\nBin: {}\nOverflow: {}".format(
-                mean, std, count, nbins, ovflow)
+                mean, std, count, nbin, ovflow)
             props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
             ax1.text(0.90,
                      0.95,
@@ -1211,7 +1222,7 @@ class MuonDataFrame:
             mean, std, count = s.describe().values[1], s.describe(
             ).values[2], s.describe().values[0]
             textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}\nBin: {}\nOverflow: {}".format(
-                mean, std, count, nbins, ovflow)
+                mean, std, count, nbin, ovflow)
             props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
             ax2.text(0.90,
                      0.95,
@@ -1229,7 +1240,7 @@ class MuonDataFrame:
             mean, std, count = s.describe().values[1], s.describe(
             ).values[2], s.describe().values[0]
             textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}\nBin: {}\nOverflow: {}".format(
-                mean, std, count, nbins, ovflow)
+                mean, std, count, nbin, ovflow)
             props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
             ax3.text(0.90,
                      0.95,
@@ -1260,7 +1271,7 @@ class MuonDataFrame:
             mean, std, count = s.describe().values[1], s.describe(
             ).values[2], s.describe().values[0]
             textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}\nBin: {}\nOverflow: {}".format(
-                mean, std, count, nbins, ovflow)
+                mean, std, count, nbin, ovflow)
             props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
             ax0.text(0.90,
                      0.95,
@@ -1280,7 +1291,7 @@ class MuonDataFrame:
             mean, std, count = s.describe().values[1], s.describe(
             ).values[2], s.describe().values[0]
             textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}\nBin: {}\nOverflow: {}".format(
-                mean, std, count, nbins, ovflow)
+                mean, std, count, nbin, ovflow)
             props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
             ax1.text(0.90,
                      0.95,
@@ -1299,7 +1310,7 @@ class MuonDataFrame:
             mean, std, count = s.describe().values[1], s.describe(
             ).values[2], s.describe().values[0]
             textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}\nBin: {}\nOverflow: {}".format(
-                mean, std, count, nbins, ovflow)
+                mean, std, count, nbin, ovflow)
             props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
             ax2.text(0.90,
                      0.95,
@@ -1318,7 +1329,7 @@ class MuonDataFrame:
             mean, std, count = s.describe().values[1], s.describe(
             ).values[2], s.describe().values[0]
             textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}\nBin: {}\nOverflow: {}".format(
-                mean, std, count, nbins, ovflow)
+                mean, std, count, nbin, ovflow)
             props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
             ax3.text(0.90,
                      0.95,
@@ -1333,21 +1344,25 @@ class MuonDataFrame:
             else:
                 return fig
 
-    def getAsymmetry1DPlots(self, pdf=False, isBinned=True, bins=50, amount=5):
+    def getAsymmetry1DPlots(self, pdf=False, isBinned=True, nbin=50, amount=5):
         if isBinned:
             fig, axes = plt.subplots(nrows=4, ncols=1)
             plt.suptitle("Histogram of Asymmetry of each Tray")
             ax0, ax1, ax2, ax3 = axes.flatten()
             xmin, xmax = -0.25, 0.25
-            nbins = bins
+            # nbins = self.getBins(xmin, xmax, nbin)
+            nbins = nbin
             ovflow = ((xmax < self.events_df['asymL1'].values) |
                       (self.events_df['asymL1'].values < xmin)).sum()
-            ax0.hist(self.events_df['asymL1'], nbins, histtype='step')
+            ax0.hist(self.events_df['asymL1'],
+                     range=(xmin, xmax),
+                     bins=nbins,
+                     histtype='step')
             s = self.events_df['asymL1']
             mean, std, count = s.describe().values[1], s.describe(
             ).values[2], s.describe().values[0]
             textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}\nBin: {}\nOverflow: {}".format(
-                mean, std, count, nbins, ovflow)
+                mean, std, count, nbin, ovflow)
             props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
             ax0.text(0.90,
                      0.95,
@@ -1360,14 +1375,15 @@ class MuonDataFrame:
             ax0.set_title('Tray 1')
             ovflow = ((xmax < self.events_df['asymL2'].values) |
                       (self.events_df['asymL2'].values < xmin)).sum()
-            ax1.hist(self.events_df['asymL2'], nbins, histtype='step')
+            ax1.hist(self.events_df['asymL2'], range=(xmin, xmax),
+                     bins=nbins, histtype='step')
             ax1.set_xlim([xmin, xmax])
             ax1.set_title('Tray 2')
             s = self.events_df['asymL2']
             mean, std, count = s.describe().values[1], s.describe(
             ).values[2], s.describe().values[0]
             textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}\nBin: {}\nOverflow: {}".format(
-                mean, std, count, nbins, ovflow)
+                mean, std, count, nbin, ovflow)
             props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
             ax1.text(0.90,
                      0.95,
@@ -1378,14 +1394,14 @@ class MuonDataFrame:
                      bbox=props)
             ovflow = ((xmax < self.events_df['asymL3'].values) |
                       (self.events_df['asymL3'].values < xmin)).sum()
-            ax2.hist(self.events_df['asymL3'], nbins, histtype='step')
+            ax2.hist(self.events_df['asymL3'], range=(xmin, xmax), bins=nbins, histtype='step')
             ax2.set_xlim([xmin, xmax])
             ax2.set_title('Tray 3')
             s = self.events_df['asymL3']
             mean, std, count = s.describe().values[1], s.describe(
             ).values[2], s.describe().values[0]
             textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}\nBin: {}\nOverflow: {}".format(
-                mean, std, count, nbins, ovflow)
+                mean, std, count, nbin, ovflow)
             props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
             ax2.text(0.90,
                      0.95,
@@ -1396,14 +1412,14 @@ class MuonDataFrame:
                      bbox=props)
             ovflow = ((xmax < self.events_df['asymL4'].values) |
                       (self.events_df['asymL4'].values < xmin)).sum()
-            ax3.hist(self.events_df['asymL4'], nbins, histtype='step')
+            ax3.hist(self.events_df['asymL4'], range=(xmin, xmax), bins=nbins, histtype='step')
             ax3.set_xlim([xmin, xmax])
             ax3.set_title('Tray 4')
             s = self.events_df['asymL4']
             mean, std, count = s.describe().values[1], s.describe(
             ).values[2], s.describe().values[0]
             textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}\nBin: {}\nOverflow: {}".format(
-                mean, std, count, nbins, ovflow)
+                mean, std, count, nbin, ovflow)
             props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
             ax3.text(0.90,
                      0.95,
@@ -1430,7 +1446,7 @@ class MuonDataFrame:
             mean, std, count = s.describe().values[1], s.describe(
             ).values[2], s.describe().values[0]
             textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}\nBin: {}\nOverflow: {}".format(
-                mean, std, count, nbins, ovflow)
+                mean, std, count, nbin, ovflow)
             props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
             ax0.text(0.90,
                      0.95,
@@ -1451,7 +1467,7 @@ class MuonDataFrame:
             mean, std, count = s.describe().values[1], s.describe(
             ).values[2], s.describe().values[0]
             textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}\nBin: {}\nOverflow: {}".format(
-                mean, std, count, nbins, ovflow)
+                mean, std, count, nbin, ovflow)
             props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
             ax1.text(0.90,
                      0.95,
@@ -1470,7 +1486,7 @@ class MuonDataFrame:
             mean, std, count = s.describe().values[1], s.describe(
             ).values[2], s.describe().values[0]
             textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}\nBin: {}\nOverflow: {}".format(
-                mean, std, count, nbins, ovflow)
+                mean, std, count, nbin, ovflow)
             props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
             ax2.text(0.90,
                      0.95,
@@ -1489,7 +1505,7 @@ class MuonDataFrame:
             mean, std, count = s.describe().values[1], s.describe(
             ).values[2], s.describe().values[0]
             textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}\nBin: {}\nOverflow: {}".format(
-                mean, std, count, nbins, ovflow)
+                mean, std, count, nbin, ovflow)
             props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
             ax3.text(0.90,
                      0.95,
