@@ -6,3 +6,4 @@ CrateCode/*.bin
 CrateCode/secrets.py
 CrateAnalysis/OneDriveUpload.py
 CrateAnalysis/generateOneDriveAPIConsentURL-public.py
+CrateAnalysis/*pdf
