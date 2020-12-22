@@ -789,7 +789,7 @@ class MuonDataFrame:
 
     def getNumLayersHitPlot(self, pdf=False):
         x = self.getHistogram("numLHit",
-                              title="(Number of Layers Hit Per Event)",
+                              title="(TDC Hits Registered Per Event)",
                               pdf=pdf)
         return x
 
@@ -1349,7 +1349,7 @@ class MuonDataFrame:
             fig, axes = plt.subplots(nrows=4, ncols=1)
             plt.suptitle("Histogram of Asymmetry of each Tray")
             ax0, ax1, ax2, ax3 = axes.flatten()
-            xmin, xmax = -0.25, 0.25
+            xmin, xmax = -0.5, 0.5
             # nbins = self.getBins(xmin, xmax, nbin)
             nbins = nbin
             ovflow = ((xmax < self.events_df['asymL1'].values) |
@@ -1375,8 +1375,10 @@ class MuonDataFrame:
             ax0.set_title('Tray 1')
             ovflow = ((xmax < self.events_df['asymL2'].values) |
                       (self.events_df['asymL2'].values < xmin)).sum()
-            ax1.hist(self.events_df['asymL2'], range=(xmin, xmax),
-                     bins=nbins, histtype='step')
+            ax1.hist(self.events_df['asymL2'],
+                     range=(xmin, xmax),
+                     bins=nbins,
+                     histtype='step')
             ax1.set_xlim([xmin, xmax])
             ax1.set_title('Tray 2')
             s = self.events_df['asymL2']
@@ -1394,7 +1396,10 @@ class MuonDataFrame:
                      bbox=props)
             ovflow = ((xmax < self.events_df['asymL3'].values) |
                       (self.events_df['asymL3'].values < xmin)).sum()
-            ax2.hist(self.events_df['asymL3'], range=(xmin, xmax), bins=nbins, histtype='step')
+            ax2.hist(self.events_df['asymL3'],
+                     range=(xmin, xmax),
+                     bins=nbins,
+                     histtype='step')
             ax2.set_xlim([xmin, xmax])
             ax2.set_title('Tray 3')
             s = self.events_df['asymL3']
@@ -1412,7 +1417,10 @@ class MuonDataFrame:
                      bbox=props)
             ovflow = ((xmax < self.events_df['asymL4'].values) |
                       (self.events_df['asymL4'].values < xmin)).sum()
-            ax3.hist(self.events_df['asymL4'], range=(xmin, xmax), bins=nbins, histtype='step')
+            ax3.hist(self.events_df['asymL4'],
+                     range=(xmin, xmax),
+                     bins=nbins,
+                     histtype='step')
             ax3.set_xlim([xmin, xmax])
             ax3.set_title('Tray 4')
             s = self.events_df['asymL4']
@@ -1554,7 +1562,9 @@ class MuonDataFrame:
         df['asymL2'] = df.eval('diffL2 / sumL2')
         df['asymL3'] = df.eval('diffL3 / sumL3')
         df['asymL4'] = df.eval('diffL4 / sumL4')
-        df['numLHit'] = self.removeMultiHits(df['TDC'].values)
+        # df['numLHit'] = self.removeMultiHits(df['TDC'].values)
+        df["numLHit"] = df.eval(
+            'l1hit + l2hit + l3hit + l4hit + r1hit + r2hit + r3hit + r4hit')
         return df
 
     def completeDataFrame(self, df):
@@ -1580,7 +1590,9 @@ class MuonDataFrame:
         df['asymL2'] = df.eval('diffL2 / sumL2')
         df['asymL3'] = df.eval('diffL3 / sumL3')
         df['asymL4'] = df.eval('diffL4 / sumL4')
-        df['numLHit'] = self.removeMultiHits(df['TDC'].values)
+        # df['numLHit'] = self.removeMultiHits(df['TDC'].values)
+        df["numLHit"] = df.eval(
+            'l1hit + l2hit + l3hit + l4hit + r1hit + r2hit + r3hit + r4hit')
         return df
 
     def getTDC(self, event, chNum):
@@ -1610,6 +1622,9 @@ class MuonDataFrame:
             else:
                 counts.append(0)
         return counts
+
+    def get(self, term):
+        return self.events_df[term].values
 
     def getCorrectTDC(self, tdcs):
         if len(tdcs) == 1:
