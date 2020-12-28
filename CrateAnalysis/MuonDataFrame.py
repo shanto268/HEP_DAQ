@@ -287,6 +287,7 @@ class MuonDataFrame:
         return txt
 
     def generateAnaReport(self, pdfName=""):
+        print("Creating the report pdf...")
         if pdfName == "":
             pdfName = self.pdfName
         with PdfPages(pdfName) as pdf:
@@ -356,6 +357,7 @@ class MuonDataFrame:
             d['ModDate'] = datetime.datetime.today()
 
         self.get2DTomogram(pdfv=True)
+        self.get2DTomogram(pdfv=True, nbins=50, title="(High Binning)")
         self.getFingerPlots(pdfv=True)
         self.allLayerCorrelationPlots(pdfv=True,
                                       nbins=1000,
@@ -916,7 +918,8 @@ class MuonDataFrame:
                             ymin,
                             ymax,
                             nbins,
-                            pdf=pdfv)
+                            pdf=pdfv,
+                            zLog=False)
         self.reload()
 
     def allLayerCorrelationPlots(self, pdfv=False, nbins=1000, title=""):
@@ -2100,15 +2103,40 @@ class MuonDataFrame:
                        ymin,
                        ymax,
                        nbins=150,
-                       pdf=False):
+                       pdf=False,
+                       zLog=True):
         name = title.replace(" ", "") + "_run_" + self.runNum
         self.pdfList.append(name)
         if not pdf:
-            Histo2D(name, title, xlabel, nbins, xmin, xmax, xvals, ylabel,
-                    nbins, ymin, ymax, yvals, pdf)
+            Histo2D(name,
+                    title,
+                    xlabel,
+                    nbins,
+                    xmin,
+                    xmax,
+                    xvals,
+                    ylabel,
+                    nbins,
+                    ymin,
+                    ymax,
+                    yvals,
+                    pdf,
+                    zIsLog=zLog)
         else:
-            return Histo2D(name, title, xlabel, nbins, xmin, xmax, xvals,
-                           ylabel, nbins, ymin, ymax, yvals, pdf)
+            return Histo2D(name,
+                           title,
+                           xlabel,
+                           nbins,
+                           xmin,
+                           xmax,
+                           xvals,
+                           ylabel,
+                           nbins,
+                           ymin,
+                           ymax,
+                           yvals,
+                           pdf,
+                           zIsLog=zLog)
 
     def getFilteredEvents(self, conditions):
         df = self.events_df

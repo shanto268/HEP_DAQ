@@ -6,24 +6,23 @@ import matplotlib.colors as colors
 
 
 class Histo2D:
-    def __init__(
-        self,
-        name,
-        title,
-        xlabel,
-        nxbins,
-        xmin,
-        xmax,
-        xvals,
-        ylabel,
-        nybins,
-        ymin,
-        ymax,
-        yvals,
-        pdf,
-        wcalculator=None,
-        rotate=False,
-    ):
+    def __init__(self,
+                 name,
+                 title,
+                 xlabel,
+                 nxbins,
+                 xmin,
+                 xmax,
+                 xvals,
+                 ylabel,
+                 nybins,
+                 ymin,
+                 ymax,
+                 yvals,
+                 pdf,
+                 wcalculator=None,
+                 rotate=False,
+                 zIsLog=True):
 
         self.name = name
         self.defaultValue = -0
@@ -60,6 +59,7 @@ class Histo2D:
         # print("self.xmax : {}".format(self.xmax))
         self.doRotate = rotate
         self.pdf = pdf
+        self.zIsLog = zIsLog
         # print(self.pdf)
         self.plot2DHist()
         self.endjob()
@@ -68,7 +68,7 @@ class Histo2D:
         plt.ioff()
         # print(self.data)
         self.data[self.data == self.defaultValue] = np.nan
-        print("in module %s: %s overflow %s" % \
+        #print("in module %s: %s overflow %s" % \
               (self.name, self.overflow, self._makeZLabel()))
         if not self.pdf:
             self.redraw()
@@ -125,46 +125,6 @@ class Histo2D:
         for i in range(len(self.xvals)):
             self.processEvent([self.xvals[i], self.yvals[i]])
 
-    """
-    def _colormeshData(self, ax, zmin, zmax, **options):
-        if not self.doRotate:
-            shape = self.data.shape
-            xedges = np.linspace(self.xmin, self.xmax, num=shape[0] + 1)
-            yedges = np.linspace(self.ymax, self.ymin, num=shape[1] + 1)
-            xv, yv = np.meshgrid(xedges, yedges, indexing='ij')
-            if zmin is None and zmax is None:
-                return ax.pcolormesh(xv,
-                                     yv,
-                                     np.flip(self.data, 1),
-                                     cmap='RdBu_r',
-                                     **options)
-            if zmin is None:
-                zmin = -1.0 * sys.float_info.max
-            if zmax is None:
-                zmax = sys.float_info.max
-            clipped = np.clip(self.data, zmin, zmax)
-            return ax.pcolormesh(xv,
-                                 yv,
-                                 np.flip(clipped, 1),
-                                 cmap='RdBu_r',
-                                 **options)
-        elif self.doRotate:
-            shape = self.data.shape
-            xedges = np.linspace(self.xmin, self.xmax, num=shape[0] + 1)
-            yedges = np.linspace(self.ymax, self.ymin, num=shape[1] + 1)
-            # xv, yv = np.meshgrid(xedges, yedges, indexing='ij')
-            xv, yv = self.DoRotation(xedges, yedges, RotRad=-44.75)
-            #print(xv, yv)
-            if zmin is None and zmax is None:
-                return ax.pcolormesh(xv, yv, np.flip(self.data, 1), **options)
-            if zmin is None:
-                zmin = -1.0 * sys.float_info.max
-            if zmax is None:
-                zmax = sys.float_info.max
-            clipped = np.clip(self.data, zmin, zmax)
-            return ax.pcolormesh(xv, yv, np.flip(clipped, 1), **options)
-    """
-
     def processEvent(self, eventRecord):
         if self.wcalculator is None:
             w = 1.0
@@ -211,6 +171,28 @@ class Histo2D:
             # print("yv[0]: {}".format(yv[0]))
             # print("len of yv[0]: {}".format(len(yv[0])))
             if zmin is None and zmax is None:
+                if self.zIsLog:
+                    return ax.pcolormesh(xv,
+                                         yv,
+                                         np.flip(self.data, 1),
+                                         norm=colors.LogNorm(vmin=zmin,
+                                                             vmax=zmax),
+                                         cmap='RdBu_r',
+                                         rasterized=True,
+                                         **options)
+                else:
+                    return ax.pcolormesh(xv,
+                                         yv,
+                                         np.flip(self.data, 1),
+                                         rasterized=True,
+                                         **options)
+
+            if zmin is None:
+                zmin = -1.0 * sys.float_info.max
+            if zmax is None:
+                zmax = sys.float_info.max
+            clipped = np.clip(self.data, zmin, zmax)
+            if self.zIsLog:
                 return ax.pcolormesh(xv,
                                      yv,
                                      np.flip(self.data, 1),
@@ -218,18 +200,13 @@ class Histo2D:
                                      cmap='RdBu_r',
                                      rasterized=True,
                                      **options)
-            if zmin is None:
-                zmin = -1.0 * sys.float_info.max
-            if zmax is None:
-                zmax = sys.float_info.max
-            clipped = np.clip(self.data, zmin, zmax)
-            return ax.pcolormesh(xv,
-                                 yv,
-                                 np.flip(clipped, 1),
-                                 norm=colors.LogNorm(vmin=zmin, vmax=zmax),
-                                 cmap='RdBu_r',
-                                 rasterized=True,
-                                 **options)
+            else:
+                return ax.pcolormesh(xv,
+                                     yv,
+                                     np.flip(self.data, 1),
+                                     rasterized=True,
+                                     **options)
+
         elif self.doRotate:
             shape = self.data.shape
             xedges = np.linspace(self.xmin, self.xmax, num=shape[0] + 1)

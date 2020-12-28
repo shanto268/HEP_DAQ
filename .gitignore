@@ -1,6 +1,7 @@
 .DS_store
 CrateAnalysis/.ipynb_checkpoints/*
 CrateAnalysis/processed_data/*
+CrateAnalysis/*csv
 CrateAnalysis/*png
 CrateCode/*.bin
 CrateCode/secrets.py
