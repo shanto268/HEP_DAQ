@@ -62,15 +62,23 @@ def main(totalEvents, test_num):
     if not (outputFile == "None" or outputFile == "none"):
         print('Run %d data is stored in the file "%s"' %
               (runNumber, outputFile))
-    print("Uploading File to Quanah.....\n")
-    os.system("upload.sh {}".format(outputFile))
-    print("File {} has been successfully uploaded to Quanah\n".format(outputFile))
-    print(25 * "=")
-    print()
-    fileName = outputFile.split("/")[1]
-    Notify(fileName).sendEmail()
-    analyzeOnQuanah(fileName)
-    print("File {} has been analyzed on Quanah\n".format("fileName"))
+    try:
+        print("Uploading File to Quanah.....\n")
+        os.system("upload.sh {}".format(outputFile))
+        print("File {} has been successfully uploaded to Quanah\n".format(
+            outputFile))
+        print(25 * "=")
+        print()
+        fileName = outputFile.split("/")[1]
+        Notify(fileName).sendEmail()
+        analyzeOnQuanah(fileName)
+        print("File {} has been analyzed on Quanah\n".format(fileName))
+    except:
+        print(
+            "Problem encountered in uploading to Quanah....\nSending notifying email....\n"
+        )
+        Notify(fileName).sendQuanahIssueEmail()
+        print("Saving raw data file locally....\n")
     return 0
 
 

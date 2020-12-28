@@ -29,25 +29,28 @@ class TDCUnpacker(DummyModule):
         for slot in self.tdc_slots:
             fifoData = eventRecord[(slot, "LeCroy3377")]
             unpacked = LC3377Readout(fifoData)
-            if len(unpacked.events[0].data) > 0:
-                # print("{} {}".format(eventNumber,
-                # len(unpacked.events[0].data)))
-                tdc_vals = []
-                for i in range(len(unpacked.events[0].data)):
-                    # print(unpacked.events[0].data[i].tdc)
-                    # print(unpacked.events[0].data[i].channel)
-                    tdc_vals.append([
-                        unpacked.events[0].data[i].channel,
-                        unpacked.events[0].data[i].tdc
-                    ])
-                    tdcSData["TDC"] = tdc_vals
-                    # print("{} {}".format(eventNumber, unpacked.events[0].data.tdc))
-            if len(unpacked.events) > 0:
-                lastevent = unpacked.events[-1]
-                firstevent = unpacked.events[0]
-                for datum in lastevent.data:
-                    #for datum in firstevent.data:
-                    tdcData[(slot, datum.channel)] = datum.tdc
+           # print(unpacked.events)
+            try:
+                if len(unpacked.events[0].data) > 0:
+                    #print("{} {}".format(eventNumber,len(unpacked.events[0].data)))
+                    tdc_vals = []
+                    for i in range(len(unpacked.events[0].data)):
+                        # print(unpacked.events[0].data[i].tdc)
+                        # print(unpacked.events[0].data[i].channel)
+                        tdc_vals.append([
+                            unpacked.events[0].data[i].channel,
+                            unpacked.events[0].data[i].tdc
+                        ])
+                        tdcSData["TDC"] = tdc_vals
+                        # print("{} {}".format(eventNumber, unpacked.events[0].data.tdc))
+                if len(unpacked.events) > 0:
+                    lastevent = unpacked.events[-1]
+                    firstevent = unpacked.events[0]
+                    for datum in lastevent.data:
+                        #for datum in firstevent.data:
+                        tdcData[(slot, datum.channel)] = datum.tdc
+            except:
+                pass
         # eventRecord["unpacked3377Data"] = tdcData
         eventRecord["TDC"] = tdcSData
         # eventRecord["len_unpacked_3377Data"] = len(tdcData)

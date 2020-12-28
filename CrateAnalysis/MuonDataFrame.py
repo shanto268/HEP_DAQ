@@ -59,6 +59,14 @@ def parallelize_dataframe(df, func, path, n_cores=2):
     return df
 
 
+def getPhysicalUnits(asym):
+    return (0.55 / 0.5) * asym
+
+
+def getAsymmetryUnits(phys):
+    return (1 / (0.55 / 0.5)) * phys
+
+
 def remove_if_first_index(l):
     return [
         item for index, item in enumerate(l)
@@ -182,6 +190,9 @@ class MuonDataFrame:
         self.newFileName = path.split(".")[0].split("/")[0] + "/" + path.split(
             ".")[0].split("/")[1] + ".h5"
         self.nbins = 150
+        self.d_phys = 2  #distance between two trays in meters
+        self.d_lead = 0.42  #distance (m) between top tray and lead brick
+        self.d_asym = getAsymmetryUnits(self.d_phys / 2)
         self.quant_query_terms = []
         self.default_query_terms = [
             'event_num', 'event_time', 'deadtime', 'ADC', 'TDC', 'SCh0',
@@ -296,6 +307,15 @@ class MuonDataFrame:
             self.getChannelStatusPlot(pdf=True)
             pdf.savefig()
             plt.close()
+            self.getNumLayersHitPlot(pdf=True)
+            pdf.savefig()
+            plt.close()
+            self.getScalerPlots_header(pdf=True)
+            pdf.savefig()
+            plt.close()
+            self.getScalerPlots_channels(pdf=True)
+            pdf.savefig()
+            plt.close()
             self.getCounterPlots(pdf=True)
             pdf.savefig()
             plt.close()
@@ -311,13 +331,19 @@ class MuonDataFrame:
             self.getAsymmetry1DPlots(pdf=True, isBinned=True, nbin=100)
             pdf.savefig()
             plt.close()
-            self.getNumLayersHitPlot(pdf=True)
+            self.getAsymmetry1DPlotsWithGoodTDCEvents(dev=5,
+                                                      pdf=True,
+                                                      isBinned=True,
+                                                      nbin=150)
             pdf.savefig()
             plt.close()
-            self.getScalerPlots_header(pdf=True)
+            self.getXView(pdf=True)
             pdf.savefig()
             plt.close()
-            self.getScalerPlots_channels(pdf=True)
+            self.getYView(pdf=True)
+            pdf.savefig()
+            plt.close()
+            self.getZView(pdf=True)
             pdf.savefig()
             plt.close()
 
@@ -329,15 +355,257 @@ class MuonDataFrame:
             d['CreationDate'] = datetime.datetime(2020, 12, 21)
             d['ModDate'] = datetime.datetime.today()
 
+        self.get2DTomogram(pdfv=True)
+        self.getFingerPlots(pdfv=True)
         self.allLayerCorrelationPlots(pdfv=True,
                                       nbins=1000,
                                       title="(High Binning)")
-        self.getFingerPlots(pdfv=True)
         self.allLayerCorrelationPlots(pdfv=True, nbins=22, title="(Bins = 22)")
         self.convertPNG2PDF()
         self.createOnePDF(pdfName)
         # self.mergePDF(pdfName)
         print("The report file {} has been created.".format(pdfName))
+
+    def keepGoodTDCEventsPlot(self, dev=5):
+        self.keepEvents("sumL1", self.getStats("sumL1")['mean'] + dev, "<=")
+        self.keepEvents("sumL1", self.getStats("sumL1")['mean'] - dev, ">=")
+        self.keepEvents("sumL2", self.getStats("sumL2")['mean'] + dev, "<=")
+        self.keepEvents("sumL2", self.getStats("sumL2")['mean'] - dev, ">=")
+        self.keepEvents("sumL3", self.getStats("sumL3")['mean'] + dev, "<=")
+        self.keepEvents("sumL3", self.getStats("sumL3")['mean'] - dev, ">=")
+        self.keepEvents("sumL4", self.getStats("sumL4")['mean'] + dev, "<=")
+        self.keepEvents("sumL4", self.getStats("sumL4")['mean'] - dev, ">=")
+
+    def keep4by4Events(self):
+        self.keepEvents("numLHit", 8, "==")
+
+    def getXView(self,
+                 pdf=False,
+                 isBinned=True,
+                 nbin=90,
+                 a_min=-180,
+                 a_max=180):
+        self.keep4by4Events()
+        xmin = a_min
+        xmax = a_max
+        nbins = self.getBins(xmin, xmax, nbin)
+        fig, axes = plt.subplots(nrows=1, ncols=2)
+        plt.suptitle("X view")
+        ax0, ax1 = axes.flatten()
+        ax0.hist(self.events_df['theta_x1'], nbins, histtype='step')
+        ax0.set_xlim([xmin, xmax])
+        s = self.events_df['theta_x1']
+        mean, std, count = s.describe().values[1], s.describe(
+        ).values[2], s.describe().values[0]
+        ovflow = ((xmax < s.values) | (s.values < xmin)).sum()
+        textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}\nBins: {}\nOverflow: {}".format(
+            mean, std, count, nbin, ovflow)
+        props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+        ax0.text(0.80,
+                 0.95,
+                 textstr,
+                 transform=ax0.transAxes,
+                 fontsize=5,
+                 verticalalignment='top',
+                 bbox=props)
+        ax0.set_title('Top Tray')
+        ax1.hist(self.events_df['theta_x2'], nbins, histtype='step')
+        ax1.set_xlim([xmin, xmax])
+        ax1.set_title('Bottom Tray')
+        s = self.events_df['theta_x2']
+        mean, std, count = s.describe().values[1], s.describe(
+        ).values[2], s.describe().values[0]
+        ovflow = ((xmax < s.values) | (s.values < xmin)).sum()
+        textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}\nBins: {}\nOverflow: {}".format(
+            mean, std, count, nbin, ovflow)
+        props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+        ax1.text(0.80,
+                 0.95,
+                 textstr,
+                 transform=ax1.transAxes,
+                 fontsize=5,
+                 verticalalignment='top',
+                 bbox=props)
+        fig.tight_layout()
+        self.reload()
+        if not pdf:
+            plt.show()
+        else:
+            return fig
+
+    def getYView(self,
+                 pdf=False,
+                 isBinned=True,
+                 nbin=90,
+                 a_min=-180,
+                 a_max=180):
+        self.keep4by4Events()
+        xmin = a_min
+        xmax = a_max
+        nbins = self.getBins(xmin, xmax, nbin)
+        fig, axes = plt.subplots(nrows=1, ncols=2)
+        plt.suptitle("Y view")
+        ax0, ax1 = axes.flatten()
+        ax0.hist(self.events_df['theta_y1'], nbins, histtype='step')
+        ax0.set_xlim([xmin, xmax])
+        s = self.events_df['theta_y1']
+        mean, std, count = s.describe().values[1], s.describe(
+        ).values[2], s.describe().values[0]
+        ovflow = ((xmax < s.values) | (s.values < xmin)).sum()
+        textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}\nBins: {}\nOverflow: {}".format(
+            mean, std, count, nbin, ovflow)
+        props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+        ax0.text(0.80,
+                 0.95,
+                 textstr,
+                 transform=ax0.transAxes,
+                 fontsize=5,
+                 verticalalignment='top',
+                 bbox=props)
+        ax0.set_title('Top Tray')
+        ax1.hist(self.events_df['theta_y2'], nbins, histtype='step')
+        ax1.set_xlim([xmin, xmax])
+        ax1.set_title('Bottom Tray')
+        s = self.events_df['theta_y2']
+        mean, std, count = s.describe().values[1], s.describe(
+        ).values[2], s.describe().values[0]
+        ovflow = ((xmax < s.values) | (s.values < xmin)).sum()
+        textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}\nBins: {}\nOverflow: {}".format(
+            mean, std, count, nbin, ovflow)
+        props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+        ax1.text(0.80,
+                 0.95,
+                 textstr,
+                 transform=ax1.transAxes,
+                 fontsize=5,
+                 verticalalignment='top',
+                 bbox=props)
+        fig.tight_layout()
+        self.reload()
+        if not pdf:
+            plt.show()
+        else:
+            return fig
+
+    def getThetaXPlot(self,
+                      theta_x1,
+                      theta_x2,
+                      pdf=False,
+                      isBinned=True,
+                      nbin=90,
+                      a_min=-180,
+                      a_max=180):
+        fig, ax = plt.subplots(nrows=1, ncols=2)
+        plt.suptitle("X Angle (degrees)")
+        ax[0].hist(theta_x1,
+                   bins=nbin,
+                   range=(a_min, a_max),
+                   alpha=0.5,
+                   label="Top")
+        ax[1].hist(theta_x2,
+                   bins=nbin,
+                   range=(a_min, a_max),
+                   alpha=0.5,
+                   label="Bottom")
+        plt.legend()
+        fig.tight_layout()
+        if not pdf:
+            plt.show()
+        else:
+            return ax
+
+    def getThetaYPlot(self,
+                      theta_y1,
+                      theta_y2,
+                      pdf=False,
+                      isBinned=True,
+                      nbin=90,
+                      a_min=-180,
+                      a_max=180):
+        fig, ax = plt.subplots(nrows=1, ncols=2)
+        plt.suptitle("Y Angle (degrees)")
+        ax[0].hist(theta_y1,
+                   bins=nbin,
+                   range=(a_min, a_max),
+                   alpha=0.5,
+                   label="Top")
+        ax[1].hist(theta_y2,
+                   bins=nbin,
+                   range=(a_min, a_max),
+                   alpha=0.5,
+                   label="Bottom")
+        plt.legend()
+        if not pdf:
+            plt.show()
+        else:
+            return ax
+
+    def getTomogram(self, pdf=False, isBinned=True, nbin=11):
+        self.keep4by4Events()
+        xmin = -1
+        ymin = -1
+        xmax = 1
+        ymax = 1
+        nbins = nbin
+
+        fig, axes = plt.subplots(nrows=1, ncols=1)
+        ax0 = axes
+        ax0.hist(self.events_df['z_angle'], nbins, histtype='step')
+        ax0.set_title('Plane of Lead Brick in Asymmetry Space')
+        fig.tight_layout()
+        self.reload()
+        if not pdf:
+            plt.show()
+        else:
+            return fig
+
+    def getZView(self, pdf=False, isBinned=True, nbin=90, a_min=0, a_max=90):
+        self.keep4by4Events()
+        xmin = a_min
+        xmax = a_max
+        nbins = self.getBins(xmin, xmax, nbin)
+        fig, axes = plt.subplots(nrows=1, ncols=1)
+        ax0 = axes
+        ax0.hist(self.events_df['z_angle'], nbins, histtype='step')
+        ax0.set_xlim([xmin, xmax])
+        s = self.events_df['z_angle']
+        mean, std, count = s.describe().values[1], s.describe(
+        ).values[2], s.describe().values[0]
+        ovflow = ((xmax < s.values) | (s.values < xmin)).sum()
+        textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}\nBins: {}\nOverflow: {}".format(
+            mean, std, count, nbin, ovflow)
+        props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+        ax0.text(0.80,
+                 0.95,
+                 textstr,
+                 transform=ax0.transAxes,
+                 fontsize=10,
+                 verticalalignment='top',
+                 bbox=props)
+        ax0.set_title('Zenith Angle')
+        fig.tight_layout()
+        self.reload()
+        if not pdf:
+            plt.show()
+        else:
+            return fig
+
+    def getAsymmetry1DPlotsWithGoodTDCEvents(self,
+                                             dev=5,
+                                             pdf=False,
+                                             isBinned=True,
+                                             nbin=150,
+                                             amount=5):
+        self.keepGoodTDCEventsPlot(dev)
+        self.getAsymmetry1DPlots(
+            pdf=pdf,
+            isBinned=isBinned,
+            nbin=nbin,
+            amount=amount,
+            title=
+            "Histogram of Assymetry of each Tray (Events +- {} of Mean of SumTDC)"
+            .format(dev))
+        self.reload()
 
     def mergePDF(self, pdfName):
         for i in self.pdfList:
@@ -612,6 +880,44 @@ class MuonDataFrame:
                                 ymin, ymax, nbins, True)
         print(x)
         return x
+
+    def x(self, t):
+        asymT1 = self.events_df["asymL1"].values
+        asymT3 = self.events_df["asymL3"].values
+        return asymT1 + asymT3 * t
+
+    def y(self, t):
+        asymT2 = self.events_df["asymL2"].values
+        asymT4 = self.events_df["asymL4"].values
+        return asymT2 + asymT4 * t
+
+    def z(self, t):
+        return -(self.d_phys / 2) + self.d_phys * t
+
+    def getTValue(self):
+        return -(self.d_phys / 2) - self.d_lead
+
+    def get2DTomogram(self, pdfv=False, nbins=11, title=""):
+        self.keep4by4Events()
+        xmin = -1
+        xmax = 1
+        ymin = -1
+        ymax = 1
+        t = self.getTValue()
+        xx = self.x(t)
+        yy = self.y(t)
+        self.get2DHistogram(xx,
+                            yy,
+                            "{} Z Plane of Lead Brick".format(title),
+                            "Asymmetry in X",
+                            "Asymmetry in Y",
+                            xmin,
+                            xmax,
+                            ymin,
+                            ymax,
+                            nbins,
+                            pdf=pdfv)
+        self.reload()
 
     def allLayerCorrelationPlots(self, pdfv=False, nbins=1000, title=""):
         xmin = -0.65
@@ -1344,10 +1650,15 @@ class MuonDataFrame:
             else:
                 return fig
 
-    def getAsymmetry1DPlots(self, pdf=False, isBinned=True, nbin=50, amount=5):
+    def getAsymmetry1DPlots(self,
+                            pdf=False,
+                            isBinned=True,
+                            nbin=50,
+                            amount=5,
+                            title="Histogram of Asymmetry of each Tray"):
         if isBinned:
             fig, axes = plt.subplots(nrows=4, ncols=1)
-            plt.suptitle("Histogram of Asymmetry of each Tray")
+            plt.suptitle(title)
             ax0, ax1, ax2, ax3 = axes.flatten()
             xmin, xmax = -0.5, 0.5
             # nbins = self.getBins(xmin, xmax, nbin)
@@ -1562,9 +1873,18 @@ class MuonDataFrame:
         df['asymL2'] = df.eval('diffL2 / sumL2')
         df['asymL3'] = df.eval('diffL3 / sumL3')
         df['asymL4'] = df.eval('diffL4 / sumL4')
-        # df['numLHit'] = self.removeMultiHits(df['TDC'].values)
         df["numLHit"] = df.eval(
             'l1hit + l2hit + l3hit + l4hit + r1hit + r2hit + r3hit + r4hit')
+        df['theta_x1'] = df.eval("asymL2/asymL1") * (360 / np.pi)
+        df['theta_y1'] = df.eval("asymL1/asymL2") * (360 / np.pi)
+        df['theta_x2'] = df.eval("asymL4/asymL3") * (360 / np.pi)
+        df['theta_y2'] = df.eval("asymL3/asymL4") * (360 / np.pi)
+        # process Z
+        asymT1 = df['asymL1'].values
+        asymT2 = df['asymL2'].values
+        zangles = np.arctan(
+            np.sqrt(asymT1**2 + asymT2**2) / self.d_asym) * (360 / np.pi)
+        df["z_angle"] = zangles
         return df
 
     def completeDataFrame(self, df):
@@ -1590,7 +1910,10 @@ class MuonDataFrame:
         df['asymL2'] = df.eval('diffL2 / sumL2')
         df['asymL3'] = df.eval('diffL3 / sumL3')
         df['asymL4'] = df.eval('diffL4 / sumL4')
-        # df['numLHit'] = self.removeMultiHits(df['TDC'].values)
+        df['theta_x1'] = self.events_df.eval("asymL2/asymL1") * (360 / np.pi)
+        df['theta_y1'] = self.events_df.eval("asymL1/asymL2") * (360 / np.pi)
+        df['theta_x2'] = self.events_df.eval("asymL4/asymL3") * (360 / np.pi)
+        df['theta_y2'] = self.events_df.eval("asymL3/asymL4") * (360 / np.pi)
         df["numLHit"] = df.eval(
             'l1hit + l2hit + l3hit + l4hit + r1hit + r2hit + r3hit + r4hit')
         return df
@@ -1757,12 +2080,12 @@ class MuonDataFrame:
         plt.ylabel("Frequency")
         plt.show()
 
-    def getComparableHistogram(self, queries, nbins=200, title=""):
+    def getComparableHistogram(self, queries, nbins=200, title="", lims=None):
         s = pd.DataFrame(columns=queries)
         s = s.fillna(0)  # with 0s rather than NaNs
         for query in queries:
             s[query] = self.events_df[query]
-        ax = s.plot.hist(alpha=0.6, bins=nbins)
+        ax = s.plot.hist(alpha=0.6, bins=nbins, range=lims)
         plt.title("Histogram of {} {}".format(str(queries), title))
         plt.show()
 
