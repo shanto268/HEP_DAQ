@@ -69,7 +69,7 @@ class Histo2D:
         # print(self.data)
         self.data[self.data == self.defaultValue] = np.nan
         #print("in module %s: %s overflow %s" % \
-              (self.name, self.overflow, self._makeZLabel()))
+        #      (self.name, self.overflow, self._makeZLabel()))
         if not self.pdf:
             self.redraw()
         else:

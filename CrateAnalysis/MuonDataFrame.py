@@ -23,6 +23,7 @@ import os
 import matplotlib as mpl
 import itertools
 import datetime
+import qgrid
 from matplotlib.backends.backend_pdf import PdfPages
 from collections import Counter
 from collections import OrderedDict
@@ -231,6 +232,9 @@ class MuonDataFrame:
         df["Run_Num"] = int(self.runNum)
         return df
 
+    def getJnbDf(self, df):
+        return qgrid.show_grid(df, show_toolbar=True)
+
     def sendReportEmail(self):
         csvName = "processed_data/events_data_frame_{}.csv".format(self.runNum)
         Notify().sendPdfEmail(self.pdfName, csvName)
@@ -243,6 +247,20 @@ class MuonDataFrame:
         df = self.events_df
         df.drop('ADC', axis=1, inplace=True)
         df.drop('TDC', axis=1, inplace=True)
+        df.drop('theta_x1', axis=1, inplace=True)
+        df.drop('theta_y1', axis=1, inplace=True)
+        df.drop('theta_x2', axis=1, inplace=True)
+        df.drop('theta_y2', axis=1, inplace=True)
+        df.drop('z_angle', axis=1, inplace=True)
+        df = self.addRunNumColumn(df)
+        name = "processed_data/events_data_frame_{}.csv".format(self.runNum)
+        df.to_csv(name, header=True, index=False, compression='gzip')
+        print("{} has been created".format(name))
+
+    def getCompleteCSVOutputFile_og(self):
+        df = self.events_df
+        df.drop('ADC', axis=1, inplace=True)
+        df.drop('TDC', axis=1, inplace=True)
         df = self.addRunNumColumn(df)
         name = "processed_data/events_data_frame_{}.csv".format(self.runNum)
         df.to_csv(name, header=True, index=False)
@@ -252,10 +270,15 @@ class MuonDataFrame:
         df = self.events_df
         df.drop('ADC', axis=1, inplace=True)
         df.drop('TDC', axis=1, inplace=True)
+        df.drop('theta_x1', axis=1, inplace=True)
+        df.drop('theta_y1', axis=1, inplace=True)
+        df.drop('theta_x2', axis=1, inplace=True)
+        df.drop('theta_y2', axis=1, inplace=True)
+        df.drop('z_angle', axis=1, inplace=True)
         df = self.addRunNumColumn(df)
         name = "processed_data/events_data_frame_{}.csv".format(self.runNum)
         numEvents += 1
-        df.iloc[:numEvents, :].to_csv(name, header=True, index=False)
+        df.iloc[:numEvents, :].to_csv(name, header=True, index=False, compression='gzip')
         print("{} has been created".format(name))
 
     def reload(self):
@@ -1919,6 +1942,12 @@ class MuonDataFrame:
         df['theta_y2'] = self.events_df.eval("asymL3/asymL4") * (360 / np.pi)
         df["numLHit"] = df.eval(
             'l1hit + l2hit + l3hit + l4hit + r1hit + r2hit + r3hit + r4hit')
+        # process Z
+        asymT1 = df['asymL1'].values
+        asymT2 = df['asymL2'].values
+        zangles = np.arctan(
+            np.sqrt(asymT1**2 + asymT2**2) / self.d_asym) * (360 / np.pi)
+        df["z_angle"] = zangles
         return df
 
     def getTDC(self, event, chNum):
