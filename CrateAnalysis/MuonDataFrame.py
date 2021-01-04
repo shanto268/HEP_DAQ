@@ -236,11 +236,13 @@ class MuonDataFrame:
         return qgrid.show_grid(df, show_toolbar=True)
 
     def sendReportEmail(self):
-        csvName = "processed_data/events_data_frame_{}.csv".format(self.runNum)
+        csvName = "processed_data/events_data_frame_{}.csv.gz".format(
+            self.runNum)
         Notify().sendPdfEmail(self.pdfName, csvName)
 
     def sendReportEmailRecovery(self):
-        csvName = "processed_data/events_data_frame_{}.csv".format(self.runNum)
+        csvName = "processed_data/events_data_frame_{}.csv.gz".format(
+            self.runNum)
         Notify().sendEmailRecovery(self.pdfName, csvName)
 
     def getCompleteCSVOutputFile(self):
@@ -253,8 +255,10 @@ class MuonDataFrame:
         df.drop('theta_y2', axis=1, inplace=True)
         df.drop('z_angle', axis=1, inplace=True)
         df = self.addRunNumColumn(df)
-        name = "processed_data/events_data_frame_{}.csv".format(self.runNum)
+        name = "processed_data/events_data_frame_{}.csv.gz".format(self.runNum)
         df.to_csv(name, header=True, index=False, compression='gzip')
+        name = "processed_data/events_data_frame_{}.csv".format(self.runNum)
+        df.to_csv(name, header=True, index=False)
         print("{} has been created".format(name))
 
     def getCompleteCSVOutputFile_og(self):
@@ -278,7 +282,10 @@ class MuonDataFrame:
         df = self.addRunNumColumn(df)
         name = "processed_data/events_data_frame_{}.csv".format(self.runNum)
         numEvents += 1
-        df.iloc[:numEvents, :].to_csv(name, header=True, index=False, compression='gzip')
+        df.iloc[:numEvents, :].to_csv(name,
+                                      header=True,
+                                      index=False,
+                                      compression='gzip')
         print("{} has been created".format(name))
 
     def reload(self):

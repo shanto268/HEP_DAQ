@@ -63,23 +63,37 @@ def main(totalEvents, test_num):
         print('Run %d data is stored in the file "%s"' %
               (runNumber, outputFile))
     try:
-        print("Uploading File to Quanah.....\n")
-        os.system("upload.sh {}".format(outputFile))
-        print("File {} has been successfully uploaded to Quanah\n".format(
-            outputFile))
-        print(25 * "=")
-        print()
-        fileName = outputFile.split("/")[1]
-        Notify(fileName).sendEmail()
-        analyzeOnQuanah(fileName)
-        print("File {} has been analyzed on Quanah\n".format(fileName))
+        try:
+            quanahJob(outputFile)
+        except:
+            localJob(outputFile)
     except:
         print(
             "Problem encountered in uploading to Quanah....\nSending notifying email....\n"
         )
+        fileName = outputFile.split("/")[1]
         Notify(fileName).sendQuanahIssueEmail()
         print("Saving raw data file locally....\n")
     return 0
+
+
+def localJob(outputFile):
+    fileName = outputFile.split("/")[1]
+    Notify(fileName).sendLocalStorageEmail()
+    print("Saving raw data file locally....\n")
+
+
+def quanahJob(outputFile):
+    print("Uploading File to Quanah.....\n")
+    os.system("upload.sh {}".format(outputFile))
+    print("File {} has been successfully uploaded to Quanah\n".format(
+        outputFile))
+    print(25 * "=")
+    print()
+    fileName = outputFile.split("/")[1]
+    Notify(fileName).sendEmail()
+    analyzeOnQuanah(fileName)
+    print("File {} has been analyzed on Quanah\n".format(fileName))
 
 
 def updateEnvVar():

@@ -25,6 +25,14 @@ class Notify():
             self.ofile)
         self.email(emailList, sms_list, subjectLine, emailContent)
 
+    def sendLocalStorageEmail(self):
+        emailList = ["sadman-ahmed.shanto@ttu.edu", "nural.akchurin@ttu.edu"]
+        sms_list = ['8067900156@sms.mycricket.com']
+        subjectLine = "Completed Run Notification"
+        emailContent = "File {} has been successfully created and has been stored locally since Quanah is down.\n".format(
+            self.ofile)
+        self.email(emailList, sms_list, subjectLine, emailContent)
+
     def sendEmail(self):
         #emailList = ["sadman-ahmed.shanto@ttu.edu", "nural.akchurin@ttu.edu"]
         emailList = ["sadman-ahmed.shanto@ttu.edu"]
