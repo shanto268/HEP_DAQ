@@ -62,18 +62,16 @@ def main(totalEvents, test_num):
     if not (outputFile == "None" or outputFile == "none"):
         print('Run %d data is stored in the file "%s"' %
               (runNumber, outputFile))
+    fileName = outputFile.split("/")[1]
+    localJob(outputFile)
+    """
+    # Uncomment after quanah is fixed
     try:
-        try:
-            quanahJob(outputFile)
-        except:
-            localJob(outputFile)
+        quanahJob(outputFile)
+        print("File {} has been analyzed on Quanah\n".format(fileName))
     except:
-        print(
-            "Problem encountered in uploading to Quanah....\nSending notifying email....\n"
-        )
-        fileName = outputFile.split("/")[1]
-        Notify(fileName).sendQuanahIssueEmail()
-        print("Saving raw data file locally....\n")
+        localJob(outputFile)
+    """
     return 0
 
 
@@ -93,7 +91,7 @@ def quanahJob(outputFile):
     fileName = outputFile.split("/")[1]
     Notify(fileName).sendEmail()
     analyzeOnQuanah(fileName)
-    print("File {} has been analyzed on Quanah\n".format(fileName))
+    os.remove(outputFile)
 
 
 def updateEnvVar():
