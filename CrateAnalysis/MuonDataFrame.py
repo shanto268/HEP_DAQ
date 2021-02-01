@@ -191,9 +191,9 @@ class MuonDataFrame:
         self.newFileName = path.split(".")[0].split("/")[0] + "/" + path.split(
             ".")[0].split("/")[1] + ".h5"
         self.nbins = 150
-        self.d_phys = 2  #distance between two trays in meters
+        self.d_phys = 1.65  #distance between two trays in meters
         self.d_lead = 0.42  #distance (m) between top tray and lead brick
-        self.d_asym = getAsymmetryUnits(self.d_phys / 2)
+        self.d_asym = getAsymmetryUnits(self.d_phys)
         self.quant_query_terms = []
         self.default_query_terms = [
             'event_num', 'event_time', 'deadtime', 'ADC', 'TDC', 'SCh0',
@@ -230,6 +230,10 @@ class MuonDataFrame:
 
     def addRunNumColumn(self, df):
         df["Run_Num"] = int(self.runNum)
+        return df
+
+    def getMergedMDF(self, df_list):
+        df = pd.concat(df_list).reset_index()
         return df
 
     def getJnbDf(self, df):
@@ -347,6 +351,12 @@ class MuonDataFrame:
             self.getScalerPlots_channels(pdf=True)
             pdf.savefig()
             plt.close()
+            try:
+                self.getSmallCounterPlot(pdf=True)
+                pdf.savefig()
+                plt.close()
+            except:
+                pass
             self.getCounterPlots(pdf=True)
             pdf.savefig()
             plt.close()
@@ -362,28 +372,31 @@ class MuonDataFrame:
             self.getAsymmetry1DPlots(pdf=True, isBinned=True, nbin=100)
             pdf.savefig()
             plt.close()
-            self.getAsymmetry1DPlotsWithGoodTDCEvents(dev=5,
-                                                      pdf=True,
-                                                      isBinned=True,
-                                                      nbin=150)
-            pdf.savefig()
-            plt.close()
-            self.getXView(pdf=True)
-            pdf.savefig()
-            plt.close()
-            self.getYView(pdf=True)
-            pdf.savefig()
-            plt.close()
-            self.getZView(pdf=True)
-            pdf.savefig()
-            plt.close()
+            # self.getAsymmetry1DPlotsWithGoodTDCEvents(dev=1,
+            # pdf=True,
+            # isBinned=True,
+            # nbin=150)
+            # pdf.savefig()
+            # plt.close()
+            try:
+                self.getXView(pdf=True)
+                pdf.savefig()
+                plt.close()
+                self.getYView(pdf=True)
+                pdf.savefig()
+                plt.close()
+                self.getZView(pdf=True)
+                pdf.savefig()
+                plt.close()
+            except:
+                pass
 
             d = pdf.infodict()
             d['Title'] = 'Prototype 1B Data Analysis'
             d['Author'] = 'Sadman Ahmed Shanto'
             d['Subject'] = 'Storing Analysis Results'
             d['Keywords'] = 'Muon APDL'
-            d['CreationDate'] = datetime.datetime(2020, 12, 21)
+            d['CreationDate'] = datetime.datetime.today()
             d['ModDate'] = datetime.datetime.today()
 
         self.get2DTomogram(pdfv=True)
@@ -398,7 +411,65 @@ class MuonDataFrame:
         # self.mergePDF(pdfName)
         print("The report file {} has been created.".format(pdfName))
 
-    def keepGoodTDCEventsPlot(self, dev=5):
+    def generateAsymTestReport(self, pdfName=""):
+        print("Creating the report pdf...")
+        if pdfName == "":
+            pdfName = self.pdfName
+        with PdfPages(pdfName) as pdf:
+            firstPage = plt.figure(figsize=(11.69, 8.27))
+            firstPage.clf()
+            txt = self.getFrontPageInfo()
+            firstPage.text(0.5,
+                           0.5,
+                           txt,
+                           transform=firstPage.transFigure,
+                           size=24,
+                           ha="center")
+            pdf.savefig()
+            plt.close()
+            self.getAsymmetry1DPlots(pdf=True, isBinned=True, nbin=100)
+            pdf.savefig()
+            plt.close()
+            self.getHistogram("asymL1",
+                              title="Tray 1",
+                              nbins=50,
+                              pdf=True,
+                              range=(-0.25, 0.25))
+            pdf.savefig()
+            plt.close()
+            self.getHistogram("asymL2",
+                              title="Tray 2",
+                              nbins=50,
+                              pdf=True,
+                              range=(-0.25, 0.25))
+            pdf.savefig()
+            plt.close()
+            self.getHistogram("asymL3",
+                              title="Tray 3",
+                              nbins=50,
+                              pdf=True,
+                              range=(-0.25, 0.25))
+            pdf.savefig()
+            plt.close()
+            self.getHistogram("asymL4",
+                              title="Tray 4",
+                              nbins=50,
+                              pdf=True,
+                              range=(-0.25, 0.25))
+            pdf.savefig()
+            plt.close()
+
+            d = pdf.infodict()
+            d['Title'] = 'Prototype 1B Data Analysis'
+            d['Author'] = 'Sadman Ahmed Shanto'
+            d['Subject'] = 'Storing Analysis Results'
+            d['Keywords'] = 'Muon APDL'
+            d['CreationDate'] = datetime.datetime(2020, 12, 21)
+            d['ModDate'] = datetime.datetime.today()
+
+        print("The report file {} has been created.".format(pdfName))
+
+    def keepGoodTDCEventsPlot(self, dev=1):
         self.keepEvents("sumL1", self.getStats("sumL1")['mean'] + dev, "<=")
         self.keepEvents("sumL1", self.getStats("sumL1")['mean'] - dev, ">=")
         self.keepEvents("sumL2", self.getStats("sumL2")['mean'] + dev, "<=")
@@ -614,7 +685,7 @@ class MuonDataFrame:
                  fontsize=10,
                  verticalalignment='top',
                  bbox=props)
-        ax0.set_title('Zenith Angle')
+        ax0.set_title('Zenith Angle (4/4 events)')
         fig.tight_layout()
         self.reload()
         if not pdf:
@@ -623,11 +694,13 @@ class MuonDataFrame:
             return fig
 
     def getAsymmetry1DPlotsWithGoodTDCEvents(self,
-                                             dev=5,
+                                             dev=1,
                                              pdf=False,
                                              isBinned=True,
                                              nbin=150,
-                                             amount=5):
+                                             amount=5,
+                                             xmax=0.5,
+                                             xmin=-0.5):
         self.keepGoodTDCEventsPlot(dev)
         self.getAsymmetry1DPlots(
             pdf=pdf,
@@ -636,7 +709,9 @@ class MuonDataFrame:
             amount=amount,
             title=
             "Histogram of Assymetry of each Tray (Events +- {} of Mean of SumTDC)"
-            .format(dev))
+            .format(dev),
+            xmax=xmax,
+            xmin=xmin)
         self.reload()
 
     def mergePDF(self, pdfName):
@@ -929,7 +1004,7 @@ class MuonDataFrame:
     def getTValue(self):
         return -(self.d_phys / 2) - self.d_lead
 
-    def get2DTomogram(self, pdfv=False, nbins=11, title=""):
+    def get2DTomogram(self, pdfv=False, nbins=11, title="", reload=True):
         self.keep4by4Events()
         xmin = -1
         xmax = 1
@@ -950,7 +1025,21 @@ class MuonDataFrame:
                             nbins,
                             pdf=pdfv,
                             zLog=False)
-        self.reload()
+        if reload:
+            self.reload()
+        else:
+            pass
+
+    def getCorrelationPlot(self, query_list, nbins=1000, title=""):
+        xmin = -0.65
+        xmax = 0.65
+        ymin = -0.65
+        ymax = 0.65
+        self.get2DHistogram(self.events_df[query_list[0]].values,
+                            self.events_df[query_list[1]].values,
+                            "{}".format(title), "{}".format(query_list[0]),
+                            "{}".format(query_list[1]), xmin, xmax, ymin, ymax,
+                            nbins, False)
 
     def allLayerCorrelationPlots(self, pdfv=False, nbins=1000, title=""):
         xmin = -0.65
@@ -1117,6 +1206,7 @@ class MuonDataFrame:
         barlist[4].set_color('r')
         barlist[5].set_color('r')
         plt.title("Percentage of Good Events")
+        plt.ylim(0, 100)
         ax = barlist
         if not pdf:
             plt.show()
@@ -1137,9 +1227,39 @@ class MuonDataFrame:
         n = round((xmax - xmin) / nbins)
         return x[::n]
 
+    def getSmallCounterPlot(self, pdf=False, nbin=100):
+        xmin = 0
+        xmax = 400
+        nbins = self.getBins(xmin, xmax, nbin)
+        fig, axes = plt.subplots(nrows=1, ncols=1)
+        ax0 = axes
+        ax0.hist(self.events_df['SmallCounter'], nbins, histtype='step')
+        ax0.set_xlim([xmin, xmax])
+        s = self.events_df['SmallCounter']
+        mean, std, count = s.describe().values[1], s.describe(
+        ).values[2], s.describe().values[0]
+        ovflow = ((xmax < s.values) | (s.values < xmin)).sum()
+        textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}\nBins: {}\nOverflow: {}".format(
+            mean, std, count, nbin, ovflow)
+        props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+        ax0.text(0.80,
+                 0.95,
+                 textstr,
+                 transform=ax0.transAxes,
+                 fontsize=10,
+                 verticalalignment='top',
+                 bbox=props)
+        ax0.set_title('Small Counter')
+        fig.tight_layout()
+        self.reload()
+        if not pdf:
+            plt.show()
+        else:
+            return fig
+
     def getCounterPlots(self, pdf=False, nbin=100):
         xmin = 0
-        xmax = 100
+        xmax = 200
         nbins = self.getBins(xmin, xmax, nbin)
         fig, axes = plt.subplots(nrows=1, ncols=2)
         plt.suptitle("Top and Bottom Counters")
@@ -1336,7 +1456,7 @@ class MuonDataFrame:
     def getChannelSumPlots(self, pdf=False, isBinned=True, nbin=50, amount=5):
         if isBinned:
             fig, axes = plt.subplots(nrows=4, ncols=1)
-            xmin, xmax = 150, 250
+            xmin, xmax = 180, 380
             nbins = self.getBins(xmin, xmax, nbin)
             plt.suptitle(
                 "Histogram of Sum of Channels in their Respective Trays")
@@ -1688,12 +1808,13 @@ class MuonDataFrame:
                             isBinned=True,
                             nbin=50,
                             amount=5,
-                            title="Histogram of Asymmetry of each Tray"):
+                            title="Histogram of Asymmetry of each Tray",
+                            xmax=0.5,
+                            xmin=-0.5):
         if isBinned:
             fig, axes = plt.subplots(nrows=4, ncols=1)
             plt.suptitle(title)
             ax0, ax1, ax2, ax3 = axes.flatten()
-            xmin, xmax = -0.5, 0.5
             # nbins = self.getBins(xmin, xmax, nbin)
             nbins = nbin
             ovflow = ((xmax < self.events_df['asymL1'].values) |
@@ -1915,9 +2036,13 @@ class MuonDataFrame:
         # process Z
         asymT1 = df['asymL1'].values
         asymT2 = df['asymL2'].values
+        asymT3 = df['asymL3'].values
+        asymT4 = df['asymL4'].values
         zangles = np.arctan(
-            np.sqrt(asymT1**2 + asymT2**2) / self.d_asym) * (360 / np.pi)
+            np.sqrt((asymT1 - asymT3)**2 +
+                    (asymT2 - asymT4)**2) / self.d_asym) * (360 / np.pi)
         df["z_angle"] = zangles
+        df['SmallCounter'] = self.getTDC(df['TDC'].values, 12)
         return df
 
     def completeDataFrame(self, df):
@@ -1952,10 +2077,26 @@ class MuonDataFrame:
         # process Z
         asymT1 = df['asymL1'].values
         asymT2 = df['asymL2'].values
+        asymT3 = df['asymL3'].values
+        asymT4 = df['asymL4'].values
         zangles = np.arctan(
-            np.sqrt(asymT1**2 + asymT2**2) / self.d_asym) * (360 / np.pi)
+            np.sqrt((asymT1 - asymT3)**2 +
+                    (asymT2 - asymT4)**2) / self.d_asym) * (360 / np.pi)
         df["z_angle"] = zangles
+        df['SmallCounter'] = self.getTDC(df['TDC'].values, 12)
         return df
+
+    def getMultiTDCEventsHisto(self):
+        x = self.get("TDC")
+        y = []
+        for i in x:
+            for j in i:
+                if len(j) > 2:
+                    y.append(j)
+        plt.hist(y)
+        plt.title("Number of Events with Multiple TDCs")
+        plt.title("Number of TDC / event")
+        plt.show()
 
     def getTDC(self, event, chNum):
         tdcs = []
@@ -2071,10 +2212,21 @@ class MuonDataFrame:
         ev = self.createTDCValues(tdc_hit, event, criteria)
         return tdc_hit, ev
 
-    def getHistogram(self, queryName, title="", nbins=200, pdf=False):
+    def getHisto1DInfo(self, queryName):
+        s = self.events_df[queryName]
+        mean, std, count = s.describe().values[1], s.describe(
+        ).values[2], s.describe().values[0]
+        return mean, std, count
+
+    def getHistogram(self,
+                     queryName,
+                     title="",
+                     nbins=200,
+                     pdf=False,
+                     range=None):
         s = self.events_df[queryName]
         # plt.figure(figsize=(3, 3))
-        ax = s.plot.hist(alpha=0.7, bins=nbins)
+        ax = s.plot.hist(alpha=0.7, bins=nbins, range=range)
         mean, std, count = s.describe().values[1], s.describe(
         ).values[2], s.describe().values[0]
         textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}".format(

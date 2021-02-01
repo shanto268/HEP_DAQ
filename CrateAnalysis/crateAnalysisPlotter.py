@@ -21,7 +21,9 @@ if __name__ == "__main__":
         print("\nAssuming the file has been analyzed before.")
 
     mdfo = MuonDataFrame(ifile, isNew=iisNew, d1="last")
+    # mdfo.generateAsymTestReport(pdfName="channel1.pdf")
     mdfo.generateAnaReport()
+    # mdfo.getMultiTDCEventsHisto()
     mdfo.getCompleteCSVOutputFile()
     # mdfo.getM2DPlot()
     # mdf = mdfo.events_df

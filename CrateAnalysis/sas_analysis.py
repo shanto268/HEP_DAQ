@@ -95,11 +95,11 @@ def processWithCuts(modules1, modules2, inputFiles):
 
 def processDefault(modules_og, inputFiles):
     t0 = datetime.now()
-    n, newRunRecord  = runAnalysisSequence(modules_og, inputFiles)
+    n, newRunRecord = runAnalysisSequence(modules_og, inputFiles)
     dt = datetime.now() - t0
     print('Processed %d events in %g sec' % (n, dt.total_seconds()))
 
 
 if __name__ == '__main__':
-    ray.init(ignore_reinit_error=True)
+    ray.init(ignore_reinit_error=True, num_cpus=2)
     sys.exit(main(sys.argv[1:]))
