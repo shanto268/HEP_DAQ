@@ -61,11 +61,11 @@ def parallelize_dataframe(df, func, path, n_cores=2):
 
 
 def getPhysicalUnits(asym):
-    return (0.55 / 0.5) * asym
+    return (0.55 / 0.6) * asym
 
 
 def getAsymmetryUnits(phys):
-    return (1 / (0.55 / 0.5)) * phys
+    return (0.6 / 0.55) * phys
 
 
 def remove_if_first_index(l):
@@ -232,6 +232,10 @@ class MuonDataFrame:
         df["Run_Num"] = int(self.runNum)
         return df
 
+    def addInfoColumn(self, df, term, term2):
+        df[term2] = self.events_df[term]
+        return df
+
     def getMergedMDF(self, df_list):
         df = pd.concat(df_list).reset_index()
         return df
@@ -252,6 +256,17 @@ class MuonDataFrame:
     def getCompleteCSVOutputFile(self):
         df = self.events_df
         df.drop('ADC', axis=1, inplace=True)
+        df.drop('ADC1', axis=1, inplace=True)
+        df.drop('ADC2', axis=1, inplace=True)
+        df.drop('ADC3', axis=1, inplace=True)
+        df.drop('ADC4', axis=1, inplace=True)
+        df.drop('ADC5', axis=1, inplace=True)
+        df.drop('ADC6', axis=1, inplace=True)
+        df.drop('ADC7', axis=1, inplace=True)
+        df.drop('ADC8', axis=1, inplace=True)
+        df.drop('ADC9', axis=1, inplace=True)
+        df.drop('ADC10', axis=1, inplace=True)
+        df.drop('ADC11', axis=1, inplace=True)
         df.drop('TDC', axis=1, inplace=True)
         df.drop('theta_x1', axis=1, inplace=True)
         df.drop('theta_y1', axis=1, inplace=True)
@@ -259,6 +274,8 @@ class MuonDataFrame:
         df.drop('theta_y2', axis=1, inplace=True)
         df.drop('z_angle', axis=1, inplace=True)
         df = self.addRunNumColumn(df)
+        df = self.addInfoColumn(df, "ADC0", "ADC_Ch0")
+        df.drop('ADC0', axis=1, inplace=True)
         name = "processed_data/events_data_frame_{}.csv.gz".format(self.runNum)
         df.to_csv(name, header=True, index=False, compression='gzip')
         name = "processed_data/events_data_frame_{}.csv".format(self.runNum)
@@ -320,7 +337,7 @@ class MuonDataFrame:
         txt = fLine + sLine + tLine + foLine
         return txt
 
-    def generateAnaReport(self, pdfName=""):
+    def generateAnaReport(self, pdfName="", reload=True):
         print("Creating the report pdf...")
         if pdfName == "":
             pdfName = self.pdfName
@@ -345,6 +362,15 @@ class MuonDataFrame:
             self.getNumLayersHitPlot(pdf=True)
             pdf.savefig()
             plt.close()
+            self.getPDFPlot("ADC0", 100, [0, 100], "ADC Channel 0", pdf=True)
+            pdf.savefig()
+            plt.close()
+            try:
+                self.getADCPlots(pdf=True)
+                pdf.savefig()
+                plt.close()
+            except:
+                pass
             self.getScalerPlots_header(pdf=True)
             pdf.savefig()
             plt.close()
@@ -379,13 +405,13 @@ class MuonDataFrame:
             # pdf.savefig()
             # plt.close()
             try:
-                self.getXView(pdf=True)
+                self.getXView(pdf=True, reload=reload)
                 pdf.savefig()
                 plt.close()
-                self.getYView(pdf=True)
+                self.getYView(pdf=True, reload=reload)
                 pdf.savefig()
                 plt.close()
-                self.getZView(pdf=True)
+                self.getZView(pdf=True, reload=reload)
                 pdf.savefig()
                 plt.close()
             except:
@@ -399,8 +425,11 @@ class MuonDataFrame:
             d['CreationDate'] = datetime.datetime.today()
             d['ModDate'] = datetime.datetime.today()
 
-        self.get2DTomogram(pdfv=True)
-        self.get2DTomogram(pdfv=True, nbins=50, title="(High Binning)")
+        self.get2DTomogram(pdfv=True, reload=reload)
+        self.get2DTomogram(pdfv=True,
+                           nbins=50,
+                           title="(High Binning)",
+                           reload=reload)
         self.getFingerPlots(pdfv=True)
         self.allLayerCorrelationPlots(pdfv=True,
                                       nbins=1000,
@@ -409,6 +438,13 @@ class MuonDataFrame:
         self.convertPNG2PDF()
         self.createOnePDF(pdfName)
         # self.mergePDF(pdfName)
+        try:
+            os.system("cpdf -add-text \"Run {}\" -topright 8  {} -o {}".format(
+                self.runNum, pdfName, pdfName))
+        except:
+            os.system(
+                "./cpdf -add-text \"Run {}\" -topright 8  {} -o {}".format(
+                    self.runNum, pdfName, pdfName))
         print("The report file {} has been created.".format(pdfName))
 
     def generateAsymTestReport(self, pdfName=""):
@@ -487,7 +523,8 @@ class MuonDataFrame:
                  isBinned=True,
                  nbin=90,
                  a_min=-180,
-                 a_max=180):
+                 a_max=180,
+                 reload=True):
         self.keep4by4Events()
         xmin = a_min
         xmax = a_max
@@ -530,7 +567,8 @@ class MuonDataFrame:
                  verticalalignment='top',
                  bbox=props)
         fig.tight_layout()
-        self.reload()
+        if reload:
+            self.reload()
         if not pdf:
             plt.show()
         else:
@@ -541,7 +579,8 @@ class MuonDataFrame:
                  isBinned=True,
                  nbin=90,
                  a_min=-180,
-                 a_max=180):
+                 a_max=180,
+                 reload=True):
         self.keep4by4Events()
         xmin = a_min
         xmax = a_max
@@ -584,7 +623,8 @@ class MuonDataFrame:
                  verticalalignment='top',
                  bbox=props)
         fig.tight_layout()
-        self.reload()
+        if reload:
+            self.reload()
         if not pdf:
             plt.show()
         else:
@@ -643,7 +683,7 @@ class MuonDataFrame:
         else:
             return ax
 
-    def getTomogram(self, pdf=False, isBinned=True, nbin=11):
+    def getTomogram(self, pdf=False, isBinned=True, nbin=11, reload=True):
         self.keep4by4Events()
         xmin = -1
         ymin = -1
@@ -656,13 +696,20 @@ class MuonDataFrame:
         ax0.hist(self.events_df['z_angle'], nbins, histtype='step')
         ax0.set_title('Plane of Lead Brick in Asymmetry Space')
         fig.tight_layout()
-        self.reload()
+        if reload:
+            self.reload()
         if not pdf:
             plt.show()
         else:
             return fig
 
-    def getZView(self, pdf=False, isBinned=True, nbin=90, a_min=0, a_max=90):
+    def getZView(self,
+                 pdf=False,
+                 isBinned=True,
+                 nbin=90,
+                 a_min=0,
+                 a_max=90,
+                 reload=True):
         self.keep4by4Events()
         xmin = a_min
         xmax = a_max
@@ -687,7 +734,8 @@ class MuonDataFrame:
                  bbox=props)
         ax0.set_title('Zenith Angle (4/4 events)')
         fig.tight_layout()
-        self.reload()
+        if reload:
+            self.reload()
         if not pdf:
             plt.show()
         else:
@@ -1002,7 +1050,8 @@ class MuonDataFrame:
         return -(self.d_phys / 2) + self.d_phys * t
 
     def getTValue(self):
-        return -(self.d_phys / 2) - self.d_lead
+        phys = -(self.d_phys / 2) - self.d_lead
+        return getAsymmetryUnits(phys)
 
     def get2DTomogram(self, pdfv=False, nbins=11, title="", reload=True):
         self.keep4by4Events()
@@ -1176,6 +1225,31 @@ class MuonDataFrame:
         x = self.getHistogram("deadtime", pdf=pdf)
         return x
 
+    def getPDFPlot(self, term, nbin, range, title="", pdf=False):
+        xmin, xmax = range
+        nbins = self.getBins(xmin, xmax, nbin)
+        fig, ax = plt.subplots(nrows=1, ncols=1)
+        ax.hist(self.events_df[term], nbins, histtype='step')
+        ax.set_xlim([xmin, xmax])
+        s = self.events_df[term]
+        mean, std, count = s.describe().values[1], s.describe(
+        ).values[2], s.describe().values[0]
+        ovflow = ((xmax < s.values) | (s.values < xmin)).sum()
+        textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}\nBins: {}\nOverflow: {}".format(
+            mean, std, count, nbin, ovflow)
+        props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+        ax.text(0.80,
+                0.95,
+                textstr,
+                transform=ax.transAxes,
+                fontsize=5,
+                verticalalignment='top',
+                bbox=props)
+        ax.set_title(title)
+        ax.set_yscale('log')
+        fig.tight_layout()
+        return fig
+
     def getEfficiencyPlot(self, pdf=False):
         ax = ""
         return ax
@@ -1213,9 +1287,6 @@ class MuonDataFrame:
         else:
             return ax
 
-    def getADCPlot(self):
-        pass
-
     def getNumLayersHitPlot(self, pdf=False):
         x = self.getHistogram("numLHit",
                               title="(TDC Hits Registered Per Event)",
@@ -1251,7 +1322,6 @@ class MuonDataFrame:
                  bbox=props)
         ax0.set_title('Small Counter')
         fig.tight_layout()
-        self.reload()
         if not pdf:
             plt.show()
         else:
@@ -1298,6 +1368,226 @@ class MuonDataFrame:
                  fontsize=5,
                  verticalalignment='top',
                  bbox=props)
+        fig.tight_layout()
+        if not pdf:
+            plt.show()
+        else:
+            return fig
+
+    def getADCPlots(self, pdf=False, nbin=10):
+        xmin = 0
+        xmax = 30
+        # nbins = self.getBins(xmin, xmax, nbin)
+        nbins = nbin
+        fig, axes = plt.subplots(nrows=3, ncols=4)
+        plt.suptitle("Histogram of All ADC Channels")
+        ax0, ax1, ax2, ax3, ax4, ax5, ax6, ax7, ax8, ax9, ax10, ax11 = axes.flatten(
+        )
+
+        ax0.hist(self.events_df['ADC0'], nbins, histtype='step')
+        # ax0.set_xlim([xmin, xmax])
+        s = self.events_df['ADC0']
+        mean, std, count = s.describe().values[1], s.describe(
+        ).values[2], s.describe().values[0]
+        ovflow = ((xmax < s.values) | (s.values < xmin)).sum()
+        textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}\nBins: {}\nOverflow: {}".format(
+            mean, std, count, nbin, ovflow)
+        props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+        ax0.text(0.80,
+                 0.95,
+                 textstr,
+                 transform=ax0.transAxes,
+                 fontsize=5,
+                 verticalalignment='top',
+                 bbox=props)
+        ax0.set_title('Ch0')
+        ax1.hist(self.events_df['ADC1'], nbins, histtype='step')
+        ax1.set_xlim([xmin, xmax])
+        ax1.set_title('Ch1')
+        s = self.events_df['ADC1']
+        mean, std, count = s.describe().values[1], s.describe(
+        ).values[2], s.describe().values[0]
+        ovflow = ((xmax < s.values) | (s.values < xmin)).sum()
+        textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}\nBins: {}\nOverflow: {}".format(
+            mean, std, count, nbin, ovflow)
+        props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+        ax1.text(0.80,
+                 0.95,
+                 textstr,
+                 transform=ax1.transAxes,
+                 fontsize=5,
+                 verticalalignment='top',
+                 bbox=props)
+        ax2.hist(self.events_df['ADC2'], nbins, histtype='step')
+        ax2.set_title('Ch2')
+        ax2.set_xlim([xmin, xmax])
+        s = self.events_df['ADC2']
+        mean, std, count = s.describe().values[1], s.describe(
+        ).values[2], s.describe().values[0]
+        ovflow = ((xmax < s.values) | (s.values < xmin)).sum()
+        textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}\nBins: {}\nOverflow: {}".format(
+            mean, std, count, nbin, ovflow)
+        props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+        ax2.text(0.80,
+                 0.95,
+                 textstr,
+                 transform=ax2.transAxes,
+                 fontsize=5,
+                 verticalalignment='top',
+                 bbox=props)
+        ax3.hist(self.events_df['ADC3'], nbins, histtype='step')
+        ax3.set_xlim([xmin, xmax])
+        ax3.set_title('Ch3')
+        s = self.events_df['ADC3']
+        mean, std, count = s.describe().values[1], s.describe(
+        ).values[2], s.describe().values[0]
+        ovflow = ((xmax < s.values) | (s.values < xmin)).sum()
+        textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}\nBins: {}\nOverflow: {}".format(
+            mean, std, count, nbin, ovflow)
+        props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+        ax3.text(0.80,
+                 0.95,
+                 textstr,
+                 transform=ax3.transAxes,
+                 fontsize=5,
+                 verticalalignment='top',
+                 bbox=props)
+        ax4.hist(self.events_df['ADC4'], nbins, histtype='step')
+        ax4.set_xlim([xmin, xmax])
+        ax4.set_title('Ch4')
+        s = self.events_df['ADC4']
+        mean, std, count = s.describe().values[1], s.describe(
+        ).values[2], s.describe().values[0]
+        ovflow = ((xmax < s.values) | (s.values < xmin)).sum()
+        textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}\nBins: {}\nOverflow: {}".format(
+            mean, std, count, nbin, ovflow)
+        props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+        ax4.text(0.80,
+                 0.95,
+                 textstr,
+                 transform=ax4.transAxes,
+                 fontsize=5,
+                 verticalalignment='top',
+                 bbox=props)
+        ax5.hist(self.events_df['ADC5'], nbins, histtype='step')
+        ax5.set_xlim([xmin, xmax])
+        ax5.set_title('Ch5')
+        s = self.events_df['ADC5']
+        mean, std, count = s.describe().values[1], s.describe(
+        ).values[2], s.describe().values[0]
+        ovflow = ((xmax < s.values) | (s.values < xmin)).sum()
+        textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}\nBins: {}\nOverflow: {}".format(
+            mean, std, count, nbin, ovflow)
+        props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+        ax5.text(0.80,
+                 0.95,
+                 textstr,
+                 transform=ax5.transAxes,
+                 fontsize=5,
+                 verticalalignment='top',
+                 bbox=props)
+        ax6.hist(self.events_df['ADC6'], nbins, histtype='step')
+        ax6.set_xlim([xmin, xmax])
+        ax6.set_title('Ch6')
+        s = self.events_df['ADC6']
+        mean, std, count = s.describe().values[1], s.describe(
+        ).values[2], s.describe().values[0]
+        ovflow = ((xmax < s.values) | (s.values < xmin)).sum()
+        textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}\nBins: {}\nOverflow: {}".format(
+            mean, std, count, nbin, ovflow)
+        props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+        ax6.text(0.80,
+                 0.95,
+                 textstr,
+                 transform=ax6.transAxes,
+                 fontsize=5,
+                 verticalalignment='top',
+                 bbox=props)
+        ax7.hist(self.events_df['ADC7'], nbins, histtype='step')
+        ax7.set_xlim([xmin, xmax])
+        ax7.set_title('Ch7')
+        s = self.events_df['ADC7']
+        mean, std, count = s.describe().values[1], s.describe(
+        ).values[2], s.describe().values[0]
+        ovflow = ((xmax < s.values) | (s.values < xmin)).sum()
+        textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}\nBins: {}\nOverflow: {}".format(
+            mean, std, count, nbin, ovflow)
+        props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+        ax7.text(0.80,
+                 0.95,
+                 textstr,
+                 transform=ax7.transAxes,
+                 fontsize=5,
+                 verticalalignment='top',
+                 bbox=props)
+        ax8.hist(self.events_df['ADC8'], nbins, histtype='step')
+        ax8.set_xlim([xmin, xmax])
+        ax8.set_title('Ch8')
+        s = self.events_df['ADC8']
+        mean, std, count = s.describe().values[1], s.describe(
+        ).values[2], s.describe().values[0]
+        ovflow = ((xmax < s.values) | (s.values < xmin)).sum()
+        textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}\nBins: {}\nOverflow: {}".format(
+            mean, std, count, nbin, ovflow)
+        props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+        ax8.text(0.80,
+                 0.95,
+                 textstr,
+                 transform=ax8.transAxes,
+                 fontsize=5,
+                 verticalalignment='top',
+                 bbox=props)
+        ax9.hist(self.events_df['ADC9'], nbins, histtype='step')
+        ax9.set_xlim([xmin, xmax])
+        ax9.set_title('Ch9')
+        s = self.events_df['ADC9']
+        mean, std, count = s.describe().values[1], s.describe(
+        ).values[2], s.describe().values[0]
+        ovflow = ((xmax < s.values) | (s.values < xmin)).sum()
+        textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}\nBins: {}\nOverflow: {}".format(
+            mean, std, count, nbin, ovflow)
+        props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+        ax9.text(0.80,
+                 0.95,
+                 textstr,
+                 transform=ax9.transAxes,
+                 fontsize=5,
+                 verticalalignment='top',
+                 bbox=props)
+        ax10.hist(self.events_df['ADC10'], nbins, histtype='step')
+        ax10.set_xlim([xmin, xmax])
+        ax10.set_title('Ch10')
+        s = self.events_df['ADC10']
+        mean, std, count = s.describe().values[1], s.describe(
+        ).values[2], s.describe().values[0]
+        ovflow = ((xmax < s.values) | (s.values < xmin)).sum()
+        textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}\nBins: {}\nOverflow: {}".format(
+            mean, std, count, nbin, ovflow)
+        props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+        ax10.text(0.80,
+                  0.95,
+                  textstr,
+                  transform=ax10.transAxes,
+                  fontsize=5,
+                  verticalalignment='top',
+                  bbox=props)
+        ax11.hist(self.events_df['ADC11'], nbins, histtype='step')
+        ax11.set_xlim([xmin, xmax])
+        ax11.set_title('Ch11')
+        s = self.events_df['ADC11']
+        mean, std, count = s.describe().values[1], s.describe(
+        ).values[2], s.describe().values[0]
+        ovflow = ((xmax < s.values) | (s.values < xmin)).sum()
+        textstr = "Mean: {:0.3f}\nStd: {:0.3f}\nCount: {}\nBins: {}\nOverflow: {}".format(
+            mean, std, count, nbin, ovflow)
+        props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+        ax11.text(0.80,
+                  0.95,
+                  textstr,
+                  transform=ax11.transAxes,
+                  fontsize=5,
+                  verticalalignment='top',
+                  bbox=props)
         fig.tight_layout()
         if not pdf:
             plt.show()
@@ -2013,6 +2303,18 @@ class MuonDataFrame:
         df['R3'] = self.getTDC(df['TDC'].values, 7)
         df['L4'] = self.getTDC(df['TDC'].values, 8)
         df['R4'] = self.getTDC(df['TDC'].values, 9)
+        df['ADC0'] = self.getADC(df['ADC'].values, 0)
+        df['ADC1'] = self.getADC(df['ADC'].values, 1)
+        df['ADC2'] = self.getADC(df['ADC'].values, 2)
+        df['ADC3'] = self.getADC(df['ADC'].values, 3)
+        df['ADC4'] = self.getADC(df['ADC'].values, 4)
+        df['ADC5'] = self.getADC(df['ADC'].values, 5)
+        df['ADC6'] = self.getADC(df['ADC'].values, 6)
+        df['ADC7'] = self.getADC(df['ADC'].values, 7)
+        df['ADC8'] = self.getADC(df['ADC'].values, 8)
+        df['ADC9'] = self.getADC(df['ADC'].values, 9)
+        df['ADC10'] = self.getADC(df['ADC'].values, 10)
+        df['ADC11'] = self.getADC(df['ADC'].values, 11)
         df['TopCounter'] = self.getTDC(df['TDC'].values, 4)
         df['BottomCounter'] = self.getTDC(df['TDC'].values, 10)
         df['sumL1'] = df.eval('L1 + R1')
@@ -2054,6 +2356,18 @@ class MuonDataFrame:
         df['R3'] = self.getTDC(df['TDC'].values, 7)
         df['L4'] = self.getTDC(df['TDC'].values, 8)
         df['R4'] = self.getTDC(df['TDC'].values, 9)
+        df['ADC0'] = self.getADC(df['ADC'].values, 0)
+        df['ADC1'] = self.getADC(df['ADC'].values, 1)
+        df['ADC2'] = self.getADC(df['ADC'].values, 2)
+        df['ADC3'] = self.getADC(df['ADC'].values, 3)
+        df['ADC4'] = self.getADC(df['ADC'].values, 4)
+        df['ADC5'] = self.getADC(df['ADC'].values, 5)
+        df['ADC6'] = self.getADC(df['ADC'].values, 6)
+        df['ADC7'] = self.getADC(df['ADC'].values, 7)
+        df['ADC8'] = self.getADC(df['ADC'].values, 8)
+        df['ADC9'] = self.getADC(df['ADC'].values, 9)
+        df['ADC10'] = self.getADC(df['ADC'].values, 10)
+        df['ADC11'] = self.getADC(df['ADC'].values, 11)
         df['TopCounter'] = self.getTDC(df['TDC'].values, 4)
         df['BottomCounter'] = self.getTDC(df['TDC'].values, 10)
         df['sumL1'] = df.eval('L1 + R1')
@@ -2097,6 +2411,12 @@ class MuonDataFrame:
         plt.title("Number of Events with Multiple TDCs")
         plt.title("Number of TDC / event")
         plt.show()
+
+    def getADC(self, event, chNum):
+        adcs = []
+        for ev in event:
+            adcs.append(ev[chNum])
+        return adcs
 
     def getTDC(self, event, chNum):
         tdcs = []
@@ -2355,10 +2675,11 @@ class MuonDataFrame:
             dropped = dropped.flatten()
         return dropped
 
-    def getFilteredPlot(self, term, value, cond, title=""):
+    def getFilteredPlot(self, term, value, cond, title="", reload=True):
         self.keepEvents(term, value, cond)
         self.getPlot(term, title=title)
-        self.reload()
+        if reload:
+            self.reload()
 
     @dispatch(str)
     def getPlot(self, query):
@@ -2387,11 +2708,13 @@ class MuonDataFrame:
             queries[0], queries[1], title))
         plt.show()
 
-    def get3DScatterPlot(self, queries, title=""):
+    def get3DScatterPlot(self, queries, title="", xlims=None, ylims=None):
         self.events_df.plot.scatter(x=queries[0],
                                     y=queries[1],
                                     c=queries[2],
                                     colormap='viridis')
+        plt.xlim(xlims)
+        plt.ylim(ylims)
         plt.title(title)
         plt.show()
 

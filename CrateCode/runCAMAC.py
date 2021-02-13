@@ -53,7 +53,7 @@ def initLeCroy3377(h, slot, moduleId=None):
     # Fill control registers
     h.CSSA(17, slot, 0, int('1000', 16) + moduleId)
     h.CSSA(17, slot, 1, int('0000', 16))
-    h.CSSA(17, slot, 2, int('03F1', 16))
+    h.CSSA(17, slot, 2, int('03F0', 16))
     h.CSSA(17, slot, 3, int('0000', 16))
 
     # Disable LAM
@@ -84,8 +84,6 @@ def configureDAQDefaults(h):
     runConfiguration["tdc_channels_3377"] = 32
     runConfiguration["scaler_slots_2552"] = (5, )  # new
     runConfiguration["scaler_channels"] = 12  # new
-    runConfiguration["fiber_test_channel"] = 1  # new
-    runConfiguration["fiber_test_slot"] = (17, )  # new
 
     # Enable busy signal on the controller combo channel 1
     h.stdCMDSR("nim_enablecombo 1 0")

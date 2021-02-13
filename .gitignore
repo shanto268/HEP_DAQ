@@ -2,6 +2,7 @@
 CrateAnalysis/.ipynb_checkpoints/*
 CrateAnalysis/processed_data/*
 CrateAnalysis/*csv
+CrateAnalysis/*csv.gz
 CrateAnalysis/*png
 CrateCode/*.bin
 CrateCode/secrets.py
