@@ -6,13 +6,8 @@ Program : CrateAnalysis/MuonDataFrame.py
 Summary:
 """
 __author__ = "Sadman Ahmed Shanto"
-__date__ = "10/06/2020"
+__date__ = "2021-02-17"
 __email__ = "sadman-ahmed.shanto@ttu.edu"
-""""
-To DO:
-    - Event Display/Tracking
-    - Imaging
-"""
 
 # import feather
 import matplotlib.pyplot as plt
@@ -179,8 +174,8 @@ def getFilteredHistogram(df, queryName, filter, nbins=200, title=""):
     plt.show()
 
 
-class MuonDataFrame:
-    def __init__(self, path, isNew, d1="last"):
+class MuDataFrame:
+    def __init__(self, path):
         """
         Initialize the MuonDataFrame
 
@@ -188,8 +183,9 @@ class MuonDataFrame:
         :param d1 [string]: type of decision to be made on multiTDC events (acceptable terms are "last", "first", "min", and "max")
                             default value = last
         """
+        self.events_df = pd.read_csv(path)
         self.newFileName = path.split(".")[0].split("/")[0] + "/" + path.split(
-            ".")[0].split("/")[1] + ".h5"
+            ".")[0].split("/")[1] + ".csv"
         self.nbins = 150
         self.d_phys = 1.65  #distance between two trays in meters
         self.d_lead = 0.42  #distance (m) between top tray and lead brick
@@ -202,25 +198,6 @@ class MuonDataFrame:
             'r1hit', 'r2hit', 'r3hit', 'r4hit'
         ]
         self.query_terms = self.default_query_terms + self.quant_query_terms
-        self.d1 = d1
-        if isNew == "True":
-            try:
-                with pd.HDFStore(path) as hdf:
-                    key1 = hdf.keys()[0]
-                self.events_df = self.getDataFrame(
-                    pd.read_hdf(path, key=key1, use_threads=True))
-                #format="table",
-            except:
-                self.events_df = self.getDataFrame(
-                    #pd.read_hdf(path, format="table", use_threads=True))
-                    pd.read_hdf(path, use_threads=True))
-        else:
-            with pd.HDFStore(path) as hdf:
-                key2 = hdf.keys()[1]
-            self.events_df = pd.read_hdf(self.newFileName,
-                                         key=key2,
-                                         use_threads=True)
-            #  format="table",
         self.pdfName = path.split(".")[0].split("/")[1] + ".pdf"
         self.pdfList = []
         self.runNum = self.pdfName.split(".")[0].split("_")[-1]
@@ -247,10 +224,6 @@ class MuonDataFrame:
         csvName = "processed_data/events_data_frame_{}.csv.gz".format(
             self.runNum)
         Notify().sendPdfEmail(self.pdfName, csvName)
-
-    def sendShantoEmail(self):
-        csvName = "processed_data/run{}.csv.gz".format(self.runNum)
-        Notify().sendShantoPdfEmail(self.pdfName, csvName)
 
     def sendReportEmailRecovery(self):
         csvName = "processed_data/events_data_frame_{}.csv.gz".format(
@@ -282,6 +255,8 @@ class MuonDataFrame:
         df.drop('ADC0', axis=1, inplace=True)
         name = "processed_data/events_data_frame_{}.csv.gz".format(self.runNum)
         df.to_csv(name, header=True, index=False, compression='gzip')
+        name = "processed_data/events_data_frame_{}.csv".format(self.runNum)
+        df.to_csv(name, header=True, index=False)
         print("{} has been created".format(name))
 
     def getCompleteCSVOutputFile_og(self):
@@ -293,21 +268,17 @@ class MuonDataFrame:
         df.to_csv(name, header=True, index=False)
         print("{} has been created".format(name))
 
-    def getEmissionFile(self):
-        df = self.events_df
-        df.drop('ADC', axis=1, inplace=True)
-        df.drop('TDC', axis=1, inplace=True)
-        df = self.addRunNumColumn(df)
-        name = "processed_data/run{}.csv.gz".format(self.runNum)
-        df.to_csv(name, header=True, index=False, compression='gzip')
-        print("{} has been created".format(name))
-
     def getCSVOutputFile(self, numEvents):
         df = self.events_df
         df.drop('ADC', axis=1, inplace=True)
         df.drop('TDC', axis=1, inplace=True)
+        df.drop('theta_x1', axis=1, inplace=True)
+        df.drop('theta_y1', axis=1, inplace=True)
+        df.drop('theta_x2', axis=1, inplace=True)
+        df.drop('theta_y2', axis=1, inplace=True)
+        df.drop('z_angle', axis=1, inplace=True)
         df = self.addRunNumColumn(df)
-        name = "processed_data/run{}.csv".format(self.runNum)
+        name = "processed_data/events_data_frame_{}.csv".format(self.runNum)
         numEvents += 1
         df.iloc[:numEvents, :].to_csv(name,
                                       header=True,

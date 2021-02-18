@@ -24,7 +24,8 @@ if __name__ == "__main__":
     # mdfo.generateAsymTestReport(pdfName="channel1.pdf")
     mdfo.generateAnaReport()
     # mdfo.getMultiTDCEventsHisto()
-    #mdfo.getCompleteCSVOutputFile()
+    mdfo.getEmissionFile()
+    mdfo.sendShantoEmail()
     # mdfo.getM2DPlot()
     # mdf = mdfo.events_df
     # mdfo.getAnaReport()
